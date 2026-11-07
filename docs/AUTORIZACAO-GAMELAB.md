@@ -36,3 +36,13 @@ Falha de autenticação HTTP 401; indisponibilidade HTTP 5xx. Em todos os casos,
 
 ## Segurança
 Não tratar controle visual em GitHub Pages como barreira de segurança. O servidor deve autorizar cada leitura/gravação. Não publicar chaves privadas nem permitir leitura de quizzes de outros professores.
+
+## Verificação de acesso realizada em 2026-11-07
+- Repositórios acessíveis da conta GitHub foram enumerados; nenhum contém o projeto de implantação do Worker `anna-one-auditoria`.
+- Não existe ferramenta conectada de administração Cloudflare Workers nesta sessão. Portanto, **não foi possível criar/publicar** `/v1/eduplay/authorize`.
+- O login existente em `anna-one/app/login-neon.html` aceita apenas `next=master` ou redireciona ao dashboard; não implementa retorno seguro ao EduPlay. Alterá-lo isoladamente não resolveria compartilhamento de sessão entre origens.
+- A branch do GameLab está configurada para falhar fechada (sem autorização explícita, interface oculta). **Não fazer merge** até validar endpoint, sessão e isolamento de dados.
+- Bloqueio visual de uma página estática não equivale a proteção de conteúdo. Para segurança efetiva, mover operações privadas para backend autenticado.
+
+## Dependência para conclusão
+Obter acesso ao código-fonte/deploy do Worker central e à configuração de Neon Auth, para implementar autorização docente, configurar origens/retorno do login e executar testes com contas autorizadas e não autorizadas. Não alterar banco de produção nem presumir o esquema de papéis.
