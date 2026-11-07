@@ -40,13 +40,17 @@ try{
      try{const response=await fetch('https://ep-spring-snow-b6mci3yx.neonauth.c-2.sa-east-1.aws.neon.tech/neondb/auth/token',{credentials:'include',cache:'no-store'});if(response.ok){const data=await response.json();jwt=typeof data==='string'?data:data?.token||data?.data?.token||data?.access_token;}}catch{}
    }
    if(typeof jwt!=='string'||jwt.split('.').length!==3)throw Error('token indisponível');
-   const adminResponse=await fetch('https://anna-one-auditoria.elisonborg.workers.dev/v1/admin/authorize',{headers:{Authorization:'Bearer '+jwt},cache:'no-store'});
-   const isMaster=adminResponse.ok&&(await adminResponse.json()).admin_authorized===true; if(isMaster){document.documentElement.dataset.annaAuth='verified';status.remove();}else{
-   const response=await fetch('https://anna-one-auditoria.elisonborg.workers.dev/v1/institution/me',{headers:{Authorization:'Bearer '+jwt},cache:'no-store'});
-   if(!response.ok)throw Error('permissões indisponíveis');
-   const permissions=await response.json();
-   // Esta checagem confirma apenas vínculo institucional; perfil docente exige endpoint específico.
-   notice('Conta AnnA One reconhecida','O acesso de professores depende de autorização específica no servidor. O estúdio permanece bloqueado nesta prévia.');}
+   // Endpoint proposto: deve ser implementado no serviço central antes de liberar professores.
+   const response=await fetch('https://anna-one-auditoria.elisonborg.workers.dev/v1/eduplay/authorize',{headers:{Authorization:'Bearer '+jwt},cache:'no-store'});
+   if(response.status===401||response.status===403){notice('Acesso não autorizado','Esta conta não possui autorização para o AnnA GameLab.');}
+   else if(!response.ok)throw Error('autorização indisponível');
+   else{
+     const data=await response.json();
+     if(data?.authorized===true&&(data.role==='master'||data.role==='teacher')){
+       document.documentElement.dataset.annaAuth='verified';
+       status.remove();
+     }else notice('Acesso não autorizado','O perfil desta conta não permite utilizar o estúdio.');
+   }
  }
 }catch{notice('Não foi possível validar o acesso','Verifique sua sessão no Portal AnnA One. O estúdio permanece bloqueado até a confirmação das permissões.');}
 </script></body></html>
