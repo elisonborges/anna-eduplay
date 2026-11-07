@@ -40,11 +40,13 @@ try{
      try{const response=await fetch('https://ep-spring-snow-b6mci3yx.neonauth.c-2.sa-east-1.aws.neon.tech/neondb/auth/token',{credentials:'include',cache:'no-store'});if(response.ok){const data=await response.json();jwt=typeof data==='string'?data:data?.token||data?.data?.token||data?.access_token;}}catch{}
    }
    if(typeof jwt!=='string'||jwt.split('.').length!==3)throw Error('token indisponível');
+   const adminResponse=await fetch('https://anna-one-auditoria.elisonborg.workers.dev/v1/admin/authorize',{headers:{Authorization:'Bearer '+jwt},cache:'no-store'});
+   if(adminResponse.ok&&(await adminResponse.json()).admin_authorized===true){document.documentElement.dataset.annaAuth='verified';status.remove();return;}
    const response=await fetch('https://anna-one-auditoria.elisonborg.workers.dev/v1/institution/me',{headers:{Authorization:'Bearer '+jwt},cache:'no-store'});
    if(!response.ok)throw Error('permissões indisponíveis');
    const permissions=await response.json();
    // Esta checagem confirma apenas vínculo institucional; perfil docente exige endpoint específico.
-   notice('Conta AnnA One reconhecida','A integração do perfil de professor ainda depende de autorização específica no servidor. O estúdio permanece bloqueado nesta prévia.');
+   notice('Conta AnnA One reconhecida','O acesso de professores depende de autorização específica no servidor. O estúdio permanece bloqueado nesta prévia.');
  }
 }catch{notice('Não foi possível validar o acesso','Verifique sua sessão no Portal AnnA One. O estúdio permanece bloqueado até a confirmação das permissões.');}
 </script></body></html>
