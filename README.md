@@ -8,13 +8,15 @@ Protótipo incremental de AnnA GameLab e Quiz Arena. A branch **não está publi
 - Acesso condicionado à autenticação e autorização do portal AnnA One, via Worker de homologação.
 - Criação, edição, duplicação, importação e exportação de quizzes JSON.
 - Questões de múltipla escolha e verdadeiro/falso, com nível de dificuldade.
-- Biblioteca de questões reutilizáveis, busca, filtros, importação e exportação JSON.
+- Biblioteca de questões reutilizáveis, busca, filtros, importação/exportação JSON e exclusão individual confirmada.
 - Dados armazenados em `localStorage` na origem `eduplay.annaone.com.br`.
 
 ### Quiz Arena
 - Leitura dos quizzes locais criados no GameLab na mesma origem e perfil de navegador.
 - Importação aditiva de arquivos JSON exportados do GameLab, sem sobrescrever os quizzes existentes.
 - Jogo com pontuação, feedback, repetição e histórico local de até 20 partidas (10 exibidas).
+- Exportação de quizzes em JSON e histórico em CSV (separador ponto e vírgula, UTF-8 com BOM).
+- Atualização da listagem entre abas da mesma origem via evento de armazenamento.
 - Limpeza voluntária do histórico; nenhum nome de aluno é solicitado.
 
 ### Limitações e segurança
@@ -30,8 +32,10 @@ Protótipo incremental de AnnA GameLab e Quiz Arena. A branch **não está publi
 3. Exportar quizzes e biblioteca JSON; verificar os arquivos.
 4. Na mesma origem, abrir o Quiz Arena, jogar, conferir pontuação, resultado e histórico.
 5. Em outro navegador, importar o JSON no Quiz Arena; confirmar que nenhum quiz anterior foi apagado.
-6. Verificar comportamento sem autenticação no GameLab, sem afetar o acesso público ao Quiz Arena.
-7. Testar layouts mobile, armazenamento indisponível e dados JSON inválidos.
-8. Testar perfil Professor institucional quando houver conta disponível.
+6. Exportar os resultados em CSV, conferir acentos e limpar o histórico local.
+7. Excluir uma questão da biblioteca e verificar que os quizzes existentes permanecem intactos.
+8. Verificar comportamento sem autenticação no GameLab, sem afetar o acesso público ao Quiz Arena.
+9. Testar layouts mobile, armazenamento indisponível e dados JSON inválidos.
+10. Testar perfil Professor institucional quando houver conta disponível.
 
 **Não fazer merge em `main` antes da validação funcional e da autorização explícita.**
