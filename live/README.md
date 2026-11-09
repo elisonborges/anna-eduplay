@@ -34,3 +34,16 @@ A interface atual do Quiz Arena mantém dois **layouts locais**. Eles não const
 - A autenticação do host exige contrato real do AnnA One. Não ativar endpoint sem validá-lo. O token digitado é enviado somente ao endpoint de criação e não é persistido pela interface.
 - Limitações pendentes: expiração e exclusão de salas, reconexão confiável, persistência de placar por aluno, temporizador autoritativo após hibernação, antiabuso, testes E2E e validação de autenticação.
 - Os arquivos de interface foram adicionados à produção, **mas o multiplayer permanece desativado**. O modo individual existente não foi substituído.
+
+## Configuração de implantação Cloudflare (pendente)
+Arquivo `live/wrangler.toml` adicionado com binding `SESSIONS` e migração SQLite Durable Objects.
+A implantação deve ser feita no diretório `live`, após verificar as permissões do plano Cloudflare e autenticação do apresentador.
+```sh
+cd live
+npx wrangler login
+npx wrangler secret put HOST_AUTH_SECRET
+npx wrangler deploy
+```
+Configurar `HOST_AUTH_URL` como variável de ambiente segura apontando para o verificador real de professor, **somente após validar seu contrato**. O endpoint de domínio personalizado também precisa ser configurado; sem isso, a interface continua indisponível.
+
+As salas agora têm validade de duas horas e os PINs podem ser reutilizados após expiração. Ainda não foi implementada a persistência do placar dos participantes, nem reconexão e testes reais. Não declarar o multiplayer pronto antes dessas etapas.
