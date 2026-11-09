@@ -3,7 +3,7 @@
 export default {
  async fetch(request,env){
   const url=new URL(request.url);
-  const headers={'Access-Control-Allow-Origin':'https://eduplay.annaone.com.br','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type','Cache-Control':'no-store'};
+  const headers={'Access-Control-Allow-Origin':'https://eduplay.annaone.com.br','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization','Cache-Control':'no-store'};
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
   if(url.pathname==='/health')return Response.json({service:'anna-eduplay-live',ready:true},{headers});
   if(url.pathname==='/sessions'&&request.method==='POST'){
