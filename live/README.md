@@ -24,3 +24,13 @@ Professor cria sala, recebe PIN de seis dígitos, alunos entram com apelido, pro
 
 ## Importante
 A interface atual do Quiz Arena mantém dois **layouts locais**. Eles não constituem multiplayer. Nenhuma configuração de Neon, Supabase, Cloudflare ou dados reais foi alterada.
+
+## Entrega seguinte (2026-11-08)
+- `live/index.html`: interface de professor e aluno, seleção de quiz local, escolha do modo, criação e entrada por PIN, painel de participantes, envio de respostas e feedback.
+- `index.html`: acesso ao Live claramente identificado como **em preparação**.
+- `live/worker.js`: tentativas adicionais em caso de colisão de PIN, armazenamento do estado principal da sala e resposta correta não revelada antecipadamente ao aluno.
+- Interface aponta para `https://eduplay-live.annaone.com.br`, **endereço planejado e não verificado**. Enquanto indisponível, a interface desabilita criar/entrar.
+- Não houve implantação do Worker, configuração de DNS, binding Durable Object, segredo de autenticação nem testes com vários dispositivos.
+- A autenticação do host exige contrato real do AnnA One. Não ativar endpoint sem validá-lo. O token digitado é enviado somente ao endpoint de criação e não é persistido pela interface.
+- Limitações pendentes: expiração e exclusão de salas, reconexão confiável, persistência de placar por aluno, temporizador autoritativo após hibernação, antiabuso, testes E2E e validação de autenticação.
+- Os arquivos de interface foram adicionados à produção, **mas o multiplayer permanece desativado**. O modo individual existente não foi substituído.
