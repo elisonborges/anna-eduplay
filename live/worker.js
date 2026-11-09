@@ -19,11 +19,13 @@ export default {
    if(!check.ok)return Response.json({error:'Authorization service unavailable'},{status:503,headers});
    let authorization;try{authorization=await check.json()}catch{return Response.json({error:'Invalid authorization response'},{status:503,headers})}
    if(authorization?.authorized!==true||!['master','teacher'].includes(authorization.role))return Response.json({error:'Forbidden'},{status:403,headers});
+   let input;try{input=await request.json()}catch{return Response.json({error:'Invalid JSON'},{status:400,headers})}
+   const participation=['individual','team','both'].includes(input?.participation)?input.participation:'both';
    for(let attempt=0;attempt<6;attempt++){
     const pin=String(crypto.getRandomValues(new Uint32Array(1))[0]%900000+100000);
     const id=env.SESSIONS.idFromName(pin),stub=env.SESSIONS.get(id);
     const hostSecret=crypto.randomUUID()+crypto.randomUUID();
-    const result=await stub.fetch('https://room/init',{method:'POST',body:JSON.stringify({hostSecret})});
+    const result=await stub.fetch('https://room/init',{method:'POST',body:JSON.stringify({hostSecret,participation})});
     if(result.ok)return Response.json({pin,hostSecret},{headers});
    }
    return Response.json({error:'No available session PIN'},{status:503,headers});
@@ -37,13 +39,13 @@ export default {
  }
 };
 export class EduPlayRoom {
- constructor(state){this.state=state;this.sockets=new Map();this.session=null;this.hostSecret=null;this.questionIndex=-1;this.deadline=0;this.answers=new Map();this.expiresAt=0;this.ready=this.state.blockConcurrencyWhile(async()=>{const saved=await this.state.storage.get('room');if(saved){this.hostSecret=saved.hostSecret;this.session=saved.session;this.questionIndex=saved.questionIndex;this.deadline=saved.deadline;this.expiresAt=saved.expiresAt}})}
- async persist(){await this.state.storage.put('room',{hostSecret:this.hostSecret,session:this.session,questionIndex:this.questionIndex,deadline:this.deadline,expiresAt:this.expiresAt})}
+ constructor(state){this.state=state;this.sockets=new Map();this.session=null;this.hostSecret=null;this.questionIndex=-1;this.deadline=0;this.answers=new Map();this.expiresAt=0;this.participation='both';this.ready=this.state.blockConcurrencyWhile(async()=>{const saved=await this.state.storage.get('room');if(saved){this.hostSecret=saved.hostSecret;this.session=saved.session;this.questionIndex=saved.questionIndex;this.deadline=saved.deadline;this.expiresAt=saved.expiresAt;this.participation=saved.participation||'both'}})}
+ async persist(){await this.state.storage.put('room',{hostSecret:this.hostSecret,session:this.session,questionIndex:this.questionIndex,deadline:this.deadline,expiresAt:this.expiresAt,participation:this.participation})}
  async fetch(request){
   await this.ready;const url=new URL(request.url);
   if(url.pathname==='/init'){
    if(this.hostSecret&&Date.now()<this.expiresAt)return new Response('Already exists',{status:409});
-   const body=await request.json();this.hostSecret=body.hostSecret;this.session=null;this.questionIndex=-1;this.deadline=0;this.expiresAt=Date.now()+2*60*60*1000;await this.persist();return new Response('Created',{status:201});
+   const body=await request.json();this.hostSecret=body.hostSecret;this.participation=['individual','team','both'].includes(body.participation)?body.participation:'both';this.session=null;this.questionIndex=-1;this.deadline=0;this.expiresAt=Date.now()+2*60*60*1000;await this.persist();return new Response('Created',{status:201});
   }
   if(request.headers.get('Upgrade')!=='websocket'||!this.hostSecret||Date.now()>=this.expiresAt)return new Response('Not found',{status:404});
   const role=url.searchParams.get('role'),secret=url.searchParams.get('secret');
@@ -57,6 +59,7 @@ export class EduPlayRoom {
   const name=role==='student'?clean(url.searchParams.get('name')):'Professor';
   if(role==='student'&&!name)return new Response('Name required',{status:400});
   const team=role==='student'&&url.searchParams.get('team')==='1';
+  if(role==='student'&&((this.participation==='team'&&!team)||(this.participation==='individual'&&team)))return new Response('Participation mode not allowed',{status:403});
   let members=[];
   if(team){try{members=JSON.parse(url.searchParams.get('members')||'[]')}catch{return new Response('Invalid team',{status:400})}
    if(!Array.isArray(members)||members.length<2||members.length>8||members.some(v=>typeof v!=='string'||!clean(v)))return new Response('Invalid members',{status:400});
