@@ -14,12 +14,14 @@ export default {
    if(!bearer.startsWith('Bearer '))return Response.json({error:'Unauthorized'},{status:401,headers});
    const check=await fetch(env.HOST_AUTH_URL,{method:'POST',headers:{'Content-Type':'application/json','X-Internal-Secret':env.HOST_AUTH_SECRET},body:JSON.stringify({token:bearer.slice(7),scope:'eduplay:host'})});
    if(!check.ok)return Response.json({error:'Unauthorized'},{status:401,headers});
-   const pin=String(crypto.getRandomValues(new Uint32Array(1))[0]%900000+100000);
-   const id=env.SESSIONS.idFromName(pin),stub=env.SESSIONS.get(id);
-   const hostSecret=crypto.randomUUID()+crypto.randomUUID();
-   const result=await stub.fetch('https://room/init',{method:'POST',body:JSON.stringify({hostSecret})});
-   if(!result.ok)return new Response('Unable to create room',{status:409,headers});
-   return Response.json({pin,hostSecret},{headers});
+   for(let attempt=0;attempt<6;attempt++){
+    const pin=String(crypto.getRandomValues(new Uint32Array(1))[0]%900000+100000);
+    const id=env.SESSIONS.idFromName(pin),stub=env.SESSIONS.get(id);
+    const hostSecret=crypto.randomUUID()+crypto.randomUUID();
+    const result=await stub.fetch('https://room/init',{method:'POST',body:JSON.stringify({hostSecret})});
+    if(result.ok)return Response.json({pin,hostSecret},{headers});
+   }
+   return Response.json({error:'No available session PIN'},{status:503,headers});
   }
   const match=url.pathname.match(/^\/sessions\/(\d{6})\/connect$/);
   if(match&&request.headers.get('Upgrade')==='websocket'){
@@ -30,18 +32,20 @@ export default {
  }
 };
 export class EduPlayRoom {
- constructor(state){this.state=state;this.sockets=new Map();this.session=null;this.hostSecret=null;this.questionIndex=-1;this.deadline=0;this.answers=new Map();}
+ constructor(state){this.state=state;this.sockets=new Map();this.session=null;this.hostSecret=null;this.questionIndex=-1;this.deadline=0;this.answers=new Map();this.ready=this.state.blockConcurrencyWhile(async()=>{const saved=await this.state.storage.get('room');if(saved){this.hostSecret=saved.hostSecret;this.session=saved.session;this.questionIndex=saved.questionIndex;this.deadline=saved.deadline}})}
+ async persist(){await this.state.storage.put('room',{hostSecret:this.hostSecret,session:this.session,questionIndex:this.questionIndex,deadline:this.deadline})}
  async fetch(request){
-  const url=new URL(request.url);
+  await this.ready;const url=new URL(request.url);
   if(url.pathname==='/init'){
    if(this.hostSecret)return new Response('Already exists',{status:409});
-   const body=await request.json();this.hostSecret=body.hostSecret;return new Response('Created',{status:201});
+   const body=await request.json();this.hostSecret=body.hostSecret;await this.persist();return new Response('Created',{status:201});
   }
   if(request.headers.get('Upgrade')!=='websocket'||!this.hostSecret)return new Response('Not found',{status:404});
   const role=url.searchParams.get('role'),secret=url.searchParams.get('secret');
   if(role==='host'&&secret!==this.hostSecret)return new Response('Unauthorized',{status:401});
   if(role!=='host'&&role!=='student')return new Response('Invalid role',{status:400});
   if(this.sockets.size>=100)return new Response('Room full',{status:429});
+  if(role==='host'&&[...this.sockets.values()].some(p=>p.role==='host'))return new Response('Host already connected',{status:409});
   const pair=new WebSocketPair(),client=pair[0],server=pair[1];server.accept();
   const id=crypto.randomUUID(),name=role==='student'?(url.searchParams.get('name')||'Aluno').slice(0,30):'Professor';
   this.sockets.set(id,{socket:server,role,name,score:0,answered:false});
@@ -60,14 +64,14 @@ export class EduPlayRoom {
   if(peer.role==='host'){
    if(msg.type==='start'&&Array.isArray(msg.questions)&&msg.questions.length>0&&msg.questions.length<=100&&msg.questions.every(q=>typeof q.prompt==='string'&&q.prompt.length<=300&&Array.isArray(q.options)&&q.options.length>=2&&q.options.length<=4&&q.options.every(a=>typeof a==='string'&&a.length<=180)&&Number.isInteger(q.correct)&&q.correct>=0&&q.correct<q.options.length)){
     this.session={questions:msg.questions.map(q=>({prompt:q.prompt,options:q.options,correct:q.correct,timeLimit:[10,15,20,30,45,60,90,120].includes(q.timeLimit)?q.timeLimit:30,pointsMultiplier:[1,2,3].includes(q.pointsMultiplier)?q.pointsMultiplier:1})),mode:msg.mode==='buttons'?'buttons':'full'};
-    this.questionIndex=-1;this.broadcast({type:'ready',count:this.session.questions.length,mode:this.session.mode});
+    this.questionIndex=-1;this.persist();this.broadcast({type:'ready',count:this.session.questions.length,mode:this.session.mode});
    }
-   if(msg.type==='next'&&this.session){this.questionIndex++;if(this.questionIndex>=this.session.questions.length){this.broadcast({type:'finished'});return}const q=this.session.questions[this.questionIndex];this.deadline=Date.now()+q.timeLimit*1000;this.answers.clear();for(const p of this.sockets.values())if(p.role==='student')p.answered=false;this.broadcast({type:'question',index:this.questionIndex,count:this.session.questions.length,deadline:this.deadline,multiplier:q.pointsMultiplier,mode:this.session.mode,prompt:this.session.mode==='full'?q.prompt:null,options:this.session.mode==='full'?q.options:null,answerCount:q.options.length});this.send(id,{type:'hostQuestion',prompt:q.prompt,options:q.options,index:this.questionIndex,deadline:this.deadline});}
-   if(msg.type==='reveal'&&this.session&&this.questionIndex>=0){const q=this.session.questions[this.questionIndex];this.deadline=0;this.broadcast({type:'reveal',correct:q.correct,leaderboard:[...this.sockets.values()].filter(p=>p.role==='student').map(p=>({name:p.name,score:p.score})).sort((a,b)=>b.score-a.score).slice(0,10)})}
+   if(msg.type==='next'&&this.session){this.questionIndex++;if(this.questionIndex>=this.session.questions.length){this.broadcast({type:'finished'});return}const q=this.session.questions[this.questionIndex];this.deadline=Date.now()+q.timeLimit*1000;this.answers.clear();this.persist();for(const p of this.sockets.values())if(p.role==='student')p.answered=false;this.broadcast({type:'question',index:this.questionIndex,count:this.session.questions.length,deadline:this.deadline,multiplier:q.pointsMultiplier,mode:this.session.mode,prompt:this.session.mode==='full'?q.prompt:null,options:this.session.mode==='full'?q.options:null,answerCount:q.options.length});this.send(id,{type:'hostQuestion',prompt:q.prompt,options:q.options,index:this.questionIndex,deadline:this.deadline});}
+   if(msg.type==='reveal'&&this.session&&this.questionIndex>=0){const q=this.session.questions[this.questionIndex];this.deadline=0;this.persist();this.broadcast({type:'reveal',correct:q.correct,leaderboard:[...this.sockets.values()].filter(p=>p.role==='student').map(p=>({name:p.name,score:p.score})).sort((a,b)=>b.score-a.score).slice(0,10)})}
   }else if(msg.type==='answer'&&this.session&&this.questionIndex>=0&&!peer.answered&&Date.now()<=this.deadline){
    const q=this.session.questions[this.questionIndex];if(!Number.isInteger(msg.choice)||msg.choice<0||msg.choice>=q.options.length)return;
    peer.answered=true;const correct=msg.choice===q.correct;if(correct)peer.score+=1000*q.pointsMultiplier;
-   this.send(id,{type:'answerReceived',correct,score:peer.score});this.broadcastRoster();
+   this.send(id,{type:'answerReceived',score:peer.score});this.broadcastRoster();
   }
  }
 }
