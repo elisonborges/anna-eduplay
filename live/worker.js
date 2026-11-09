@@ -20,7 +20,7 @@ export default {
    let authorization;try{authorization=await check.json()}catch{return Response.json({error:'Invalid authorization response'},{status:503,headers})}
    if(authorization?.authorized!==true||!['master','teacher'].includes(authorization.role))return Response.json({error:'Forbidden'},{status:403,headers});
    let input;try{input=await request.json()}catch{return Response.json({error:'Invalid JSON'},{status:400,headers})}
-   const participation=['individual','team','both'].includes(input?.participation)?input.participation:'both';
+   const participation=['individual','team'].includes(input?.participation)?input.participation:'individual';
    for(let attempt=0;attempt<6;attempt++){
     const pin=String(crypto.getRandomValues(new Uint32Array(1))[0]%900000+100000);
     const id=env.SESSIONS.idFromName(pin),stub=env.SESSIONS.get(id);
@@ -29,6 +29,12 @@ export default {
     if(result.ok)return Response.json({pin,hostSecret},{headers});
    }
    return Response.json({error:'No available session PIN'},{status:503,headers});
+  }
+  const config=url.pathname.match(/^\/sessions\/(\d{6})\/config$/);
+  if(config&&request.method==='GET'){
+   const stub=env.SESSIONS.get(env.SESSIONS.idFromName(config[1]));
+   const response=await stub.fetch('https://room/config');
+   return new Response(response.body,{status:response.status,headers:{...headers,'Content-Type':'application/json'}});
   }
   const match=url.pathname.match(/^\/sessions\/(\d{6})\/connect$/);
   if(match&&request.headers.get('Upgrade')==='websocket'){
@@ -39,13 +45,18 @@ export default {
  }
 };
 export class EduPlayRoom {
- constructor(state){this.state=state;this.sockets=new Map();this.session=null;this.hostSecret=null;this.questionIndex=-1;this.deadline=0;this.answers=new Map();this.expiresAt=0;this.participation='both';this.ready=this.state.blockConcurrencyWhile(async()=>{const saved=await this.state.storage.get('room');if(saved){this.hostSecret=saved.hostSecret;this.session=saved.session;this.questionIndex=saved.questionIndex;this.deadline=saved.deadline;this.expiresAt=saved.expiresAt;this.participation=saved.participation||'both'}})}
+ constructor(state){this.state=state;this.sockets=new Map();this.session=null;this.hostSecret=null;this.questionIndex=-1;this.deadline=0;this.answers=new Map();this.expiresAt=0;this.participation='individual';this.ready=this.state.blockConcurrencyWhile(async()=>{const saved=await this.state.storage.get('room');if(saved){this.hostSecret=saved.hostSecret;this.session=saved.session;this.questionIndex=saved.questionIndex;this.deadline=saved.deadline;this.expiresAt=saved.expiresAt;this.participation=saved.participation||'individual'}})}
  async persist(){await this.state.storage.put('room',{hostSecret:this.hostSecret,session:this.session,questionIndex:this.questionIndex,deadline:this.deadline,expiresAt:this.expiresAt,participation:this.participation})}
  async fetch(request){
   await this.ready;const url=new URL(request.url);
+  if(url.pathname==='/config'){
+   if(!this.hostSecret||Date.now()>=this.expiresAt)return Response.json({error:'Sala não encontrada'},{status:404});
+   if(this.questionIndex>=0)return Response.json({error:'Partida já iniciada'},{status:409});
+   return Response.json({participation:this.participation==='team'?'team':'individual',phase:'waiting'});
+  }
   if(url.pathname==='/init'){
    if(this.hostSecret&&Date.now()<this.expiresAt)return new Response('Already exists',{status:409});
-   const body=await request.json();this.hostSecret=body.hostSecret;this.participation=['individual','team','both'].includes(body.participation)?body.participation:'both';this.session=null;this.questionIndex=-1;this.deadline=0;this.expiresAt=Date.now()+2*60*60*1000;await this.persist();return new Response('Created',{status:201});
+   const body=await request.json();this.hostSecret=body.hostSecret;this.participation=['individual','team'].includes(body.participation)?body.participation:'individual';this.session=null;this.questionIndex=-1;this.deadline=0;this.expiresAt=Date.now()+2*60*60*1000;await this.persist();return new Response('Created',{status:201});
   }
   if(request.headers.get('Upgrade')!=='websocket'||!this.hostSecret||Date.now()>=this.expiresAt)return new Response('Not found',{status:404});
   const role=url.searchParams.get('role'),secret=url.searchParams.get('secret');
