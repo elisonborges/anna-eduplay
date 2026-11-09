@@ -52,17 +52,29 @@ export class EduPlayRoom {
   if(this.sockets.size>=100)return new Response('Room full',{status:429});
   if(role==='host'&&[...this.sockets.values()].some(p=>p.role==='host'))return new Response('Host already connected',{status:409});
   const pair=new WebSocketPair(),client=pair[0],server=pair[1];server.accept();
-  const id=crypto.randomUUID(),name=role==='student'?(url.searchParams.get('name')||'Aluno').slice(0,30):'Professor';
-  this.sockets.set(id,{socket:server,role,name,score:0,answered:false});
+  const id=crypto.randomUUID();
+  const clean=v=>String(v||'').trim().replace(/[<>\\x00-\\x1f]/g,'').slice(0,30);
+  const name=role==='student'?clean(url.searchParams.get('name')):'Professor';
+  if(role==='student'&&!name)return new Response('Name required',{status:400});
+  const team=role==='student'&&url.searchParams.get('team')==='1';
+  let members=[];
+  if(team){try{members=JSON.parse(url.searchParams.get('members')||'[]')}catch{return new Response('Invalid team',{status:400})}
+   if(!Array.isArray(members)||members.length<2||members.length>8||members.some(v=>typeof v!=='string'||!clean(v)))return new Response('Invalid members',{status:400});
+   members=members.map(clean);
+  }
+  const avatars=['😀','😎','🤖','🦊','🐱','🐼','🦁','🐸','🚀','⭐','🦄','🐙'];
+  const avatar=avatars.includes(url.searchParams.get('avatar'))?url.searchParams.get('avatar'):'😀';
+  if(role==='student'&&this.session&&this.questionIndex>=0)return new Response('Game already started',{status:409});
+  this.sockets.set(id,{socket:server,role,name,avatar,team,members,score:0,answered:false});
   server.addEventListener('message',event=>this.onMessage(id,event.data));
   server.addEventListener('close',()=>{this.sockets.delete(id);this.broadcastRoster()});
-  server.send(JSON.stringify({type:'connected',id,role,questionIndex:this.questionIndex,deadline:this.deadline}));
+  server.send(JSON.stringify({type:'connected',id,role,questionIndex:this.questionIndex,deadline:this.deadline,phase:this.questionIndex>=0?'playing':'waiting'}));
   this.broadcastRoster();
   return new Response(null,{status:101,webSocket:client});
  }
  send(id,payload){const peer=this.sockets.get(id);if(peer)try{peer.socket.send(JSON.stringify(payload))}catch{}}
  broadcast(payload){for(const id of this.sockets.keys())this.send(id,payload)}
- broadcastRoster(){this.broadcast({type:'roster',students:[...this.sockets].filter(([,p])=>p.role==='student').map(([id,p])=>({id,name:p.name,score:p.score}))})}
+ broadcastRoster(){this.broadcast({type:'roster',students:[...this.sockets].filter(([,p])=>p.role==='student').map(([id,p])=>({id,name:p.name,avatar:p.avatar,team:p.team,members:p.members,score:p.score}))})}
  onMessage(id,raw){
   const peer=this.sockets.get(id);if(!peer||typeof raw!=='string'||raw.length>20000)return;
   let msg;try{msg=JSON.parse(raw)}catch{return}
