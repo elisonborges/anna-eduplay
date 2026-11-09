@@ -1,0 +1,15 @@
+name = "anna-eduplay-live"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[durable_objects]
+bindings = [
+  { name = "SESSIONS", class_name = "EduPlayRoom" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["EduPlayRoom"]
+
+# Configure HOST_AUTH_URL and HOST_AUTH_SECRET securely before enabling room creation.
+# Custom domain eduplay-live.annaone.com.br must be configured separately in Cloudflare.
