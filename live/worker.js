@@ -9,11 +9,16 @@ export default {
   if(url.pathname==='/sessions'&&request.method==='POST'){
    // Session creation must be protected by the existing AnnA One authentication gateway.
    // Reject all creation requests until a server-side verifier is configured.
-   if(!env.HOST_AUTH_URL||!env.HOST_AUTH_SECRET)return Response.json({error:'Host authentication not configured'},{status:503,headers});
+   const authUrl='https://anna-one-auditoria-homolog.elisonborg.workers.dev/v1/eduplay/authorize';
    const bearer=request.headers.get('Authorization')||'';
    if(!bearer.startsWith('Bearer '))return Response.json({error:'Unauthorized'},{status:401,headers});
-   const check=await fetch(env.HOST_AUTH_URL,{method:'POST',headers:{'Content-Type':'application/json','X-Internal-Secret':env.HOST_AUTH_SECRET},body:JSON.stringify({token:bearer.slice(7),scope:'eduplay:host'})});
-   if(!check.ok)return Response.json({error:'Unauthorized'},{status:401,headers});
+   let check;
+   try{check=await fetch(authUrl,{method:'GET',headers:{Authorization:bearer,Accept:'application/json'},redirect:'error'});}
+   catch{return Response.json({error:'Authorization service unavailable'},{status:503,headers});}
+   if(check.status===401||check.status===403)return Response.json({error:'Unauthorized'},{status:403,headers});
+   if(!check.ok)return Response.json({error:'Authorization service unavailable'},{status:503,headers});
+   let authorization;try{authorization=await check.json()}catch{return Response.json({error:'Invalid authorization response'},{status:503,headers})}
+   if(authorization?.authorized!==true||!['master','teacher'].includes(authorization.role))return Response.json({error:'Forbidden'},{status:403,headers});
    for(let attempt=0;attempt<6;attempt++){
     const pin=String(crypto.getRandomValues(new Uint32Array(1))[0]%900000+100000);
     const id=env.SESSIONS.idFromName(pin),stub=env.SESSIONS.get(id);
