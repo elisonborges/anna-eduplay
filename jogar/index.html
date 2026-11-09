@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#09294c"><title>Entrar no jogo | AnnA EduPlay</title>
+<style>
+:root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#102d53;background:#eef5ff}*{box-sizing:border-box}body{margin:0}header{background:#09294c;color:white;padding:16px 22px}header a{color:white;text-decoration:none}main{max-width:640px;margin:30px auto;padding:0 16px}.card{background:#fff;border:1px solid #d7e5f7;border-radius:22px;padding:25px;box-shadow:0 12px 30px #08284c12}h1{margin:0 0 6px}p{line-height:1.5}.muted{color:#536982}label{display:block;font-weight:700;margin:15px 0 7px}input,select{font:inherit;width:100%;padding:13px;border:1px solid #b5cce5;border-radius:11px}button{font:inherit;cursor:pointer;background:#087cff;color:white;border:0;border-radius:11px;padding:13px 18px;font-weight:750}button:disabled{opacity:.55;cursor:not-allowed}.primary{width:100%;margin-top:20px}.avatars{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}.avatars button{padding:10px 0;background:#f0f6ff;color:#15385b;font-size:25px;border:2px solid transparent}.avatars button[aria-pressed="true"]{border-color:#087cff;background:#dcecff}.hidden{display:none!important}.status{min-height:24px;font-weight:700}.answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.answer-grid button{min-height:78px;font-size:18px}.answer-grid button:nth-child(1){background:#c72f47}.answer-grid button:nth-child(2){background:#2766cb}.answer-grid button:nth-child(3){background:#b27d12}.answer-grid button:nth-child(4){background:#23845c}.chip{background:#e8f2ff;padding:8px 12px;border-radius:12px;display:inline-block}.member{margin-top:8px}@media(max-width:430px){.avatars{grid-template-columns:repeat(4,1fr)}.card{padding:18px}}</style></head><body>
+<header><a href="../">← AnnA EduPlay</a></header><main><section class="card" id="entry"><h1>🎮 Entrar no jogo</h1><p class="muted">Digite o PIN fornecido pelo professor, escolha seu avatar e aguarde o início.</p>
+<label for="pin">PIN da sala</label><input id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="off">
+<label for="kind">Como você vai jogar?</label><select id="kind"><option value="individual">Individual</option><option value="team">Em equipe (um dispositivo por equipe)</option></select>
+<label for="name" id="nameLabel">Seu nome ou apelido</label><input id="name" maxlength="30" placeholder="Nome no jogo" autocomplete="off">
+<div id="teamFields" class="hidden"><label for="members">Integrantes da equipe</label><p class="muted">Informe um nome por linha (de 2 a 8 integrantes).</p><textarea id="members" rows="4" maxlength="250" placeholder="Ana&#10;Bruno" style="width:100%;font:inherit;padding:12px;border:1px solid #b5cce5;border-radius:11px"></textarea></div>
+<label>Escolha seu avatar</label><div id="avatars" class="avatars" role="group" aria-label="Avatares"></div>
+<button class="primary" id="join">Entrar na sala</button><p class="status" id="status" role="status"></p></section>
+<section class="card hidden" id="game"><h1 id="gameTitle">Sala de espera</h1><p id="identity" class="chip"></p><p class="status" id="gameStatus" role="status">Aguardando o professor iniciar…</p><p id="progress"></p><p id="clock"></p><h2 id="question"></h2><div id="answers" class="answer-grid"></div><p id="result" class="status"></p></section></main>
+<script>
+(()=>{'use strict';
+const API='https://eduplay-live.annaone.com.br', $=id=>document.getElementById(id);
+const avatars=['😀','😎','🤖','🦊','🐱','🐼','🦁','🐸','🚀','⭐','🦄','🐙'];let avatar='😀',socket=null,clock=null;
+for(const emoji of avatars){const b=document.createElement('button');b.type='button';b.textContent=emoji;b.setAttribute('aria-label','Avatar '+emoji);b.setAttribute('aria-pressed',String(emoji===avatar));b.onclick=()=>{avatar=emoji;for(const x of $('avatars').children)x.setAttribute('aria-pressed',String(x===b))};$('avatars').append(b)}
+$('kind').onchange=()=>{const team=$('kind').value==='team';$('teamFields').classList.toggle('hidden',!team);$('nameLabel').textContent=team?'Nome da equipe':'Seu nome ou apelido';$('name').placeholder=team?'Ex.: Equipe Foguete':'Nome no jogo'};
+const pinFromUrl=new URL(location.href).searchParams.get('pin');if(/^\d{6}$/.test(pinFromUrl||''))$('pin').value=pinFromUrl;
+$('join').onclick=async()=>{
+ const pin=$('pin').value.trim(),name=$('name').value.trim(),team=$('kind').value==='team';
+ const members=$('members').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ if(!/^\d{6}$/.test(pin)||!name||name.length>30){$('status').textContent='Informe um PIN de 6 dígitos e um nome válido.';return}
+ if(team&&(members.length<2||members.length>8||members.some(x=>x.length>30))){$('status').textContent='Informe de 2 a 8 integrantes, um por linha, com até 30 caracteres.';return}
+ const url=new URL(API.replace(/^http/,'ws')+'/sessions/'+pin+'/connect');
+ url.searchParams.set('role','student');url.searchParams.set('name',name);url.searchParams.set('avatar',avatar);
+ if(team){url.searchParams.set('team','1');url.searchParams.set('members',JSON.stringify(members))}
+ $('join').disabled=true;$('status').textContent='Conectando à sala…';
+ let connected=false;
+ try{socket=new WebSocket(url)}catch{$('join').disabled=false;$('status').textContent='Não foi possível conectar.';return}
+ socket.onopen=()=>{};
+ socket.onmessage=e=>{let msg;try{msg=JSON.parse(e.data)}catch{return}
+ if(msg.type==='connected'){connected=true;$('entry').classList.add('hidden');$('game').classList.remove('hidden');$('identity').textContent=avatar+' '+name+(team?' · '+members.join(', '):'');$('gameStatus').textContent='Você entrou! Aguarde o professor iniciar.'}
+ if(msg.type==='ready')$('gameStatus').textContent='Quiz preparado. Aguarde a primeira pergunta.';
+ if(msg.type==='question'){ $('gameTitle').textContent='Hora de jogar!';$('gameStatus').textContent='Escolha uma resposta';$('progress').textContent='Pergunta '+(msg.index+1)+' de '+msg.count+' · '+msg.multiplier+'× pontos';$('question').textContent=msg.mode==='full'?msg.prompt:'Veja a pergunta na tela do professor';$('answers').replaceChildren();$('result').textContent='';for(let i=0;i<msg.answerCount;i++){const b=document.createElement('button');b.textContent=msg.mode==='full'?msg.options[i]:['◆','●','▲','■'][i];b.onclick=()=>{if(socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type:'answer',choice:i}));for(const x of $('answers').children)x.disabled=true};$('answers').append(b)}clearInterval(clock);clock=setInterval(()=>{const n=Math.max(0,Math.ceil((msg.deadline-Date.now())/1000));$('clock').textContent='Tempo: '+n+' s';if(!n){clearInterval(clock);for(const x of $('answers').children)x.disabled=true}},250)}
+ if(msg.type==='answerReceived')$('result').textContent='Resposta recebida · '+msg.score+' pontos';
+ if(msg.type==='reveal'){$('result').textContent+=' · Correta: '+('ABCD'[msg.correct]||'');for(const x of $('answers').children)x.disabled=true}
+ if(msg.type==='finished'){clearInterval(clock);$('gameTitle').textContent='Partida encerrada!';$('gameStatus').textContent='Obrigado por participar.';$('answers').replaceChildren()}
+ };
+ socket.onerror=()=>{if(!connected)$('status').textContent='Não foi possível entrar. Confira o PIN e se a sala está aberta.'};
+ socket.onclose=()=>{clearInterval(clock);if(!connected){$('join').disabled=false;$('status').textContent='Sala indisponível, cheia ou partida já iniciada. Confira o PIN.'}else $('gameStatus').textContent='Conexão encerrada. Recarregue a página para entrar novamente.'};
+};
+})();
+</script></body></html>
