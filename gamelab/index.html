@@ -19,7 +19,38 @@ html:not([data-anna-auth="verified"]) #gamelab{display:none!important}.auth-stat
 const save=()=>{localStorage.setItem(KEY,JSON.stringify(quizzes));render()};
 const text=(tag,value)=>{const e=document.createElement(tag);e.textContent=value;return e};
 const btn=(label,fn,style='btn secondary')=>{const b=text('button',label);b.className=style;b.type='button';b.addEventListener('click',fn);return b};
-function render(){const list=$('quizList');list.replaceChildren();$('totalQuizzes').textContent=quizzes.length;$('totalQuestions').textContent=quizzes.reduce((n,q)=>n+q.questions.length,0);$('totalSubjects').textContent=new Set(quizzes.map(q=>(q.subject||'').trim().toLocaleLowerCase('pt-BR')).filter(Boolean)).size;const query=$('searchQuizzes').value.trim().toLocaleLowerCase('pt-BR');const visible=quizzes.filter(q=>(q.title+' '+(q.subject||'')).toLocaleLowerCase('pt-BR').includes(query));if(!visible.length){const p=text('p',quizzes.length?'Nenhum quiz encontrado para esta busca.':'Nenhum quiz criado. Comece pelo botão Novo quiz.');p.className='studio-empty';list.append(p);return}visible.forEach(q=>{const row=document.createElement('div');row.className='quiz-row';const info=document.createElement('div');info.append(text('strong',q.title),text('p',(q.subject||'Sem tema')+' · '+q.questions.length+' pergunta(s)'));const actions=document.createElement('div');actions.className='actions';actions.append(btn('Jogar',()=>start(q.id),'btn'),btn('Editar',()=>edit(q.id)),btn('Duplicar',()=>{quizzes.push({...structuredClone(q),id:crypto.randomUUID(),title:q.title+' (cópia)'});save()}),btn('Excluir',()=>{if(confirm('Excluir este quiz?')){quizzes=quizzes.filter(x=>x.id!==q.id);save()}}));row.append(info,actions);list.append(row)})}
+const CLASSROOM_ORIGIN='https://anna-classroom.elisonborg.workers.dev';
+function shareQuiz(quiz){
+ if(!quiz||!Array.isArray(quiz.questions)||!quiz.questions.length){
+  alert('Salve o quiz antes de compartilhar.');return;
+ }
+ const nonce=Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>b.toString(16).padStart(2,'0')).join('');
+ const popup=window.open(CLASSROOM_ORIGIN+'/?share_nonce='+nonce+'#atividades','_blank');
+ if(!popup){
+  alert('Permita a abertura da janela do Classroom para compartilhar o quiz.');return;
+ }
+ const snapshot={title:quiz.title,subject:quiz.subject||'',questions:quiz.questions.map(q=>({
+  prompt:q.prompt,type:q.type,options:Array.isArray(q.options)?q.options.slice():[],correct:q.correct,difficulty:q.difficulty
+ }))};
+ let attempts=0;
+ const send=()=>{
+  if(popup.closed||attempts++>=300){
+   clearInterval(interval);
+   window.removeEventListener('message',received);
+   return;
+  }
+  popup.postMessage({type:'anna-eduplay-share',nonce,quiz:snapshot},CLASSROOM_ORIGIN);
+ };
+ const received=event=>{
+  if(event.origin!==CLASSROOM_ORIGIN||event.source!==popup||event.data?.type!=='anna-classroom-received'||event.data?.nonce!==nonce)return;
+  clearInterval(interval);
+  window.removeEventListener('message',received);
+ };
+ window.addEventListener('message',received);
+ const interval=setInterval(send,600);
+ send();
+}
+function render(){const list=$('quizList');list.replaceChildren();$('totalQuizzes').textContent=quizzes.length;$('totalQuestions').textContent=quizzes.reduce((n,q)=>n+q.questions.length,0);$('totalSubjects').textContent=new Set(quizzes.map(q=>(q.subject||'').trim().toLocaleLowerCase('pt-BR')).filter(Boolean)).size;const query=$('searchQuizzes').value.trim().toLocaleLowerCase('pt-BR');const visible=quizzes.filter(q=>(q.title+' '+(q.subject||'')).toLocaleLowerCase('pt-BR').includes(query));if(!visible.length){const p=text('p',quizzes.length?'Nenhum quiz encontrado para esta busca.':'Nenhum quiz criado. Comece pelo botão Novo quiz.');p.className='studio-empty';list.append(p);return}visible.forEach(q=>{const row=document.createElement('div');row.className='quiz-row';const info=document.createElement('div');info.append(text('strong',q.title),text('p',(q.subject||'Sem tema')+' · '+q.questions.length+' pergunta(s)'));const actions=document.createElement('div');actions.className='actions';actions.append(btn('Jogar',()=>start(q.id),'btn'),btn('Compartilhar no Classroom',()=>shareQuiz(q),'btn purple'),btn('Editar',()=>edit(q.id)),btn('Duplicar',()=>{quizzes.push({...structuredClone(q),id:crypto.randomUUID(),title:q.title+' (cópia)'});save()}),btn('Excluir',()=>{if(confirm('Excluir este quiz?')){quizzes=quizzes.filter(x=>x.id!==q.id);save()}}));row.append(info,actions);list.append(row)})}
 function addQuestion(q={prompt:'',options:['','','',''],correct:0,type:'multiple',difficulty:'medium'}){
 const box=document.createElement('section');box.className='question game-question';box.dataset.questionId=crypto.randomUUID();box.dataset.answerSelected=q.prompt||q.options?.some(Boolean)?'yes':'no';
 const header=document.createElement('div');header.className='game-question-head';
