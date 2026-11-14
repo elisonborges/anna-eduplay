@@ -1,7 +1,34 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#09294c"><title>Entrar no jogo | AnnA EduPlay</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#09294c"><title>Entrar no jogo | AnnA EduPlay</title><link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <style>
-:root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#102d53;background:#eef5ff}*{box-sizing:border-box}body{margin:0}header{background:#09294c;color:white;padding:16px 22px}header a{color:white;text-decoration:none}main{max-width:640px;margin:30px auto;padding:0 16px}.card{background:#fff;border:1px solid #d7e5f7;border-radius:22px;padding:25px;box-shadow:0 12px 30px #08284c12}h1{margin:0 0 6px}p{line-height:1.5}.muted{color:#536982}label{display:block;font-weight:700;margin:15px 0 7px}input,select{font:inherit;width:100%;padding:13px;border:1px solid #b5cce5;border-radius:11px}button{font:inherit;cursor:pointer;background:#087cff;color:white;border:0;border-radius:11px;padding:13px 18px;font-weight:750}button:disabled{opacity:.55;cursor:not-allowed}.primary{width:100%;margin-top:20px}.avatars{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}.avatars button{padding:10px 0;background:#f0f6ff;color:#15385b;font-size:25px;border:2px solid transparent}.avatars button[aria-pressed="true"]{border-color:#087cff;background:#dcecff}.hidden{display:none!important}.status{min-height:24px;font-weight:700}.answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.answer-grid button{min-height:78px;font-size:18px}.answer-grid button:nth-child(1){background:#c72f47}.answer-grid button:nth-child(2){background:#2766cb}.answer-grid button:nth-child(3){background:#b27d12}.answer-grid button:nth-child(4){background:#23845c}.chip{background:#e8f2ff;padding:8px 12px;border-radius:12px;display:inline-block}.member{margin-top:8px}@media(max-width:430px){.avatars{grid-template-columns:repeat(4,1fr)}.card{padding:18px}}</style></head><body>
+:root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#102d53;background:#eef5ff}*{box-sizing:border-box}body{margin:0}header{background:#09294c;color:white;padding:16px 22px}header a{color:white;text-decoration:none}main{max-width:640px;margin:30px auto;padding:0 16px}.card{background:#fff;border:1px solid #d7e5f7;border-radius:22px;padding:25px;box-shadow:0 12px 30px #08284c12}h1{margin:0 0 6px}p{line-height:1.5}.muted{color:#536982}label{display:block;font-weight:700;margin:15px 0 7px}input,select{font:inherit;width:100%;padding:13px;border:1px solid #b5cce5;border-radius:11px}button{font:inherit;cursor:pointer;background:#087cff;color:white;border:0;border-radius:11px;padding:13px 18px;font-weight:750}button:disabled{opacity:.55;cursor:not-allowed}.primary{width:100%;margin-top:20px}.avatars{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}.avatars button{padding:10px 0;background:#f0f6ff;color:#15385b;font-size:25px;border:2px solid transparent}.avatars button[aria-pressed="true"]{border-color:#087cff;background:#dcecff}.hidden{display:none!important}.status{min-height:24px;font-weight:700}.answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.answer-grid button{min-height:78px;font-size:18px}.answer-grid button:nth-child(1){background:#c72f47}.answer-grid button:nth-child(2){background:#2766cb}.answer-grid button:nth-child(3){background:#b27d12}.answer-grid button:nth-child(4){background:#23845c}.chip{background:#e8f2ff;padding:8px 12px;border-radius:12px;display:inline-block}.member{margin-top:8px}@media(max-width:430px){.avatars{grid-template-columns:repeat(4,1fr)}.card{padding:18px}}
+/* Jogar acabamento v0.2 — alterações apenas visuais */
+:root{color:#1c2b55;background:#f2f4ff}
+body{background:linear-gradient(180deg,#edf1ff,#f8f9ff);min-height:100vh}
+header{background:linear-gradient(110deg,#371675,#55239b 75%,#431684);border-bottom:3px solid #a05bea;padding:14px 22px}
+header a{font-weight:800;font-size:14px}
+header a:hover{text-decoration:underline}
+main{margin:32px auto}
+.card{border:1px solid #d8def3;box-shadow:0 10px 26px #273c8319}
+.card h1{color:#273273;font-size:clamp(26px,4vw,32px);letter-spacing:-.5px}
+.muted{color:#516080}
+label{color:#283d73}
+input,select,textarea{border-color:#bfc8e6!important;background:#fff;color:#21335b}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #4edbd8;outline-offset:3px}
+#pin{font-size:27px;font-weight:850;letter-spacing:.28em;text-align:center;min-height:62px;border:2px solid #9b85db!important;border-radius:13px;font-variant-numeric:tabular-nums}
+#pin::placeholder{color:#a4aed0;opacity:1}
+button{background:linear-gradient(110deg,#9440ed,#6f2ddd);border-radius:11px}
+button:hover:not(:disabled){filter:brightness(1.07)}
+.primary{min-height:49px;font-weight:850}
+#back{background:#efe8ff!important;color:#4c268d!important;border:1px solid #d8c8f7}
+.avatars{gap:9px}
+.avatars button{background:#f1efff;color:#27365b;border:2px solid #e3def4;border-radius:12px;min-height:54px;transition:border-color .15s,transform .15s,background .15s}
+.avatars button:hover{transform:translateY(-1px)}
+.avatars button[aria-pressed="true"]{border-color:#6b32cc;background:#e0d4ff;box-shadow:0 0 0 2px #a782ee30}
+.chip{background:#e9e1ff;color:#402786}
+@media(max-width:430px){main{margin:22px auto}.card{padding:18px}.avatars{gap:7px}.avatars button{min-height:52px}#pin{font-size:25px}}
+@media(prefers-reduced-motion:reduce){.avatars button{transition:none}.avatars button:hover{transform:none}}
+</style></head><body>
 <header><a href="../">← AnnA EduPlay</a></header><main><section class="card" id="entry"><h1>🎮 Entrar no jogo</h1><p class="muted">Informe o PIN fornecido pelo professor.</p>
 <label for="pin">PIN da sala</label><input id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="off">
 <button class="primary" id="continue">Continuar</button><p class="status" id="pinStatus" role="status"></p></section><section class="card hidden" id="identityStep"><h1>Escolha seu avatar</h1><p id="modeInfo" class="muted"></p>
