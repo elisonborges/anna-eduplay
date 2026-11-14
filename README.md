@@ -39,3 +39,13 @@ Protótipo incremental de AnnA GameLab e Quiz Arena. A branch **não está publi
 10. Testar perfil Professor institucional quando houver conta disponível.
 
 **Não fazer merge em `main` antes da validação funcional e da autorização explícita.**
+
+## Integração com AnnA Classroom — 14/11/2026
+
+- O **GameLab** agora oferece **Compartilhar no Classroom** nos quizzes salvos, tanto na branch principal quanto na branch `dev/gamelab-editor-v03`.
+- O botão abre o Classroom numa nova janela, transmite uma cópia do quiz através de `postMessage` com origem exata e nonce aleatório e deixa o professor selecionar uma aula, prazo e orientações **antes da gravação**.
+- A API do Classroom verifica JWT, vínculo institucional, autorização de administrador ou professor, consistência das questões e vínculo da aula com a instituição. O gabarito permanece privado no banco do Classroom.
+- O quiz original continua no `localStorage` do GameLab; editar o original não muda automaticamente a cópia compartilhada.
+- **Não implementado:** execução pelo aluno diretamente no Classroom, pontuação sincronizada, compartilhamento automático de banco de questões ou notas.
+- Também há suporte no Classroom a **links oficiais de atividades do Central LabPC e Projetos Escolares**, exigindo atribuição do módulo de origem no Master. Não foi necessário alterar os dados desses dois módulos.
+- O repositório GitHub foi atualizado; a disponibilidade em domínio EduPlay e o fluxo entre navegadores ainda necessitam confirmação de implantação e teste real. Não usar esse registro como evidência de validação de ponta a ponta.
