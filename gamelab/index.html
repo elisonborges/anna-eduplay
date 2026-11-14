@@ -24,6 +24,9 @@ function shareQuiz(quiz){
  if(!quiz||!Array.isArray(quiz.questions)||!quiz.questions.length){
   alert('Salve o quiz antes de compartilhar.');return;
  }
+ if(quiz.questions.length>20||typeof quiz.title!=='string'||quiz.title.length>100){
+  alert('Para compartilhar, use um quiz com até 20 perguntas e título de até 100 caracteres.');return;
+ }
  const nonce=Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>b.toString(16).padStart(2,'0')).join('');
  const popup=window.open(CLASSROOM_ORIGIN+'/?share_nonce='+nonce+'#atividades','_blank');
  if(!popup){
