@@ -429,6 +429,9 @@ app.addEventListener('input',e=>{
 app.addEventListener('change',e=>{if(e.target.dataset.status!==undefined){const i=Number(e.target.dataset.status);s.results[i].status=e.target.value;s.results[i].reason='Revisão manual';document.getElementById('reason'+i).textContent='Decisão manual';document.getElementById('pt'+i).textContent=points(e.target.value);document.getElementById('roundScore').textContent=roundScore();const pending=s.results.filter(r=>r.status==='review').length;document.getElementById('pendingCount').textContent=pending+' resposta(s) aguardando revisão.';const btn=app.querySelector('[data-a="confirm"]');if(btn)btn.disabled=pending>0;save()}});
 app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('ans')){e.preventDefault();let arr=[...app.querySelectorAll('.ans')];arr[arr.indexOf(e.target)+1]?.focus()}if(e.key==='Enter'&&e.target.id==='newCategory'){e.preventDefault();app.querySelector('[data-a="add"]').click()}});
 let theme='light';try{theme=localStorage.getItem('anna.eduplay.stoparena.theme')||'light'}catch(e){}document.documentElement.dataset.theme=theme;document.getElementById('theme').addEventListener('click',()=>{theme=theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('anna.eduplay.stoparena.theme',theme)}catch(e){}});
+// Atualiza partidas antigas salvas antes da regra de respostas em MAIÚSCULAS.
+if(Array.isArray(s.answers))s.answers=s.answers.map(value=>String(value||'').toLocaleUpperCase('pt-BR'));
+if(Array.isArray(s.results))s.results=s.results.map(row=>({...row,answer:String(row.answer||'').toLocaleUpperCase('pt-BR')}));
 if(!Array.isArray(s.categories))s.categories=[...presets.recreativo.Clássico];
 if(s.categories.length<6){
  const defaults=presets[s.mode]?.[s.preset]||presets.recreativo.Clássico;
