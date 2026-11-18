@@ -120,6 +120,8 @@ body{background:radial-gradient(circle at 9% 12%,#fbe1fa 0,transparent 33%),radi
 .letters-alert strong{font-weight:850}.letters-alert-icon{font-size:20px;flex-shrink:0}
 :root[data-theme=dark] .letters-alert{background:#493917;border-color:#aa8129;color:#ffe6a1}
 @media(max-width:480px){.letters-alert{padding:9px 10px;font-size:12px}}
+
+.validation-guide{background:#e7f5ff;border-left:4px solid #20b0d6;border-radius:9px;padding:10px;font-size:12px;color:#194b6b}.validation-table td{vertical-align:middle}.validation-table small{display:block;margin-top:3px}.validation-table select{max-width:145px}.validation-actions{margin-top:12px}.validation-actions .notice{flex:1}:root[data-theme=dark] .validation-guide{background:#1a4657;color:#ecfaff}@media(max-width:480px){.validation-table select{max-width:119px;font-size:12px}}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -255,10 +257,61 @@ function renderGame(){
  updateFilled();clearInterval(timer);timer=setInterval(tick,250)
 }
 function updateFilled(){let el=document.getElementById('filled');if(el)el.textContent=s.answers.filter(x=>String(x||'').trim()).length+'/'+s.categories.length}
-function finish(reason){if(s.screen!=='game')return;clearInterval(timer);s.endReason=reason;s.results=s.categories.map((c,i)=>{let a=String(s.answers[i]||'').trim();return {category:c,answer:a,status:!a?'empty':norm(a).startsWith(norm(s.letter))?'valid':'invalid'}});s.screen='result';renderResult()}
+function finish(reason){if(s.screen!=='game')return;clearInterval(timer);s.endReason=reason;s.results=s.categories.map((category,i)=>{const answer=String(s.answers[i]||'').trim();return{category,answer,...classify(category,answer,s.letter)}});s.screen='result';renderResult()}
+const localWords={"Animal":["macaco","morcego","mico","mula","leão","lobo","lagarto","jacaré","cachorro","cavalo","cobra","coelho","coruja","gato","galinha","girafa","elefante","urso","pato","porco","peixe","rato","raposa","sapo","tigre","tartaruga","zebra","abelha","aranha","arara","borboleta","baleia","formiga","vaca"],"Cor":["amarelo","azul","bege","branco","cinza","dourado","laranja","lilás","magenta","marrom","preto","prata","rosa","roxo","turquesa","verde","vermelho","violeta"],"Fruta":["abacaxi","abacate","acerola","ameixa","amora","banana","caju","caqui","cereja","coco","figo","goiaba","jaca","kiwi","laranja","limão","maçã","mamão","manga","maracujá","melancia","melão","morango","pera","pêssego","pitanga","romã","tangerina","uva"],"Objeto":["anel","agulha","armário","balde","bola","boneca","borracha","cadeira","caderno","caneta","chave","colher","copo","escova","espelho","faca","fone","garrafa","garfo","geladeira","janela","lápis","livro","mesa","mochila","óculos","panela","papel","pente","porta","prato","relógio","tesoura","telefone","televisão","vaso"],"Profissão":["advogado","arquiteto","ator","bombeiro","cientista","cozinheiro","dentista","designer","eletricista","enfermeiro","engenheiro","farmacêutico","fotógrafo","jornalista","médico","motorista","músico","padeiro","pedreiro","piloto","policial","professor","psicólogo","veterinário"],"Comida":["arroz","bolo","brigadeiro","batata","churrasco","coxinha","feijão","farofa","frango","hambúrguer","lasanha","macarrão","moqueca","omelete","pão","pastel","pizza","quibe","risoto","salada","sopa","tapioca","torta"],"PHC":["braço","boca","cabeça","coração","costela","dedo","dente","estômago","fígado","joelho","mão","nariz","olho","orelha","pé","perna","pulmão","rim"],"CEP":["manaus","maceió","maranhão","méxico","minas gerais","natal","paraná","pernambuco","piauí","portugal","recife","rio de janeiro","rio grande do sul","salvador","são paulo","sergipe","teresina","tocantins","uruguai","vitória","brasil","belém","bahia","curitiba","ceará","fortaleza","frança","goiânia","goiás","japão","joão pessoa","londres","lisboa","argentina","alagoas","amazonas","acre","alemanha","angola","austrália"],"Flor":["azaleia","begônia","cravo","dália","girassol","hortênsia","jasmim","lavanda","margarida","orquídea","rosa","tulipa","violeta"],"Forma geométrica":["círculo","cubo","cilindro","esfera","hexágono","losango","oval","pentágono","quadrado","retângulo","triângulo"],"Bebida":["água","café","chá","guaraná","iogurte","leite","limonada","refrigerante","suco","vitamina"],"Parte do corpo":["braço","boca","cabeça","coração","costela","dedo","dente","estômago","fígado","joelho","mão","nariz","olho","orelha","pé","perna","pulmão","rim"]};
+const wordIndex=Object.fromEntries(Object.entries(localWords).map(([key,values])=>[norm(key),new Set(values.map(norm))]));
+const AI_ENDPOINT='/api/stop-arena/validate';
+const labels={valid:'✅ Aceita',invalid:'❌ Inválida',review:'🟡 Revisar',empty:'— Vazia'};
+function classify(category,answer,letter){
+ const value=norm(answer);
+ if(!value)return {status:'empty',reason:'Sem resposta'};
+ if(!value.startsWith(norm(letter)))return {status:'invalid',reason:'Letra inicial diferente'};
+ if(wordIndex[norm(category)]?.has(value))return {status:'valid',reason:'Reconhecida no dicionário local'};
+ return {status:'review',reason:'Não encontrada no dicionário resumido. Pode estar correta.'};
+}
+async function consultAI(){
+ const targets=s.results.map((r,index)=>({...r,index})).filter(r=>r.status==='review'&&r.answer);
+ const info=document.getElementById('aiFeedback');
+ const btn=app.querySelector('[data-a="consultAI"]');
+ if(!targets.length){info.textContent='Não há respostas pendentes.';return}
+ btn.disabled=true;info.textContent='Consultando IA...';
+ try{
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
+  let response;
+  try{response=await fetch(AI_ENDPOINT,{method:'POST',credentials:'omit',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({letter:s.letter,items:targets.map(({index,category,answer})=>({index,category,answer}))})})}
+  finally{clearTimeout(timeout)}
+  if(!response.ok)throw Error('serviço indisponível ('+response.status+')');
+  const data=await response.json();
+  if(!Array.isArray(data.suggestions))throw Error('resposta inesperada');
+  let count=0;
+  for(const suggestion of data.suggestions){
+   const ix=Number(suggestion.index);
+   if(!Number.isInteger(ix)||!targets.some(t=>t.index===ix)||!['valid','invalid','review'].includes(suggestion.status))continue;
+   const reason=document.getElementById('reason'+ix);
+   if(reason){reason.textContent='🤖 IA sugere '+labels[suggestion.status]+': '+String(suggestion.reason||'Sem justificativa').slice(0,150)+' — decida manualmente';count++}
+  }
+  info.textContent=count+' sugestão(ões) recebida(s). A decisão final é sua.';
+ }catch(error){info.textContent='IA indisponível: '+(error.name==='AbortError'?'tempo esgotado':error.message)+'. Continue manualmente.'}
+ finally{btn.disabled=false}
+}
+
 const points=x=>x==='valid'?10:0;
 const roundScore=()=>s.results.reduce((a,r)=>a+points(r.status),0);
-function renderResult(){show(title('Conferir respostas','Letra '+s.letter+' · '+s.endReason)+'<section class="panel"><p class="notice">A conferência automática verifica apenas a letra inicial. Verifique se cada resposta realmente pertence à categoria antes de confirmar.</p><div style="overflow:auto"><table class="scoretable"><thead><tr><th>Categoria</th><th>Resposta</th><th>Avaliação</th><th>Pontos</th></tr></thead><tbody>'+s.results.map((r,i)=>'<tr><td>'+esc(r.category)+'</td><td>'+esc(r.answer||'—')+'</td><td><select data-status="'+i+'" aria-label="Validar '+esc(r.category)+'"><option value="valid" '+(r.status==='valid'?'selected':'')+'>Válida</option><option value="invalid" '+(r.status==='invalid'?'selected':'')+'>Inválida</option><option value="empty" '+(r.status==='empty'?'selected':'')+'>Vazia</option></select></td><td id="pt'+i+'">'+points(r.status)+'</td></tr>').join('')+'</tbody></table></div><div class="hrow" style="margin-top:14px"><strong>Pontos da rodada</strong><span class="score" id="roundScore">'+roundScore()+'</span></div><div class="actions">'+button('Refazer rodada','retry')+button(s.round===s.rounds?'Resultado final →':'Próxima rodada →','confirm','primary')+'</div></section>')}
+function renderResult(){
+ const pending=s.results.filter(r=>r.status==='review').length;
+ show(title('🔎 Conferir respostas','Letra '+s.letter+' · '+s.endReason)+
+ '<section class="panel"><p class="validation-guide">🧠 <strong>Validação local:</strong> ✅ reconhecidas, ❌ letra incorreta, 🟡 aguardando revisão. O dicionário é parcial e não encontrar uma palavra não significa que esteja errada.</p>'+
+ '<div style="overflow:auto"><table class="scoretable validation-table"><thead><tr><th>Categoria e resposta</th><th>Avaliação</th><th>Pontos</th></tr></thead><tbody>'+
+ s.results.map((r,i)=>'<tr><td><strong>'+esc(r.category)+'</strong><div>'+esc(r.answer||'—')+'</div><small class="notice" id="reason'+i+'">'+esc(r.reason||'Revisão manual')+'</small></td><td><select data-status="'+i+'" aria-label="Validar '+esc(r.category)+'">'+
+ ['valid','review','invalid','empty'].map(status=>'<option value="'+status+'" '+(r.status===status?'selected':'')+'>'+labels[status]+'</option>').join('')+
+ '</select></td><td id="pt'+i+'">'+points(r.status)+'</td></tr>').join('')+'</tbody></table></div>'+
+ '<p class="notice" id="pendingCount">'+pending+' resposta(s) aguardando revisão.</p>'+
+ '<div class="actions validation-actions">'+button('✨ Consultar IA (opcional)','consultAI')+
+ '<span id="aiFeedback" class="notice" role="status">Requer serviço seguro de IA configurado.</span></div>'+
+ '<div class="hrow" style="margin-top:12px"><strong>Pontos confirmados</strong><span class="score" id="roundScore">'+roundScore()+'</span></div>'+
+ '<div class="actions">'+button('Refazer rodada','retry')+
+ '<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'Resultado final →':'Próxima rodada →')+'</button></div></section>');
+}
 function renderEnd(){let total=s.history.reduce((a,x)=>a+x.score,0);show(title('Partida concluída!','Modo '+(s.mode==='educacional'?'Educacional':'Recreativo')+' · '+esc(s.name))+'<section class="panel"><div class="score" style="font-size:44px;text-align:center">'+total+' pontos</div><div class="summary"><div><strong>'+s.history.length+'</strong><small>Rodadas</small></div><div><strong>'+Math.max(0,...s.history.map(x=>x.score))+'</strong><small>Melhor rodada</small></div><div><strong>'+Math.round(total/Math.max(s.history.length,1))+'</strong><small>Média</small></div></div><table class="scoretable"><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos</th></tr></thead><tbody>'+s.history.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+'</tbody></table><div class="actions" style="margin-top:15px">'+back()+button('Jogar novamente','again','primary')+'</div></section>')}
 function render(){document.body.classList.remove('keyboard-open');clearInterval(timer);clearInterval(rouletteTimer);if(s.screen==='home')renderHome();else if(s.screen==='setup')renderSetup();else if(s.screen==='letter')choose();else if(s.screen==='game')renderGame();else if(s.screen==='result')renderResult();else if(s.screen==='end')renderEnd();else{s.screen='home';renderHome()}}
 function start(){
@@ -335,11 +388,13 @@ app.addEventListener('click', e => {
       }
       break;
     case 'stop': finish('STOP solicitado'); break;
+    case 'consultAI': consultAI();break;
     case 'retry':
       s.screen = 'game';
       s.deadline = s.duration ? Date.now() + s.duration * 1000 : 0;
       render(); break;
     case 'confirm': {
+      if(s.results.some(r=>r.status==='review'))return alert('Revise todas as respostas pendentes.');
       const sc = roundScore();
       s.history.push({letter:s.letter,score:sc,valid:s.results.filter(x=>x.status==='valid').length});
       s.score += sc;
@@ -357,7 +412,7 @@ app.addEventListener('change',e=>{
 app.addEventListener('focusin',e=>{if(e.target.classList.contains('ans'))document.body.classList.add('keyboard-open')});
 app.addEventListener('focusout',e=>{if(e.target.classList.contains('ans'))setTimeout(()=>{if(!app.contains(document.activeElement)||!document.activeElement.classList.contains('ans'))document.body.classList.remove('keyboard-open')},0)});
 app.addEventListener('input',e=>{if(e.target.classList.contains('ans')){s.answers[Number(e.target.dataset.i)]=e.target.value;updateFilled();save()}});
-app.addEventListener('change',e=>{if(e.target.dataset.status!==undefined){let i=Number(e.target.dataset.status);s.results[i].status=e.target.value;document.getElementById('pt'+i).textContent=points(e.target.value);document.getElementById('roundScore').textContent=roundScore();save()}});
+app.addEventListener('change',e=>{if(e.target.dataset.status!==undefined){const i=Number(e.target.dataset.status);s.results[i].status=e.target.value;s.results[i].reason='Revisão manual';document.getElementById('reason'+i).textContent='Decisão manual';document.getElementById('pt'+i).textContent=points(e.target.value);document.getElementById('roundScore').textContent=roundScore();const pending=s.results.filter(r=>r.status==='review').length;document.getElementById('pendingCount').textContent=pending+' resposta(s) aguardando revisão.';const btn=app.querySelector('[data-a="confirm"]');if(btn)btn.disabled=pending>0;save()}});
 app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('ans')){e.preventDefault();let arr=[...app.querySelectorAll('.ans')];arr[arr.indexOf(e.target)+1]?.focus()}if(e.key==='Enter'&&e.target.id==='newCategory'){e.preventDefault();app.querySelector('[data-a="add"]').click()}});
 let theme='light';try{theme=localStorage.getItem('anna.eduplay.stoparena.theme')||'light'}catch(e){}document.documentElement.dataset.theme=theme;document.getElementById('theme').addEventListener('click',()=>{theme=theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('anna.eduplay.stoparena.theme',theme)}catch(e){}});
 if(!Array.isArray(s.categories))s.categories=[...presets.recreativo.Clássico];
@@ -367,7 +422,7 @@ if(s.categories.length<6){
 }
 if(!Array.isArray(s.excluded))s.excluded=[];s.excluded=s.excluded.filter(l=>letters.includes(l));
 if(s.screen==='roulette')s.screen='letter';
-if(s.screen==='game'&&s.duration&&remaining()===0){s.results=s.categories.map((c,i)=>{let a=String(s.answers[i]||'').trim();return{category:c,answer:a,status:!a?'empty':norm(a).startsWith(norm(s.letter))?'valid':'invalid'}});s.endReason='Tempo esgotado';s.screen='result'}
+if(s.screen==='game'&&s.duration&&remaining()===0){s.results=s.categories.map((category,i)=>{const answer=String(s.answers[i]||'').trim();return{category,answer,...classify(category,answer,s.letter)}});s.endReason='Tempo esgotado';s.screen='result'}
 render();
 })();
 </script></body></html>
