@@ -42,7 +42,72 @@ function renderResult(){show(title('Conferir respostas','Letra '+s.letter+' · '
 function renderEnd(){let total=s.history.reduce((a,x)=>a+x.score,0);show(title('Partida concluída!','Modo '+(s.mode==='educacional'?'Educacional':'Recreativo')+' · '+esc(s.name))+'<section class="panel"><div class="score" style="font-size:44px;text-align:center">'+total+' pontos</div><div class="summary"><div><strong>'+s.history.length+'</strong><small>Rodadas</small></div><div><strong>'+Math.max(0,...s.history.map(x=>x.score))+'</strong><small>Melhor rodada</small></div><div><strong>'+Math.round(total/Math.max(s.history.length,1))+'</strong><small>Média</small></div></div><table class="scoretable"><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos</th></tr></thead><tbody>'+s.history.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+'</tbody></table><div class="actions" style="margin-top:15px">'+back()+button('Jogar novamente','again','primary')+'</div></section>')}
 function render(){clearInterval(timer);if(s.screen==='home')renderHome();else if(s.screen==='setup')renderSetup();else if(s.screen==='letter')choose();else if(s.screen==='game')renderGame();else if(s.screen==='result')renderResult();else if(s.screen==='end')renderEnd();else{s.screen='home';renderHome()}}
 function start(){s.name=(document.getElementById('player')?.value||'Jogador').trim().slice(0,25)||'Jogador';s.duration=Number(document.getElementById('duration').value);s.rounds=Number(document.getElementById('rounds').value);s.rule=document.getElementById('rule').value;if(!s.categories.length){alert('Adicione ao menos uma categoria.');return}s.round=1;s.history=[];s.used=[];s.score=0;nextRound()}
-app.addEventListener('click',e=>{let el=e.target.closest('button');if(!el)return;if(el.dataset.mode){s.mode=el.dataset.mode;s.preset=Object.keys(presets[s.mode])[0];s.categories=[...presets[s.mode][s.preset]];s.screen='setup';render();return}if(el.dataset.preset){s.preset=el.dataset.preset;s.categories=[...presets[s.mode][s.preset]];render();return}if(el.dataset.remove!==undefined){s.categories.splice(Number(el.dataset.remove),1);render();return}if(el.dataset.letter){begin(el.dataset.letter);return}switch(el.dataset.a){case 'home':if(s.screen==='game'&&!confirm('Abandonar esta partida?'))return;s=fresh();render();break;case 'add':{let i=document.getElementById('newCategory'),v=i.value.trim();if(!v)return;if(s.categories.length>=12)return alert('Máximo de 12 categorias.');if(s.categories.some(c=>norm(c)===norm(v)))return alert('Categoria já adicionada.');s.categories.push(v.slice(0,42));render();break}case 'start':start();break;case 'random':{let pool=letters.split('').filter(l=>!s.used.includes(l));begin((pool.length?pool:letters.split(''))[Math.floor(Math.random()*(pool.length||letters.length))]);break}case 'quit':if(confirm('Abandonar a partida?')){s.screen='home';render()}break;case 'clear':if(confirm('Limpar respostas?')){s.answers=s.categories.map(()=>'');document.querySelectorAll('.ans').forEach(x=>x.value='');updateFilled();save()}break;case 'stop':finish('STOP solicitado');break;case 'retry':s.screen='game';s.deadline=s.duration?Date.now()+s.duration*1000:0;render();break;case 'confirm':{let sc=roundScore();s.history.push({letter:s.letter,score:sc,valid:s.results.filter(x=>x.status==='valid').length});s.score+=sc;if(s.round>=s.rounds){s.screen='end';render()}else{s.round++;nextRound()}break}case 'again':s.screen='setup';render();break}}});
+app.addEventListener('click', e => {
+  const el = e.target.closest('button');
+  if (!el) return;
+  if (el.dataset.mode) {
+    s.mode = el.dataset.mode;
+    s.preset = Object.keys(presets[s.mode])[0];
+    s.categories = [...presets[s.mode][s.preset]];
+    s.screen = 'setup';
+    render();
+    return;
+  }
+  if (el.dataset.preset) {
+    s.preset = el.dataset.preset;
+    s.categories = [...presets[s.mode][s.preset]];
+    render(); return;
+  }
+  if (el.dataset.remove !== undefined) {
+    s.categories.splice(Number(el.dataset.remove), 1);
+    render(); return;
+  }
+  if (el.dataset.letter) { begin(el.dataset.letter); return; }
+  switch (el.dataset.a) {
+    case 'home':
+      if (s.screen === 'game' && !confirm('Abandonar esta partida?')) return;
+      s = fresh(); render(); break;
+    case 'add': {
+      const field = document.getElementById('newCategory');
+      const value = field.value.trim();
+      if (!value) return;
+      if (s.categories.length >= 12) return alert('Máximo de 12 categorias.');
+      if (s.categories.some(c => norm(c) === norm(value))) return alert('Categoria já adicionada.');
+      s.categories.push(value.slice(0,42)); render(); break;
+    }
+    case 'start': start(); break;
+    case 'random': {
+      let pool = letters.split('').filter(l => !s.used.includes(l));
+      if (!pool.length) pool = letters.split('');
+      begin(pool[Math.floor(Math.random() * pool.length)]);
+      break;
+    }
+    case 'quit':
+      if (confirm('Abandonar a partida?')) { s.screen = 'home'; render(); }
+      break;
+    case 'clear':
+      if (confirm('Limpar respostas?')) {
+        s.answers = s.categories.map(() => '');
+        document.querySelectorAll('.ans').forEach(x => {x.value = '';});
+        updateFilled(); save();
+      }
+      break;
+    case 'stop': finish('STOP solicitado'); break;
+    case 'retry':
+      s.screen = 'game';
+      s.deadline = s.duration ? Date.now() + s.duration * 1000 : 0;
+      render(); break;
+    case 'confirm': {
+      const sc = roundScore();
+      s.history.push({letter:s.letter,score:sc,valid:s.results.filter(x=>x.status==='valid').length});
+      s.score += sc;
+      if (s.round >= s.rounds) { s.screen = 'end'; render(); }
+      else { s.round++; nextRound(); }
+      break;
+    }
+    case 'again': s.screen='setup'; render(); break;
+  }
+});
 app.addEventListener('input',e=>{if(e.target.classList.contains('ans')){s.answers[Number(e.target.dataset.i)]=e.target.value;updateFilled();save()}});
 app.addEventListener('change',e=>{if(e.target.dataset.status!==undefined){let i=Number(e.target.dataset.status);s.results[i].status=e.target.value;document.getElementById('pt'+i).textContent=points(e.target.value);document.getElementById('roundScore').textContent=roundScore();save()}});
 app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('ans')){e.preventDefault();let arr=[...app.querySelectorAll('.ans')];arr[arr.indexOf(e.target)+1]?.focus()}if(e.key==='Enter'&&e.target.id==='newCategory'){e.preventDefault();app.querySelector('[data-a="add"]').click()}});
