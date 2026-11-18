@@ -172,7 +172,7 @@ function renderEnd(){let total=s.history.reduce((a,x)=>a+x.score,0);show(title('
 function render(){clearInterval(timer);clearInterval(rouletteTimer);if(s.screen==='home')renderHome();else if(s.screen==='setup')renderSetup();else if(s.screen==='letter')choose();else if(s.screen==='game')renderGame();else if(s.screen==='result')renderResult();else if(s.screen==='end')renderEnd();else{s.screen='home';renderHome()}}
 function start(){
  const raw=document.getElementById('rounds').value.trim();
- if(!/^\\d+$/.test(raw)||Number(raw)<1||Number(raw)>50){alert('Defina de 1 a 50 rodadas.');document.getElementById('rounds').focus();return}
+ if(!/^\d+$/.test(raw)||Number(raw)<1||Number(raw)>50){alert('Defina de 1 a 50 rodadas.');document.getElementById('rounds').focus();return}
  if(!availableLetters().length){alert('Escolha ao menos uma letra.');return}
  captureSetup();
  if(!s.categories.length){alert('Adicione ao menos uma categoria.');return}
