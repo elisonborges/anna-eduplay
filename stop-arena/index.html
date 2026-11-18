@@ -122,6 +122,9 @@ body{background:radial-gradient(circle at 9% 12%,#fbe1fa 0,transparent 33%),radi
 @media(max-width:480px){.letters-alert{padding:9px 10px;font-size:12px}}
 
 .validation-guide{background:#e7f5ff;border-left:4px solid #20b0d6;border-radius:9px;padding:10px;font-size:12px;color:#194b6b}.validation-table td{vertical-align:middle}.validation-table small{display:block;margin-top:3px}.validation-table select{max-width:145px}.validation-actions{margin-top:12px}.validation-actions .notice{flex:1}:root[data-theme=dark] .validation-guide{background:#1a4657;color:#ecfaff}@media(max-width:480px){.validation-table select{max-width:119px;font-size:12px}}
+
+/* Respostas sempre em caixa alta, independentemente do teclado do aparelho */
+.answer input{text-transform:uppercase;letter-spacing:.015em}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -252,12 +255,12 @@ function renderGame(){
  '<div class="stat"><small>✍️ Respostas</small><strong id="filled">0/'+s.categories.length+'</strong></div>'+
  '</div><div class="progress" aria-hidden="true"><div id="bar" style="width:100%"></div></div></div>'+
  '<section class="panel gamepanel"><div class="answers">'+
- s.categories.map((c,i)=>'<div class="answer"><label for="ans'+i+'"'+meaningTitle(c)+'>'+esc(c)+sigla(c)+'</label><input id="ans'+i+'" class="ans" data-i="'+i+'" maxlength="80" autocomplete="off" enterkeyhint="next" placeholder="'+esc(s.letter)+'…" value="'+esc(s.answers[i]||'')+'"></div>').join('')+
+ s.categories.map((c,i)=>'<div class="answer"><label for="ans'+i+'"'+meaningTitle(c)+'>'+esc(c)+sigla(c)+'</label><input id="ans'+i+'" class="ans" data-i="'+i+'" maxlength="80" autocomplete="off" enterkeyhint="next" placeholder="'+esc(s.letter)+'…" value="'+esc(String(s.answers[i]||'').toLocaleUpperCase('pt-BR'))+'"></div>').join('')+
  '</div><div class="actions game-actions">'+button('Limpar','clear')+'<span class="notice">Conferência manual · 10 pontos por válida</span><button class="btn stop right" data-a="stop">✋ STOP!</button></div></section>');
  updateFilled();clearInterval(timer);timer=setInterval(tick,250)
 }
 function updateFilled(){let el=document.getElementById('filled');if(el)el.textContent=s.answers.filter(x=>String(x||'').trim()).length+'/'+s.categories.length}
-function finish(reason){if(s.screen!=='game')return;clearInterval(timer);s.endReason=reason;s.results=s.categories.map((category,i)=>{const answer=String(s.answers[i]||'').trim();return{category,answer,...classify(category,answer,s.letter)}});s.screen='result';renderResult()}
+function finish(reason){if(s.screen!=='game')return;clearInterval(timer);s.endReason=reason;s.results=s.categories.map((category,i)=>{const answer=String(s.answers[i]||'').trim().toLocaleUpperCase('pt-BR');return{category,answer,...classify(category,answer,s.letter)}});s.screen='result';renderResult()}
 const localWords={"Animal":["macaco","morcego","mico","mula","leão","lobo","lagarto","jacaré","cachorro","cavalo","cobra","coelho","coruja","gato","galinha","girafa","elefante","urso","pato","porco","peixe","rato","raposa","sapo","tigre","tartaruga","zebra","abelha","aranha","arara","borboleta","baleia","formiga","vaca"],"Cor":["amarelo","azul","bege","branco","cinza","dourado","laranja","lilás","magenta","marrom","preto","prata","rosa","roxo","turquesa","verde","vermelho","violeta"],"Fruta":["abacaxi","abacate","acerola","ameixa","amora","banana","caju","caqui","cereja","coco","figo","goiaba","jaca","kiwi","laranja","limão","maçã","mamão","manga","maracujá","melancia","melão","morango","pera","pêssego","pitanga","romã","tangerina","uva"],"Objeto":["anel","agulha","armário","balde","bola","boneca","borracha","cadeira","caderno","caneta","chave","colher","copo","escova","espelho","faca","fone","garrafa","garfo","geladeira","janela","lápis","livro","mesa","mochila","óculos","panela","papel","pente","porta","prato","relógio","tesoura","telefone","televisão","vaso"],"Profissão":["advogado","arquiteto","ator","bombeiro","cientista","cozinheiro","dentista","designer","eletricista","enfermeiro","engenheiro","farmacêutico","fotógrafo","jornalista","médico","motorista","músico","padeiro","pedreiro","piloto","policial","professor","psicólogo","veterinário"],"Comida":["arroz","bolo","brigadeiro","batata","churrasco","coxinha","feijão","farofa","frango","hambúrguer","lasanha","macarrão","moqueca","omelete","pão","pastel","pizza","quibe","risoto","salada","sopa","tapioca","torta"],"PHC":["braço","boca","cabeça","coração","costela","dedo","dente","estômago","fígado","joelho","mão","nariz","olho","orelha","pé","perna","pulmão","rim"],"CEP":["manaus","maceió","maranhão","méxico","minas gerais","natal","paraná","pernambuco","piauí","portugal","recife","rio de janeiro","rio grande do sul","salvador","são paulo","sergipe","teresina","tocantins","uruguai","vitória","brasil","belém","bahia","curitiba","ceará","fortaleza","frança","goiânia","goiás","japão","joão pessoa","londres","lisboa","argentina","alagoas","amazonas","acre","alemanha","angola","austrália"],"Flor":["azaleia","begônia","cravo","dália","girassol","hortênsia","jasmim","lavanda","margarida","orquídea","rosa","tulipa","violeta"],"Forma geométrica":["círculo","cubo","cilindro","esfera","hexágono","losango","oval","pentágono","quadrado","retângulo","triângulo"],"Bebida":["água","café","chá","guaraná","iogurte","leite","limonada","refrigerante","suco","vitamina"],"Parte do corpo":["braço","boca","cabeça","coração","costela","dedo","dente","estômago","fígado","joelho","mão","nariz","olho","orelha","pé","perna","pulmão","rim"]};
 const wordIndex=Object.fromEntries(Object.entries(localWords).map(([key,values])=>[norm(key),new Set(values.map(norm))]));
 const AI_ENDPOINT='/api/stop-arena/validate';
@@ -302,7 +305,7 @@ function renderResult(){
  show(title('🔎 Conferir respostas','Letra '+s.letter+' · '+s.endReason)+
  '<section class="panel"><p class="validation-guide">🧠 <strong>Validação local:</strong> ✅ reconhecidas, ❌ letra incorreta, 🟡 aguardando revisão. O dicionário é parcial e não encontrar uma palavra não significa que esteja errada.</p>'+
  '<div style="overflow:auto"><table class="scoretable validation-table"><thead><tr><th>Categoria e resposta</th><th>Avaliação</th><th>Pontos</th></tr></thead><tbody>'+
- s.results.map((r,i)=>'<tr><td><strong>'+esc(r.category)+'</strong><div>'+esc(r.answer||'—')+'</div><small class="notice" id="reason'+i+'">'+esc(r.reason||'Revisão manual')+'</small></td><td><select data-status="'+i+'" aria-label="Validar '+esc(r.category)+'">'+
+ s.results.map((r,i)=>'<tr><td><strong>'+esc(r.category)+'</strong><div>'+esc(String(r.answer||'—').toLocaleUpperCase('pt-BR'))+'</div><small class="notice" id="reason'+i+'">'+esc(r.reason||'Revisão manual')+'</small></td><td><select data-status="'+i+'" aria-label="Validar '+esc(r.category)+'">'+
  ['valid','review','invalid','empty'].map(status=>'<option value="'+status+'" '+(r.status===status?'selected':'')+'>'+labels[status]+'</option>').join('')+
  '</select></td><td id="pt'+i+'">'+points(r.status)+'</td></tr>').join('')+'</tbody></table></div>'+
  '<p class="notice" id="pendingCount">'+pending+' resposta(s) aguardando revisão.</p>'+
@@ -411,7 +414,18 @@ app.addEventListener('change',e=>{
 });
 app.addEventListener('focusin',e=>{if(e.target.classList.contains('ans'))document.body.classList.add('keyboard-open')});
 app.addEventListener('focusout',e=>{if(e.target.classList.contains('ans'))setTimeout(()=>{if(!app.contains(document.activeElement)||!document.activeElement.classList.contains('ans'))document.body.classList.remove('keyboard-open')},0)});
-app.addEventListener('input',e=>{if(e.target.classList.contains('ans')){s.answers[Number(e.target.dataset.i)]=e.target.value;updateFilled();save()}});
+app.addEventListener('input',e=>{
+ if(!e.target.classList.contains('ans'))return;
+ const field=e.target;
+ const upper=field.value.toLocaleUpperCase('pt-BR');
+ if(field.value!==upper){
+  const start=field.selectionStart,end=field.selectionEnd;
+  field.value=upper;
+  try{field.setSelectionRange(start,end)}catch(error){}
+ }
+ s.answers[Number(field.dataset.i)]=upper;
+ updateFilled();save();
+});
 app.addEventListener('change',e=>{if(e.target.dataset.status!==undefined){const i=Number(e.target.dataset.status);s.results[i].status=e.target.value;s.results[i].reason='Revisão manual';document.getElementById('reason'+i).textContent='Decisão manual';document.getElementById('pt'+i).textContent=points(e.target.value);document.getElementById('roundScore').textContent=roundScore();const pending=s.results.filter(r=>r.status==='review').length;document.getElementById('pendingCount').textContent=pending+' resposta(s) aguardando revisão.';const btn=app.querySelector('[data-a="confirm"]');if(btn)btn.disabled=pending>0;save()}});
 app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('ans')){e.preventDefault();let arr=[...app.querySelectorAll('.ans')];arr[arr.indexOf(e.target)+1]?.focus()}if(e.key==='Enter'&&e.target.id==='newCategory'){e.preventDefault();app.querySelector('[data-a="add"]').click()}});
 let theme='light';try{theme=localStorage.getItem('anna.eduplay.stoparena.theme')||'light'}catch(e){}document.documentElement.dataset.theme=theme;document.getElementById('theme').addEventListener('click',()=>{theme=theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('anna.eduplay.stoparena.theme',theme)}catch(e){}});
