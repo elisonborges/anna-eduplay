@@ -52,6 +52,17 @@
 .setup-actions{border-top:1px solid var(--edge);padding-top:12px;margin-top:auto;justify-content:flex-end}
 @media(max-width:720px){.setup-grid{grid-template-columns:1fr}.setup-categories{gap:12px}.setup-actions{margin-top:6px}}
 @media(max-width:480px){.setup-actions .btn{flex:1}.setup-hint{line-height:1.4}}
+
+/* Sugestões para adicionar e categorias da partida separadas */
+.setup-group-label{font-size:12px;font-weight:800;margin:11px 0 2px}
+.suggested-chips{margin:7px 0 12px}
+.suggestion-chip button{color:var(--ok);font-size:16px;font-weight:900}
+.suggestion-chip button:disabled{color:var(--muted);opacity:.45;cursor:default}
+.selected-categories{margin-top:12px;padding-top:12px;border-top:1px solid var(--edge)}
+.selected-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.selected-heading strong{font-size:13px}.selected-categories .chips{margin-bottom:0}
+.selected-chip button{color:var(--warn)}
+@media(max-width:480px){.selected-heading{gap:3px}.selected-heading .notice{font-size:11px}}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -87,8 +98,9 @@ function renderSetup(){
  '<div style="margin-top:13px"><strong>Letras que participarão</strong><div class="letter-help"><span class="notice" id="letterCount">'+(letters.length-s.excluded.length)+' letras disponíveis · toque para excluir</span><button data-a="lettersAll" type="button">Restaurar todas</button></div><div class="letter-options">'+letters.split('').map(l=>'<button type="button" class="letter-option" data-toggle-letter="'+l+'" aria-pressed="'+s.excluded.includes(l)+'" aria-label="'+(s.excluded.includes(l)?'Incluir':'Excluir')+' letra '+l+'">'+l+'</button>').join('')+'</div><p class="notice">Letras riscadas não entram na roleta nem na escolha manual. Pelo menos uma deve permanecer.</p></div>'+
  '</section>'+
  '<section class="panel setup-categories"><div><strong>Conjuntos de categorias · 6 sugestões</strong><p class="notice setup-hint">Escolha um conjunto ou personalize. Mínimo de 6 categorias. Validação supervisionada.</p><div class="preset" style="margin-top:10px">'+opts.map(p=>'<button class="chip" data-preset="'+esc(p)+'" aria-pressed="'+(s.preset===p)+'">'+esc(p)+'</button>').join('')+'</div>'+
- '<div id="chips" class="chips">'+s.categories.map((c,i)=>'<span class="chip">'+esc(c)+' <button data-remove="'+i+'" '+(s.categories.length<=6?'disabled title="Mínimo de 6 categorias"':'')+' aria-label="Remover '+esc(c)+'">×</button></span>').join('')+'</div>'+
- '<div class="field"><label for="newCategory">Adicionar categoria (6 a 12)</label><div class="actions"><input id="newCategory" maxlength="42" placeholder="Nova categoria" style="flex:1">'+button('Adicionar','add')+'</div></div></div><div class="actions setup-actions">'+back()+button('Iniciar partida →','start','primary')+'</div></section></div>');
+ '<div class="setup-group-label">Sugestões do conjunto</div><div class="chips suggested-chips">'+presets[s.mode][s.preset].map(c=>'<span class="chip suggestion-chip">'+esc(c)+' <button type="button" data-add-suggestion="'+esc(c)+'" '+(s.categories.some(x=>norm(x)===norm(c))?'disabled title="Já está na partida"':'')+' aria-label="Adicionar '+esc(c)+'">+</button></span>').join('')+'</div>'+
+ '<div class="field"><label for="newCategory">Adicionar categoria personalizada</label><div class="actions"><input id="newCategory" maxlength="42" placeholder="Nova categoria" style="flex:1">'+button('Adicionar','add')+'</div></div>'+
+ '<div class="selected-categories"><div class="selected-heading"><strong>Categorias da partida</strong><span class="notice">'+s.categories.length+' de 12 · mínimo 6 para iniciar</span></div><div id="chips" class="chips">'+(s.categories.length?s.categories.map((c,i)=>'<span class="chip selected-chip">'+esc(c)+' <button type="button" data-remove="'+i+'" aria-label="Remover '+esc(c)+'">×</button></span>').join(''):'<span class="notice">Nenhuma categoria selecionada.</span>')+'</div></div></div><div class="actions setup-actions">'+back()+button('Iniciar partida →','start','primary')+'</div></section></div>');
 }
 function captureSetup(){
  if(s.screen!=='setup')return;
@@ -200,13 +212,21 @@ app.addEventListener('click', e => {
     render();
     return;
   }
-  if (el.dataset.preset) { captureSetup();
+  if (el.dataset.preset) {
+    captureSetup();
     s.preset = el.dataset.preset;
-    s.categories = [...presets[s.mode][s.preset]];
+    render(); return;
+  }
+  if (el.dataset.addSuggestion !== undefined) {
+    captureSetup();
+    const category = el.dataset.addSuggestion;
+    if (!presets[s.mode][s.preset].includes(category)) return;
+    if (s.categories.some(x => norm(x) === norm(category))) return;
+    if (s.categories.length >= 12) return alert('Máximo de 12 categorias.');
+    s.categories.push(category);
     render(); return;
   }
   if (el.dataset.remove !== undefined) { captureSetup();
-    if(s.categories.length<=6)return alert('A partida precisa ter pelo menos 6 categorias.');
     s.categories.splice(Number(el.dataset.remove), 1);
     render(); return;
   }
