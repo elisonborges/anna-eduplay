@@ -1,5 +1,10 @@
 # Stop Arena — validação v0.2 (protótipo integrado)
 
+## Respostas em MAIÚSCULAS
+- Respostas são convertidas em letras maiúsculas durante a digitação, com acentos preservados.
+- Texto em maiúsculas é mantido no salvamento e na conferência.
+- Respostas de partidas antigas armazenadas localmente são normalizadas quando reabertas.
+
 ## Disponível no jogo web
 - Validação inicial da letra e de respostas vazias.
 - Dicionário local **parcial** para categorias comuns, utilizável sem internet.
