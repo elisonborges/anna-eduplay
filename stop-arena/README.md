@@ -14,17 +14,13 @@
 - Apenas respostas aceitas contam 10 pontos; desconhecidas nunca são recusadas apenas por ausência no dicionário.
 - Consulta opcional à IA sugere status e justificativa, mas não modifica automaticamente a decisão.
 
-## IA: backend pendente de configuração
-O botão `Consultar IA` usa `POST /api/stop-arena/validate` na **mesma origem** do EduPlay. O arquivo `server/ai-worker.js` é um **modelo de Cloudflare Worker**; adicionar esse arquivo ao GitHub NÃO implanta o Worker.
+## IA: integração com AnnA Virtual (Gemini)
 
-Antes de ativar a IA, é necessário:
-1. Configurar uma rota para `/api/stop-arena/validate` no domínio EduPlay que execute o Worker;
-2. Definir o segredo `OPENAI_API_KEY` no ambiente servidor (nunca no GitHub nem no HTML);
-3. Definir `ALLOWED_ORIGIN=https://eduplay.annaone.com.br` e verificar o modelo disponível em `OPENAI_MODEL`;
-4. Adicionar rate limiting e monitoramento de uso/custo e validar os limites antes de tornar a rota pública;
-5. Testar respostas corretas, erradas e ambíguas e o fallback quando o serviço estiver indisponível.
+O Stop Arena faz chamadas opcionais a `https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/validate`, reutilizando o backend do módulo AnnA Virtual no repositório privado `elisonborges/anna-virtual`. A rota usa a variável secreta `GEMINI_API_KEY` no Worker, com controle de origem para `https://eduplay.annaone.com.br`, limites por IP pelo `ANNA_RATE_LIMITER` e limite de 12 respostas por consulta.
 
-Sem esse serviço, a tela continua funcional com dicionário e revisão manual, exibindo indisponibilidade ao consultar IA. **IA não está ativa nem foi comprovada em produção.**
+**Código salvo no GitHub não significa Worker publicado.** Antes de declarar a IA ativa em produção, é necessário implantar a versão atual do repositório anna-virtual no Cloudflare, confirmar que o segredo GEMINI_API_KEY e o limitador estão presentes, e realizar um teste autorizado de ponta a ponta. Não é necessário criar uma chave OpenAI.
+
+A IA somente oferece sugestões, nunca altera automaticamente as respostas ou a pontuação. Se a consulta falhar, a revisão manual continua operante. A configuração anterior em `stop-arena/server/ai-worker.js` é uma alternativa não utilizada, e não deve ser implantada simultaneamente.
 
 ## Limitações
 O dicionário inicial é demonstrativo, não exaustivo. Uma palavra reconhecida pode precisar de revisão por contexto; categorias compostas como CEP aceitam cidade, estado ou país, mas ainda não possuem verificação geográfica exaustiva. O motor atual é individual, com dados locais; não há multiplayer nem avaliação docente remota. Falta teste funcional real de ponta a ponta e visual mobile.
