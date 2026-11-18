@@ -44,6 +44,14 @@
 
 /* Mobile: compact layout above the device's own keyboard */
 @media(max-width:559px){.keyboard-open .game-head{display:none}.keyboard-open .game-toolbar{padding:2px 0 0}.keyboard-open .game-toolbar .stat{padding:3px 4px}.keyboard-open .game-toolbar .stat strong{font-size:17px}.keyboard-open .game-toolbar .stat small{font-size:9px}.keyboard-open .game-toolbar .progress{margin-bottom:5px}.keyboard-open .gamepanel{padding:8px}.keyboard-open .game-actions{padding:5px 0 max(5px,env(safe-area-inset-bottom))}.keyboard-open .game-actions .btn{min-height:37px;padding:6px 10px;font-size:13px}.keyboard-open .answer input{font-size:16px}}
+
+/* Configuração compacta: instruções no topo e ações no rodapé direito */
+.setup-grid{align-items:stretch}
+.setup-categories{display:flex;flex-direction:column;justify-content:space-between;gap:16px;min-width:0}
+.setup-hint{margin:5px 0 10px}
+.setup-actions{border-top:1px solid var(--edge);padding-top:12px;margin-top:auto;justify-content:flex-end}
+@media(max-width:720px){.setup-grid{grid-template-columns:1fr}.setup-categories{gap:12px}.setup-actions{margin-top:6px}}
+@media(max-width:480px){.setup-actions .btn{flex:1}.setup-hint{line-height:1.4}}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -71,16 +79,16 @@ function renderSetup(){
  const choices=[1,3,5,10];
  const rounds=s.rounds;
  show(title('Configurar partida',s.mode==='educacional'?'Modo Educacional · atividades por conteúdo':'Modo Recreativo · categorias clássicas')+
- '<div class="grid2"><section class="panel"><div class="formgrid">'+
+ '<div class="grid2 setup-grid"><section class="panel"><div class="formgrid">'+
  '<div class="field"><label for="player">Nome ou apelido</label><input id="player" maxlength="25" value="'+esc(s.name)+'"></div>'+
  '<div class="field"><label for="duration">Tempo por rodada</label><select id="duration">'+[0,30,60,90,120,180,300].map(n=>'<option value="'+n+'" '+(s.duration===n?'selected':'')+'>'+(n?n+' segundos':'Sem limite')+'</option>').join('')+'</select></div>'+
  '<div class="field"><label for="rounds">Rodadas (mín. 1, máx. 50)</label><div class="round-input"><select id="roundsPreset" aria-label="Rodadas predefinidas"><option value="">Personalizar</option>'+choices.map(n=>'<option value="'+n+'" '+(rounds===n?'selected':'')+'>'+n+' rodadas</option>').join('')+'</select><input id="rounds" type="number" min="1" max="50" step="1" inputmode="numeric" required value="'+esc(rounds)+'" aria-label="Número de rodadas"></div></div>'+
  '<div class="field"><label for="rule">Escolha da letra</label><select id="rule"><option value="random" '+(s.rule==='random'?'selected':'')+'>Roleta animada</option><option value="manual" '+(s.rule==='manual'?'selected':'')+'>Escolher manualmente</option></select></div></div>'+
  '<div style="margin-top:13px"><strong>Letras que participarão</strong><div class="letter-help"><span class="notice" id="letterCount">'+(letters.length-s.excluded.length)+' letras disponíveis · toque para excluir</span><button data-a="lettersAll" type="button">Restaurar todas</button></div><div class="letter-options">'+letters.split('').map(l=>'<button type="button" class="letter-option" data-toggle-letter="'+l+'" aria-pressed="'+s.excluded.includes(l)+'" aria-label="'+(s.excluded.includes(l)?'Incluir':'Excluir')+' letra '+l+'">'+l+'</button>').join('')+'</div><p class="notice">Letras riscadas não entram na roleta nem na escolha manual. Pelo menos uma deve permanecer.</p></div>'+
- '<div class="actions" style="margin-top:12px">'+back()+button('Iniciar partida →','start','primary')+'</div></section>'+
- '<section class="panel"><strong>Conjuntos de categorias · 6 sugestões</strong><div class="preset" style="margin-top:10px">'+opts.map(p=>'<button class="chip" data-preset="'+esc(p)+'" aria-pressed="'+(s.preset===p)+'">'+esc(p)+'</button>').join('')+'</div>'+
+ '</section>'+
+ '<section class="panel setup-categories"><div><strong>Conjuntos de categorias · 6 sugestões</strong><p class="notice setup-hint">Escolha um conjunto ou personalize. Mínimo de 6 categorias. Validação supervisionada.</p><div class="preset" style="margin-top:10px">'+opts.map(p=>'<button class="chip" data-preset="'+esc(p)+'" aria-pressed="'+(s.preset===p)+'">'+esc(p)+'</button>').join('')+'</div>'+
  '<div id="chips" class="chips">'+s.categories.map((c,i)=>'<span class="chip">'+esc(c)+' <button data-remove="'+i+'" '+(s.categories.length<=6?'disabled title="Mínimo de 6 categorias"':'')+' aria-label="Remover '+esc(c)+'">×</button></span>').join('')+'</div>'+
- '<div class="field"><label for="newCategory">Adicionar categoria (6 a 12)</label><div class="actions"><input id="newCategory" maxlength="42" placeholder="Nova categoria" style="flex:1">'+button('Adicionar','add')+'</div></div><p class="notice">Escolha um conjunto ou personalize. Mínimo de 6 categorias. Validação supervisionada.</p></section></div>');
+ '<div class="field"><label for="newCategory">Adicionar categoria (6 a 12)</label><div class="actions"><input id="newCategory" maxlength="42" placeholder="Nova categoria" style="flex:1">'+button('Adicionar','add')+'</div></div></div><div class="actions setup-actions">'+back()+button('Iniciar partida →','start','primary')+'</div></section></div>');
 }
 function captureSetup(){
  if(s.screen!=='setup')return;
