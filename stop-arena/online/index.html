@@ -154,8 +154,8 @@ if(isLocal){
 const queryCode=params.get('sala')||'';
 const queryEvent=upper(new URLSearchParams(location.search).get('evento')||'').trim();
 const championshipMode=/^[A-HJ-NP-Z2-9]{7}$/.test(queryEvent);
-const entry={emoji:'😀',name:'',team:'',teacherPlays:false,mode:'recreativo',preset:'Clássico',eventCode:championshipMode?queryEvent:'',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
-let categories=[...PRESETS.recreativo.Clássico];
+const entry={emoji:'😀',name:'',team:'',teacherPlays:false,mode:'recreativo',eventCode:championshipMode?queryEvent:'',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
+let categories=[];
 let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='',lobbyDraft='';
 try{
@@ -192,17 +192,17 @@ async function request(payload){
 const userName=id=>room?.members.find(m=>m.id===id)?.name||'Equipe';
 const playerEmojis=["😀","😎","🤓","🥳","🤖","🦊","🐼","🐯","🦁","🐸","🦄","🚀","😁","😺","🐻","🐨","🐵","🐶","🐱","🐰","🐲","🦋","🐢","🐙","🦖","🌟","🔥","⚡","🌈","🎯","🎮","🏆","💡","🍀","🍕","⚽","🎨","🎸","🧠","👽","😇","😜","🥰","😴","🦉","🐧","🐬","🦕"];
 const emojiSelector=(id,value)=>'<div class="emoji-compact"><label for="'+id+'">Emoji</label><select id="'+id+'" aria-label="Escolha seu emoji">'+playerEmojis.map(e=>'<option value="'+e+'" '+(value===e?'selected':'')+'>'+e+'</option>').join('')+'</select></div>';
-const allCategoryOptions=[...new Set(Object.values(PRESETS).flatMap(group=>Object.values(group).flat()))];
-const suggestedCategories=()=>allCategoryOptions.filter(x=>!categories.some(y=>y.toLocaleLowerCase('pt-BR')===x.toLocaleLowerCase('pt-BR')));
-const numericField=(id,value,defaults,min,max,unit)=>'<div class="custom-number"><label for="'+id+'">'+(id==='rounds'?'Rodadas':'Tempo por rodada')+'</label><select id="'+id+'" aria-label="Escolha '+(id==='rounds'?'rodadas':'tempo')+'">'+defaults.map(v=>'<option value="'+v+'" '+(Number(value)===v?'selected':'')+'>'+v+(unit?' '+unit:'')+'</option>').join('')+'<option value="custom" '+(defaults.includes(Number(value))?'':'selected')+'>Personalizar</option></select><input id="'+id+'Custom" type="number" min="'+min+'" max="'+max+'" value="'+value+'" '+(defaults.includes(Number(value))?'hidden':'')+' aria-label="'+(id==='rounds'?'Rodadas personalizadas':'Tempo personalizado em segundos')+'"></div>';
+const allCategoryOptions=()=>[...new Set(Object.values(PRESETS[entry.mode]||{}).flat())];
+const suggestedCategories=()=>allCategoryOptions().filter(x=>!categories.some(y=>y.toLocaleLowerCase('pt-BR')===x.toLocaleLowerCase('pt-BR')));
+const numericField=(id,value,defaults,min,max,unit)=>'<div class="custom-number"><label for="'+id+'">'+(id==='rounds'?'Rodadas':'Tempo por rodada (segundos)')+'</label><select id="'+id+'" aria-label="Escolha '+(id==='rounds'?'rodadas':'tempo')+'">'+defaults.map(v=>'<option value="'+v+'" '+(Number(value)===v?'selected':'')+'>'+v+(unit?' '+unit:'')+'</option>').join('')+'<option value="custom" '+(defaults.includes(Number(value))?'':'selected')+'>Personalizar</option></select><input id="'+id+'Custom" type="number" min="'+min+'" max="'+max+'" value="'+value+'" '+(defaults.includes(Number(value))?'hidden':'')+' aria-label="'+(id==='rounds'?'Rodadas personalizadas':'Tempo personalizado em segundos')+'"></div>';
 function captureEntry(){
  for(const [key,id] of [['name','ownerName'],['team','teamName'],['joinName','joinName'],['joinCode','joinCode'],['emoji','hostEmoji']]){
   const el=document.getElementById(id);if(el)entry[key]=el.value;
  }
  const teacherCheckbox=document.getElementById('teacherPlays');
  if(teacherCheckbox)entry.teacherPlays=teacherCheckbox.checked;
- for(const [key,id] of [['mode','mode'],['preset','preset'],['rounds','rounds'],['duration','duration']]){
-  const el=document.getElementById(id);if(el)entry[key]=key==='preset'||key==='mode'?el.value:Number(el.value==='custom'?(document.getElementById(id+'Custom')?.value||''):el.value);
+ for(const [key,id] of [['mode','mode'],['rounds','rounds'],['duration','duration']]){
+  const el=document.getElementById(id);if(el)entry[key]=key==='mode'?el.value:Number(el.value==='custom'?(document.getElementById(id+'Custom')?.value||''):el.value);
  }
 }
 function renderEntry(){
@@ -216,7 +216,7 @@ function renderEntry(){
  '<label for="teamName">'+(championshipMode?'Nome da equipe':'Nome da sala')+'</label><input id="teamName" maxlength="35" placeholder="'+(championshipMode?'Ex.: Equipe 7º A':'Ex.: Sala de Stop do 7º ano')+'" value="'+esc(entry.team)+'">'+
  (isLocal?'':'<label class="teacher-toggle"><input type="checkbox" id="teacherPlays" '+(entry.teacherPlays?'checked':'')+'><span>O professor também vai jogar</span></label><p class="notice">Desmarcado: o professor apenas organiza e confere. A sala pode ter 1 a 49 jogadores convidados, além do organizador.</p>')+
  (!isLocal&&championshipMode?'<div class="championship-notice"><strong>🏆 Campeonato '+esc(entry.eventCode)+'</strong><span>Esta sala seguirá as regras definidas pelo organizador do campeonato.</span><a href="eventos/">Consultar campeonato</a></div>':'')+
- '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
+ '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div>'+
  '</div><div class="round-time-column">'+numericField('rounds',entry.rounds,[1,3,5,10,20],1,20,'')+numericField('duration',entry.duration,[30,60,90,120,180,300],30,300,'segundos')+'</div>'+
  (isLocal?'':'</section><section class="panel organizer-rules"><span class="kicker">02 · REGRAS DO JOGO</span><h2>Letras e categorias</h2>')+
  '<div class="actions"><strong>🔠 Letras disponíveis</strong>'+btn('↺ Restaurar letras','resetLetters','small')+'</div>'+
@@ -226,7 +226,7 @@ function renderEntry(){
  '<div class="actions"><strong>🎯 Categorias da partida</strong><span class="hint">'+categories.length+' de 12</span></div>'+
  '<p class="notice">💡 Escolha de 6 a 12 categorias. Use + para incluir uma sugestão; remova das escolhidas com ×.</p>'+
  '<div class="picked-categories"><strong>Selecionadas</strong><div class="chips">'+categories.map((x,i)=>'<span class="chip">'+esc(x)+' <button type="button" data-remove="'+i+'" title="Remover categoria '+esc(x)+'">×</button></span>').join('')+'</div></div>'+
- '<div class="category-library"><strong>Adicionar categorias sugeridas</strong><div class="chips suggestion-chips">'+allCategoryOptions.map(x=>'<button type="button" class="suggestion-chip" data-add-suggestion="'+esc(x)+'" '+(categories.some(y=>y.toLocaleLowerCase('pt-BR')===x.toLocaleLowerCase('pt-BR'))||categories.length>=12?'disabled':'')+'>+ '+esc(x)+'</button>').join('')+'</div></div>'+
+ '<div class="category-library"><strong>Adicionar categorias sugeridas</strong><div class="chips suggestion-chips">'+allCategoryOptions().map(x=>'<button type="button" class="suggestion-chip" data-add-suggestion="'+esc(x)+'" '+(categories.some(y=>y.toLocaleLowerCase('pt-BR')===x.toLocaleLowerCase('pt-BR'))||categories.length>=12?'disabled':'')+'>+ '+esc(x)+'</button>').join('')+'</div></div>'+
  '<div class="actions"><input style="flex:1;min-width:110px" id="extraCat" maxlength="42" placeholder="Ou escreva outra categoria">'+btn('Adicionar','addCat','small')+'</div>'+
  '<div class="actions">'+btn(isLocal?'🏫 Criar sala e gerar PIN':'✨ Criar sala e gerar convite','create','primary fill')+'</div></section>'+
  (isLocal?'<section class="panel"><span class="kicker">📲 ENTRAR EM UMA SALA</span>'+
@@ -544,8 +544,7 @@ app.addEventListener('submit',async e=>{
 });
 app.addEventListener('change',e=>{
  const el=e.target;
- if(el.id==='mode'){captureEntry();entry.preset=Object.keys(PRESETS[entry.mode])[0];categories=[...PRESETS[entry.mode][entry.preset]];renderEntry();return}
- if(el.id==='preset'){captureEntry();categories=[...PRESETS[entry.mode][entry.preset]];renderEntry();return}
+ if(el.id==='mode'){captureEntry();categories=[];renderEntry();return}
  if(el.id==='rounds'||el.id==='duration'){
   const custom=document.getElementById(el.id+'Custom');
   if(custom)custom.hidden=el.value!=='custom';
