@@ -1,3 +1,11 @@
+## Antessala — jogadores em linha com emoji próprio
+
+- A lista da antessala online agora é uma **fileira horizontal de cartões**, com rolagem lateral em telas estreitas, sem empilhar cada jogador verticalmente.
+- Cada participante escolhe um emoji ao entrar pelo link de PIN. O organizador escolhe seu emoji ao criar a sala. O servidor valida a escolha e compartilha o emoji com todos.
+- Cada cartão mostra **emoji grande, nome e identificação** (organizador, participante ou você); o organizador continua com o botão Remover para os demais.
+- A antessala mantém chat e emojis temporários separados dos emojis de identificação; o chat é bloqueado quando a partida inicia.
+- Alterações guardadas nas branches `feature/stop-arena-antessala-moderacao`, ainda não publicadas.
+
 ## Antessala Online com moderação e interação (em desenvolvimento)
 
 - Após criar a sala, organizador e participantes aguardam na antessala com o **PIN em destaque**, lista de jogadores e configurações resumidas da partida. Um novo layout responsivo destaca o painel de jogadores e a conversa da equipe.
