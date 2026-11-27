@@ -1,3 +1,11 @@
+## Cooperativo Online — até 50 participantes (versão em desenvolvimento)
+
+- A capacidade por sala do modo **Online** passa de 6 para **50 participantes** (organizador incluído), sem exigir número máximo de inscrições para iniciar: continuam necessários apenas o organizador e pelo menos mais um participante.
+- O backend agora recusa a 51ª inscrição, informa `capacity=50`, controla as vagas e permite iniciar normalmente uma partida com menos de 50 jogadores.
+- A antessala, a página independente de entrada por PIN e o quadro público de salas mostram o limite correto. O **Host LAN portátil** mantém sua capacidade anterior de 6, pois utiliza motor local próprio.
+- Teste simulado do motor de salas confirmou 50 inscritos, bloqueio do 51º e início de partida. Escalabilidade/performance em 50 dispositivos reais ainda não validada.
+- Código preparado nas branches `feature/stop-arena-online-50-participantes`; **ainda não publicado na main**.
+
 ## Ajuste da tela de criação — participantes compactos
 
 - A configuração de sala ocupa a largura disponível, com as categorias, letras e opções mantidas.
