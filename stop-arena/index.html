@@ -140,6 +140,12 @@ body{background:radial-gradient(circle at 9% 12%,#fbe1fa 0,transparent 33%),radi
 
 .coop-goal{text-align:center;font-weight:800;color:#0b926c}
 .coop-contributions{padding:12px;margin:15px 0;border:1px solid var(--edge);border-radius:12px;background:var(--card)}
+
+/* Acesso à modalidade online sem alterar os modos existentes */
+a.online-mode{text-decoration:none;display:flex;flex-direction:column;color:inherit;background:linear-gradient(145deg,#e7faff,#e9f5ff 60%,#f5e9ff)}
+a.online-mode:before{content:"✧";color:#18aed0}
+a.online-mode:hover{transform:translateY(-2px)}
+:root[data-theme=dark] a.online-mode{background:linear-gradient(145deg,#173d57,#2e305c);color:var(--ink)}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -174,8 +180,8 @@ const back=()=>button('← Início','home');
 function renderHome(){show(title('🎉 Stop Arena','Escolha sua aventura: individual ou em equipe!')+
  '<div class="gridmodes"><button class="mode" data-mode="recreativo"><span>🏆</span><strong>Recreativo</strong><small>Stop clássico com categorias divertidas.</small><em>Jogar →</em></button>'+
  '<button class="mode" data-mode="educacional"><span>🎓</span><strong>Educacional</strong><small>Atividades para aprender brincando.</small><em>Aprender →</em></button>'+
- '<button class="mode cooperative-mode" data-coop="1"><span>🤝</span><strong>Cooperativo</strong><small>2 a 6 pessoas no mesmo aparelho. Uma equipe, uma pontuação!</small><em>Jogar em equipe →</em></button></div>'+
- '<section class="panel"><strong>✨ Jogo individual e cooperativo local</strong><p class="notice">No modo cooperativo, todos compartilham respostas, conferência e pontuação. Salas online entre dispositivos estão planejadas para uma próxima etapa.</p><details style="margin-top:9px"><summary style="cursor:pointer;font-weight:800;color:var(--accent)">Sobre este módulo</summary><p class="notice">Stop Arena é um módulo do AnnA EduPlay, ecossistema AnnA One. Projeto educacional de Elison Borges. Os dados permanecem no navegador. Esta versão não sincroniza partidas entre dispositivos.</p></details></section>')}
+ '<button class="mode cooperative-mode" data-coop="1"><span>🤝</span><strong>Cooperativo local</strong><small>2 a 6 pessoas no mesmo aparelho. Uma equipe, uma pontuação!</small><em>Jogar em equipe →</em></button><a class="mode online-mode" href="online/"><span>🌐</span><strong>Cooperativo Online</strong><small>Crie uma sala, compartilhe o código e jogue em vários celulares com respostas sincronizadas.</small><em>Criar ou entrar na sala →</em></a></div>'+
+ '<section class="panel"><strong>✨ Jogo individual e cooperativo local</strong><p class="notice">No cooperativo local, todos usam o mesmo aparelho. No cooperativo online, cada participante acessa a sala pelo próprio celular, com respostas sincronizadas e conferência supervisionada.</p><details style="margin-top:9px"><summary style="cursor:pointer;font-weight:800;color:var(--accent)">Sobre este módulo</summary><p class="notice">Stop Arena é um módulo do AnnA EduPlay, ecossistema AnnA One. Projeto educacional de Elison Borges. Os dados permanecem no navegador. As salas online utilizam conexão com o servidor e precisam de internet. As partidas locais continuam armazenadas no navegador.</p></details></section>')}
 function renderSetup(){
  const opts=Object.keys(presets[s.mode]);
  const choices=[1,3,5,10];
