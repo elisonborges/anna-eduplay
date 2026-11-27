@@ -384,7 +384,7 @@ function spin(){
  show(title('Sorteio da letra','Rodada '+s.round+' de '+s.rounds)+
  '<section class="panel roulette-panel"><p class="eyebrow" id="wheelStatus" role="status">A roleta está girando...</p>'+
  '<div class="roulette-disc rolling" id="rouletteDisc" aria-hidden="true"><strong id="wheelLetter">?</strong></div>'+
- '<p class="notice" id="wheelHint">Preparando a próxima rodada</p><div class="pre-round-count" id="preRoundCount" role="status" aria-live="off" hidden><span>Começando em</span><strong id="preRoundSeconds">5</strong><span>segundos</span></div><div class="actions" style="justify-content:center">'+button('▶ Começar rodada agora','beginSelected','primary')+'</div></section>');
+ '<p class="notice" id="wheelHint">Preparando a próxima rodada</p><div class="pre-round-count" id="preRoundCount" role="status" aria-live="off" hidden><span>Começando em</span><strong id="preRoundSeconds">5</strong><span>segundos</span></div><div class="actions" style="justify-content:center">'+button('🏁 Finalizar jogo','finishGame')+button('▶ Começar rodada agora','beginSelected','primary')+'</div></section>');
  const btn=app.querySelector('[data-a="beginSelected"]');btn.disabled=true;
  const face=document.getElementById('wheelLetter');
  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -447,7 +447,7 @@ const categoryEmoji=cat=>({
 function renderGame(){
  const n=remaining();if(n===0){finish('Tempo esgotado');return}
  const filled=s.answers.filter(x=>String(x||'').trim()).length;
- show('<section class="play-hero"><div class="play-head"><div><span class="play-eyebrow">'+(s.mode==='educacional'?'🎓 Educacional':s.playStyle==='computer'?'🤖 Contra o computador':'🎮 Stop Arena')+'</span><h1>Palavras com <span class="letter-bubble">'+esc(s.letter)+'</span></h1><p>Preencha suas respostas antes que o tempo acabe!</p></div>'+button('✕ Sair','quit')+'</div>'+
+ show('<section class="play-hero"><div class="play-head"><div><span class="play-eyebrow">'+(s.mode==='educacional'?'🎓 Educacional':s.playStyle==='computer'?'🤖 Contra o computador':'🎮 Stop Arena')+'</span><h1>Palavras com <span class="letter-bubble">'+esc(s.letter)+'</span></h1><p>Preencha suas respostas antes que o tempo acabe!</p></div>'+button('🏁 Finalizar jogo','finishGame')+'</div>'+
  '<div class="play-info"><span>⏱️ <b id="countdown" role="timer">'+timeText(n)+'</b></span><span>🎯 Rodada <b>'+s.round+'/'+s.rounds+'</b></span><span>✏️ <b id="filled">'+filled+'/'+s.categories.length+'</b> completas</span></div><div class="progress" aria-hidden="true"><div id="bar" style="width:100%"></div></div></section>'+
  (s.playStyle==='computer'?'<p class="play-note">🤖 O computador também está jogando. As respostas dele só aparecem depois do STOP.</p>':'')+
  (s.playStyle==='coop'?'<p class="play-note">🤝 '+esc(s.teamName)+' · '+s.members.length+' participantes · pontuação compartilhada</p>':'')+
@@ -571,18 +571,31 @@ function renderResult(){
  '</select><strong class="review-points" id="pt'+i+'">'+(points(r.status)?'+'+points(r.status)+' pts':'0 pts')+'</strong></div></article>').join('')+'</section>'+
  (s.playStyle==='computer'?'<section class="panel computer-review"><h3>🤖 Respostas do computador</h3><p class="notice">O adversário preparou suas palavras antes da rodada.</p><div class="review-grid">'+s.computerResults.map(item=>'<div class="review-answer"><span class="review-answer-icon">'+categoryEmoji(item.category)+'</span><div class="review-answer-main"><strong>'+esc(item.category)+'</strong><b>'+esc(item.answer||'—')+'</b></div><strong class="review-points">'+(item.status==='valid'?'+10 pts':'0 pts')+'</strong></div>').join('')+'</div><p><strong>🤖 Computador: '+computerRoundScore()+' pontos nesta rodada</strong></p></section>':'')+
  '<div id="reviewMessage" class="review-message '+(pending?'has-pending':'all-ready')+'">'+(pending?'🟡 Faltam '+pending+' resposta(s) para conferir. Use a IA ou escolha a avaliação.':'🎉 Tudo conferido! Pode seguir para a próxima rodada.')+'</div>'+
- '<div class="review-toolbar"><div class="review-ai">'+button('🤖 Conferir escrita com IA','consultAI')+'<span id="aiFeedback" class="notice" role="status">'+(pending?'O Gemini ajuda na conferência; você pode corrigir a avaliação.':'Não há respostas pendentes.')+'</span></div><div class="review-buttons">'+button('↺ Refazer','retry')+'<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'🏆 Resultado final →':'➡ Próxima rodada')+'</button></div></div>'+
+ '<div class="review-toolbar"><div class="review-ai">'+button('🤖 Conferir escrita com IA','consultAI')+'<span id="aiFeedback" class="notice" role="status">'+(pending?'O Gemini ajuda na conferência; você pode corrigir a avaliação.':'Não há respostas pendentes.')+'</span></div><div class="review-buttons">'+button('🏁 Finalizar jogo','finishGame')+button('↺ Refazer','retry')+'<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'🏆 Resultado final →':'➡ Próxima rodada')+'</button></div></div>'+
  '<p id="pendingCount" class="sr-only">'+pending+' resposta(s) aguardando revisão.</p>');
 }
 
+function finalizeGameEarly(){
+ if(!['roulette','letter','game','result'].includes(s.screen))return;
+ const done=s.history.length,points=s.history.reduce((total,round)=>total+round.score,0);
+ const question='Finalizar o jogo agora?\\n\\n'+
+  'Rodadas concluídas: '+done+'\\nPontuação acumulada: '+points+' pontos.\\n\\n'+
+  'A rodada atual não concluída não será contabilizada.\\nDeseja realmente finalizar?';
+ if(!confirm(question))return;
+ clearInterval(timer);
+ clearInterval(rouletteTimer);rouletteTimer=null;
+ cancelPreRoundCountdown();
+ s.finishedEarly=true;s.screen='end';render();
+}
 function renderEnd(){
  const total=s.history.reduce((a,h)=>a+h.score,0),isTeam=s.playStyle==='coop',isBot=s.playStyle==='computer';
  const computerTotal=isBot?s.history.reduce((a,h)=>a+(h.botScore||0),0):0;
  const goal=Math.ceil(s.categories.length*10*s.rounds*.7);
  const contributionCounts=(s.members||[]).map((name,i)=>({name,count:s.history.reduce((n,h)=>n+(h.contributors||[]).filter(x=>x===String(i)).length,0)}));
- const headline=isBot?(total>computerTotal?'🏆 Você venceu!':total<computerTotal?'🤖 O computador venceu!':'🤝 Empate!'):isTeam?(total>=goal?'🏆 Missão cumprida!':'🤝 Juntos somos mais fortes!'):'Partida concluída!';
+ const headline=s.finishedEarly?'🏁 Jogo finalizado':isBot?(total>computerTotal?'🏆 Você venceu!':total<computerTotal?'🤖 O computador venceu!':'🤝 Empate!'):isTeam?(total>=goal?'🏆 Missão cumprida!':'🤝 Juntos somos mais fortes!'):'Partida concluída!';
  show(title(headline,isBot?esc(s.name)+' × Computador · '+({facil:'Fácil',normal:'Normal',dificil:'Difícil'}[s.difficulty]||'Normal'):isTeam?esc(s.teamName||'Equipe Stop')+' · meta '+goal+' pontos':'Modo '+(s.mode==='educacional'?'Educacional':'Recreativo')+' · '+esc(s.name))+
  '<section class="panel">'+
+ (s.finishedEarly?'<p class="notice">Partida encerrada antes do previsto. Apenas as '+s.history.length+' rodada(s) concluída(s) entram no placar.</p>':'')+
  (isBot?'<div class="computer-score-grid"><div><small>🙋 '+esc(s.name)+'</small><strong>'+total+'</strong><span>pontos</span></div><div><small>🤖 Computador</small><strong>'+computerTotal+'</strong><span>pontos</span></div></div>':'<div class="score" style="font-size:44px;text-align:center">'+total+' pontos</div>')+
  (isTeam?'<p class="coop-goal">'+(total>=goal?'🎉 Parabéns! A equipe atingiu a meta!':'💪 A equipe chegou a '+Math.round(total/Math.max(1,goal)*100)+'% da meta. Tentem novamente!')+'</p>':'')+
  '<div class="summary"><div><strong>'+s.history.length+'</strong><small>Rodadas</small></div><div><strong>'+Math.max(0,...s.history.map(x=>x.score))+'</strong><small>Melhor rodada</small></div><div><strong>'+Math.round(total/Math.max(s.history.length,1))+'</strong><small>Média</small></div></div>'+
@@ -599,7 +612,7 @@ function start(){
  if(s.categories.length<6){alert('Selecione pelo menos 6 categorias.');return}
  if(s.playStyle==='coop'&&(s.members.length<2||s.members.length>6)){alert('Informe de 2 a 6 participantes para jogar em equipe.');return}
  if(s.playStyle==='coop'&&new Set(s.members.map(norm)).size!==s.members.length){alert('Use nomes diferentes para os participantes.');return}
- s.round=1;s.history=[];s.used=[];s.score=0;nextRound();
+ s.round=1;s.history=[];s.used=[];s.score=0;s.finishedEarly=false;nextRound();
 }
 app.addEventListener('click', e => {
   const el = e.target.closest('button');
@@ -665,6 +678,7 @@ app.addEventListener('click', e => {
     case 'start': start(); break;
     case 'random': spin(); break;
     case 'beginSelected': if(s.screen==='roulette'&&!rouletteTimer)begin(s.letter);break;
+    case 'finishGame': finalizeGameEarly();break;
     case 'quit':
       if (confirm('Abandonar a partida?')) { s.screen = 'home'; render(); }
       break;
