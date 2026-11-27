@@ -72,6 +72,20 @@ try{const saved=JSON.parse(sessionStorage.getItem(KEY)||'null');if(saved?.code&&
 const status=(msg,isError=false)=>{let el=document.getElementById('status');if(el){el.textContent=msg||'';el.className='status'+(isError?' error':'');el.hidden=!msg}};
 const saveSession=()=>{try{sessionStorage.setItem(KEY,JSON.stringify(session))}catch{}};
 const reset=()=>{session=null;room=null;screen='';seenVersion=-1;clearInterval(interval);clearInterval(timer);interval=null;timer=null;try{sessionStorage.removeItem(KEY)}catch{};renderEntry()};
+async function checkReadiness(){
+ const el=document.getElementById('readiness');if(!el)return;
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);
+ try{
+  const response=await fetch(API.replace('/room','/status'),{signal:controller.signal,credentials:'omit'});
+  const data=await response.json();
+  if(!response.ok||!data.online)throw Error('Serviço de salas não disponível');
+  el.textContent='✅ Servidor de salas disponível'+(data.ai?' · 🧠 IA configurada':' · revisão manual disponível');
+  el.className='status';
+ }catch{
+  el.textContent='⚠️ Salas online aguardando implantação no Cloudflare. O jogo local continua disponível.';
+  el.className='status error';
+ }finally{clearTimeout(timeout)}
+}
 async function request(payload){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),14000);
  try{
@@ -93,6 +107,7 @@ function captureEntry(){
 function renderEntry(){
  screen='entry';clearInterval(interval);clearInterval(timer);interval=null;timer=null;
  app.innerHTML='<h1>🌐 Cooperativo Online</h1><p class="sub">Crie uma sala e convide a equipe. Cada participante usa seu próprio aparelho, com respostas compartilhadas!</p>'+
+ '<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>'+
  '<div class="layout"><section class="panel"><span class="kicker">🏠 CRIAR SALA</span>'+
  '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
@@ -111,6 +126,7 @@ function renderEntry(){
  '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div>'+
  '<div class="attention">🌟 Todos precisam colaborar. A equipe inteira compartilha a pontuação e a meta de 70% dos pontos possíveis.</div>'+
  '<p id="status" class="status" hidden></p></section></div>';
+ checkReadiness();
 }
 async function enter(op){
  if(working)return;captureEntry();
