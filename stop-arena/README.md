@@ -1,3 +1,11 @@
+## Sugestões ortográficas do Gemini (em desenvolvimento)
+
+- O botão **🤖 Conferir escrita com IA** permite revisar a adequação à categoria e a grafia das respostas preenchidas, mesmo quando já reconhecidas localmente.
+- Se o Gemini identificar uma grafia corrigida com segurança, o card mostra **✍️ Grafia sugerida: ...**, mantém a palavra originalmente digitada e deixa a avaliação pendente de decisão humana (sem pontuação automática para uma correção).
+- No Cooperativo Online, a sugestão aparece ao organizador; a avaliação pode ficar pendente por ação autenticada do servidor. Os outros participantes recebem as alterações de status e pontuação.
+- O Worker filtra sugestões por índice, comprimento e letra inicial. Gemini pode errar e não é um corretor ortográfico infalível.
+- Esta melhoria está nas branches **feature/stop-arena-correcao-ortografica** dos dois repositórios; ainda não foi publicada na branch principal nem validada com a API Gemini real.
+
 ## Conferência de respostas com Gemini — integração
 
 - O jogador continua recebendo validação imediata do dicionário local, inclusive offline. Palavras não encontradas, mas com letra inicial compatível, ficam pendentes.
