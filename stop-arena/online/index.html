@@ -277,7 +277,7 @@ async function act(action,extra={}){
 function renderRoom(){
  if(!room)return renderEntry();
  screen='room';clearInterval(timer);
- const header='<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">'+(isLocal?'PIN ':'Sala ')+esc(room.code)+' · '+room.members.length+'/6 participantes</div></div><div class="actions" style="margin:0">'+btn('📋 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>';
+ const header='<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">'+(isLocal?'PIN ':'Sala ')+esc(room.code)+' · '+room.members.length+'/'+(isLocal?6:50)+' participantes</div></div><div class="actions" style="margin:0">'+btn('📋 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>';
  let body='';
  if(room.stage==='lobby'){
  if(isLocal){  body='<section class="panel"><h1>🎊 Sala criada!</h1><p>Compartilhe o código com os participantes. O organizador inicia quando estiverem prontos.</p>'+
@@ -285,14 +285,14 @@ function renderRoom(){
   (isLocal?'<p class="notice">🔐 Compartilhe este PIN de 7 caracteres com seus colegas. Todos entram pelo próprio aparelho.</p>':'')+ (room.eventCode?'<p class="notice">🏆 Evento '+esc(room.eventCode)+' · até 50 equipes.</p>':'')+
   '<div class="actions">'+btn('📋 Copiar PIN','copyPin','small')+btn('🔗 Copiar convite','share',isLocal?'small':'primary')+(isLocal?'':'<a class="btn green" href="'+esc(link())+'">🔑 Link para participantes</a>')+'</div>'+
   '<h3>🙌 Nossa equipe</h3>'+room.members.map(m=>'<div class="member">🙋 '+esc(m.name)+(m.id===room.viewer?' <small>(você)</small>':'')+'</div>').join('')+
-  '<p class="notice">Mínimo de 2 jogadores; máximo de 6. '+room.categories.length+' categorias, '+room.rounds+' rodadas de '+room.duration+'s.</p>'+
+  '<p class="notice">Mínimo de 2 jogadores; máximo de '+(isLocal?6:50)+'. '+room.categories.length+' categorias, '+room.rounds+' rodadas de '+room.duration+'s.</p>'+
   (room.host?'<div class="actions">'+btn('🚀 Iniciar missão','start','green')+btn('🏁 Finalizar jogo','finishGame')+'</div>':'<div class="attention">⏳ Aguardando o organizador começar a partida...</div>')+'</section>';
 
  }else{
 const chat=(room.lobbyMessages||[]).slice(-40);
-body='<div class="lobby-hero"><div><span>● ANTESSALA · '+(room.host?'ORGANIZADOR':'PARTICIPANTE')+'</span><h1>🏠 '+esc(room.team)+'</h1><p>Compartilhe o PIN e receba os jogadores antes de iniciar.</p></div><div class="lobby-pin"><small>PIN DE ACESSO</small><strong>'+esc(room.code)+'</strong><small>'+room.members.length+' de 6 participantes</small></div></div>'+
+body='<div class="lobby-hero"><div><span>● ANTESSALA · '+(room.host?'ORGANIZADOR':'PARTICIPANTE')+'</span><h1>🏠 '+esc(room.team)+'</h1><p>Compartilhe o PIN e receba os jogadores antes de iniciar.</p></div><div class="lobby-pin"><small>PIN DE ACESSO</small><strong>'+esc(room.code)+'</strong><small>'+room.members.length+' de '+(isLocal?6:50)+' participantes</small></div></div>'+
 '<div class="lobby-links">'+btn('📋 Copiar PIN','copyPin','small')+btn('🔗 Copiar convite','share','primary')+'<a class="btn green" href="'+esc(link())+'">Link dos participantes</a></div>'+
-'<div class="lobby-layout"><section class="panel"><h2>👥 Jogadores ('+room.members.length+'/6)</h2><p class="notice">O organizador pode remover participantes antes de iniciar.</p>'+
+'<div class="lobby-layout"><section class="panel"><h2>👥 Jogadores ('+room.members.length+'/'+(isLocal?6:50)+')</h2><p class="notice">O organizador pode remover participantes antes de iniciar.</p>'+
 '<div class="lobby-player-row">'+room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.emoji||'😀')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você':m.id===room.members[0].id?'Organizador':'Jogador')+'</small></span>'+
 (room.host&&m.id!==room.viewer?'<button class="btn lobby-remove" data-kick="'+esc(m.id)+'" data-kick-name="'+esc(m.name)+'">Remover</button>':'')+'</div>').join('')+'</div>'+
 '<div class="lobby-details">🎯 '+room.categories.length+' categorias · 🔁 '+room.rounds+' rodadas · ⏱️ '+room.duration+'s</div>'+
