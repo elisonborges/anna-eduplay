@@ -71,7 +71,8 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'
 const upper=x=>String(x??'').toLocaleUpperCase('pt-BR');
 const btn=(title,act,cls='')=>'<button class="btn '+cls+'" data-act="'+act+'">'+title+'</button>';
 const queryCode=new URLSearchParams(location.search).get('sala')||'';
-const entry={name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
+const queryEvent=new URLSearchParams(location.search).get('evento')||'';
+const entry={name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:upper(queryEvent).slice(0,7),rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[...PRESETS.recreativo.Clássico];
 let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='';
@@ -108,7 +109,7 @@ async function request(payload){
 }
 const userName=id=>room?.members.find(m=>m.id===id)?.name||'Equipe';
 function captureEntry(){
- for(const [key,id] of [['name','ownerName'],['team','teamName'],['joinName','joinName'],['joinCode','joinCode']]){
+ for(const [key,id] of [['name','ownerName'],['team','teamName'],['eventCode','eventCode'],['joinName','joinName'],['joinCode','joinCode']]){
   const el=document.getElementById(id);if(el)entry[key]=el.value;
  }
  for(const [key,id] of [['mode','mode'],['preset','preset'],['rounds','rounds'],['duration','duration']]){
@@ -122,6 +123,8 @@ function renderEntry(){
  '<div class="layout"><section class="panel"><span class="kicker">🏠 CRIAR SALA</span>'+
  '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
+ '<label for="eventCode">Código do evento (opcional; até 50 equipes)</label><input id="eventCode" maxlength="7" placeholder="Código de 7 caracteres" value="'+esc(entry.eventCode)+'">'+
+ '<p class="notice"><a href="eventos/">🏆 Criar evento ou ver placar de equipes</a></p>'+
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
  '<div><label for="rounds">Rodadas</label><select id="rounds">'+[1,3,5,10,20].map(n=>'<option value="'+n+'" '+(entry.rounds===n?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div>'+
  '<label for="duration">Tempo por rodada</label><select id="duration">'+[30,60,90,120,180,300].map(n=>'<option value="'+n+'" '+(entry.duration===n?'selected':'')+'>'+n+' segundos</option>').join('')+'</select>'+
@@ -148,7 +151,7 @@ async function enter(op){
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
-  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:upper(entry.eventCode).trim(),categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
   const data=await request(payload);
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
@@ -194,7 +197,7 @@ function renderRoom(){
  let body='';
  if(room.stage==='lobby'){
   body='<section class="panel"><h1>🎊 Sala criada!</h1><p>Compartilhe o código com os participantes. O organizador inicia quando estiverem prontos.</p>'+
-  '<div class="roomcode">'+esc(room.code)+'</div>'+
+  '<div class="roomcode">'+esc(room.code)+'</div>'+ (room.eventCode?'<p class="notice">🏆 Evento '+esc(room.eventCode)+' · até 50 equipes.</p>':'')+
   '<div class="actions">'+btn('📋 Copiar convite','share','primary')+'</div>'+
   '<h3>🙌 Nossa equipe</h3>'+room.members.map(m=>'<div class="member">🙋 '+esc(m.name)+(m.id===room.viewer?' <small>(você)</small>':'')+'</div>').join('')+
   '<p class="notice">Mínimo de 2 jogadores; máximo de 6. '+room.categories.length+' categorias, '+room.rounds+' rodadas de '+room.duration+'s.</p>'+
@@ -317,7 +320,7 @@ app.addEventListener('input',e=>{
   if(field.value!==next){const start=field.selectionStart,end=field.selectionEnd;field.value=next;try{field.setSelectionRange(start,end)}catch{}}
   queueAnswer(index,next);
  }
- if(e.target.id==='joinCode')e.target.value=upper(e.target.value);
+ if(e.target.id==='joinCode'||e.target.id==='eventCode')e.target.value=upper(e.target.value);
 });
 window.addEventListener('visibilitychange',()=>{if(!document.hidden&&session)poll()});
 if(session){app.innerHTML='<h1>🔄 Retomando sua sala...</h1>';startPolling()}
