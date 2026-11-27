@@ -202,7 +202,7 @@ const suggestedCategories=()=>allCategoryOptions().filter(x=>!categories.some(y=
 const numericField=(id,value,defaults,min,max,unit)=>'<div class="custom-number"><label for="'+id+'">'+(id==='rounds'?'Rodadas':'Tempo por rodada (segundos)')+'</label><select id="'+id+'" aria-label="Escolha '+(id==='rounds'?'rodadas':'tempo')+'">'+defaults.map(v=>'<option value="'+v+'" '+(Number(value)===v?'selected':'')+'>'+v+(unit?' '+unit:'')+'</option>').join('')+'<option value="custom" '+(defaults.includes(Number(value))?'':'selected')+'>Personalizar</option></select><input id="'+id+'Custom" type="number" min="'+min+'" max="'+max+'" value="'+value+'" '+(defaults.includes(Number(value))?'hidden':'')+' aria-label="'+(id==='rounds'?'Rodadas personalizadas':'Tempo personalizado em segundos')+'"></div>';
 function captureEntry(){
  for(const [key,id] of [['name','ownerName'],['team','teamName'],['joinName','joinName'],['joinCode','joinCode'],['emoji','hostEmoji']]){
-  const el=document.getElementById(id);if(el)entry[key]=el.value;
+  const el=document.getElementById(id);if(el)entry[key]=(key==='name'||key==='team')?upper(el.value):el.value;
  }
  const teacherCheckbox=document.getElementById('teacherPlays');
  if(teacherCheckbox)entry.teacherPlays=teacherCheckbox.checked;
@@ -216,9 +216,9 @@ function renderEntry(){
  (isLocal?'<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>':'')+
  ''+
  '<div class="layout organizer-layout"><section class="panel organizer-config"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
- '<div class="name-emoji-row"><div class="name-compact"><label for="ownerName">'+(isLocal?'Seu nome':'Nome do professor')+'</label><input id="ownerName" maxlength="25" placeholder="Nome do professor" value="'+esc(entry.name)+'"></div>'+
+ '<div class="name-emoji-row"><div class="name-compact"><label for="ownerName">'+(isLocal?'Seu nome':'Nome do professor')+'</label><input id="ownerName" autocapitalize="characters" maxlength="25" placeholder="Nome do professor" value="'+esc(entry.name)+'"></div>'+
  (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+'</div>'+
- '<label for="teamName">'+(championshipMode?'Nome da equipe':'Nome da sala')+'</label><input id="teamName" maxlength="35" placeholder="'+(championshipMode?'Ex.: Equipe 7º A':'Ex.: Sala de Stop do 7º ano')+'" value="'+esc(entry.team)+'">'+
+ '<label for="teamName">'+(championshipMode?'Nome da equipe':'Nome da sala')+'</label><input id="teamName" autocapitalize="characters" maxlength="35" placeholder="'+(championshipMode?'Ex.: Equipe 7º A':'Ex.: Sala de Stop do 7º ano')+'" value="'+esc(entry.team)+'">'+
  (isLocal?'':'<label class="teacher-toggle"><input type="checkbox" id="teacherPlays" '+(entry.teacherPlays?'checked':'')+'><span>O professor também vai jogar</span></label><p class="notice">Desmarcado: o professor apenas organiza e confere. A sala pode ter 1 a 49 jogadores convidados, além do organizador.</p>')+
  (!isLocal&&championshipMode?'<div class="championship-notice"><strong>🏆 Campeonato '+esc(entry.eventCode)+'</strong><span>Esta sala seguirá as regras definidas pelo organizador do campeonato.</span><a href="eventos/">Consultar campeonato</a></div>':'')+
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div>'+
@@ -249,7 +249,7 @@ async function enter(op){
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
-  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':(championshipMode?entry.eventCode:''),emoji:isLocal?undefined:entry.emoji,teacherPlays:isLocal?true:entry.teacherPlays,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const payload=op==='create'?{op,name:upper(entry.name.trim()),team:upper(entry.team.trim()),eventCode:isLocal?'':(championshipMode?entry.eventCode:''),emoji:isLocal?undefined:entry.emoji,teacherPlays:isLocal?true:entry.teacherPlays,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
   const data=await request(payload);
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
@@ -567,7 +567,16 @@ app.addEventListener('input',e=>{
   if(field.value!==next){const start=field.selectionStart,end=field.selectionEnd;field.value=next;try{field.setSelectionRange(start,end)}catch{}}
   queueAnswer(index,next);
  }
- if(e.target.id==='joinCode'||e.target.id==='eventCode')e.target.value=upper(e.target.value);
+ if(['ownerName','teamName','joinCode','eventCode'].includes(e.target.id)){
+  const el=e.target,next=upper(el.value);
+  if(el.value!==next){
+   const start=el.selectionStart,end=el.selectionEnd;
+   el.value=next;
+   try{el.setSelectionRange(start,end)}catch{}
+  }
+  if(el.id==='ownerName')entry.name=next;
+  if(el.id==='teamName')entry.team=next;
+ }
 });
 window.addEventListener('visibilitychange',()=>{if(!document.hidden&&session)poll()});
 if(session){app.innerHTML='<h1>🔄 Retomando sua sala...</h1>';startPolling()}
