@@ -472,7 +472,7 @@ async function consultAI(){
   try{response=await fetch(AI_ENDPOINT,{method:'POST',credentials:'omit',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({letter:expectedLetter,items:targets.map(({index,category,answer})=>({index,category,answer}))})})}
   finally{clearTimeout(timeout)}
   const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw Error(data.error||'serviço indisponível ('+response.status+')');
+  if(!response.ok)throw Error((data.error||'Serviço Gemini indisponível')+(data.diagnostico?.providerStatus?' · HTTP '+data.diagnostico.providerStatus:'')+(data.diagnostico?.detail?' · '+String(data.diagnostico.detail).slice(0,150):'')+(data.diagnostico?.type?' · '+data.diagnostico.type:''));
   if(!Array.isArray(data.suggestions))throw Error('formato da IA inesperado');
   if(s.screen!=='result'||s.round!==expectedRound||s.letter!==expectedLetter)return;
   let evaluated=0,uncertain=0;
