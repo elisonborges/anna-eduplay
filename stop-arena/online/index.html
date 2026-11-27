@@ -185,7 +185,7 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .champion-announce p,.champion-announce strong{font-size:clamp(17px,3vw,24px);color:white;position:relative;z-index:2}
 .champion-cup{font-size:50px;animation:champ-bounce 1.25s ease-in-out infinite alternate;position:relative;z-index:2}
 .firework-field{position:absolute;inset:0;pointer-events:none;z-index:1}
-.firework-field i{position:absolute;left:calc(10% + mod(var(--i),9)*10%);top:calc(12% + mod(var(--i),4)*17%);width:6px;height:16px;border-radius:3px;background:var(--spark,#ffe66c);opacity:0;animation:firework-pop 1.8s ease-out infinite;animation-delay:calc(var(--i)*.12s)}
+.firework-field i{position:absolute;left:calc(10% + var(--i)*4.4%);top:calc(12% + var(--i)*3%);width:6px;height:16px;border-radius:3px;background:var(--spark,#ffe66c);opacity:0;animation:firework-pop 1.8s ease-out infinite;animation-delay:calc(var(--i)*.12s)}
 .firework-field i:nth-child(3n){--spark:#63ebff}
 .firework-field i:nth-child(3n + 1){--spark:#ff86d4}
 @keyframes firework-pop{0%{transform:translateY(0) scale(.2) rotate(0);opacity:0}20%{opacity:1}100%{transform:translateY(-105px) scale(.9) rotate(220deg);opacity:0}}
