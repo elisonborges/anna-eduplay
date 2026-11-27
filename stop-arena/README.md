@@ -1,3 +1,13 @@
+## Experimento de layout — cards verticais (branch visual)
+
+- Branch: `experiment/stop-arena-cards-verticais`. **Não está publicada no site principal**.
+- Tela inicial com cinco cards em **formato retrato**, ícone ilustrativo grande, texto centralizado e ação destacada na parte inferior.
+- Ícones renovados: 🎯 Individual, 🦾 Contra o computador, 🧩 Educacional, 🤝 Cooperativo local e 🌐 Cooperativo Online.
+- Responsividade: grade de **3 colunas no desktop**, **2 no tablet/celular**, **1 em telas muito estreitas**.
+- Interação leve: elevação do card, rotação suave do ícone e deslocamento da seta ao passar o mouse; efeitos desativados para usuários com `prefers-reduced-motion`.
+- Respeita tema claro/escuro e navegação por teclado; **não modifica lógica de jogo, partidas ou rotas online**.
+- Sintaxe JavaScript verificada; validação visual em navegador e aprovação ainda pendentes.
+
 # Stop Arena — validação e modalidades
 
 ## Recreativo contra o computador — protótipo offline (branch de desenvolvimento)
