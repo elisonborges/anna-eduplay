@@ -1,3 +1,13 @@
+## Cooperativo Online — criação, entrada independente e roleta sincronizada (novembro de 2026)
+
+- A página `stop-arena/online/` fica dedicada ao **organizador**, que configura equipe, categorias, letras, quantidade de rodadas e duração, cria a sala e compartilha PIN e convite.
+- Nova página independente para os **participantes**: `stop-arena/online/entrar/`, com apenas PIN de 7 caracteres e nome. O convite enviado pelo organizador abre diretamente esta página com o PIN preenchido. A adesão salva a sessão no navegador e leva à tela compartilhada da sala.
+- O menu inicial do Stop Arena apresenta dois links separados, **Criar sala online** e **Entrar em sala online**.
+- A etapa de roleta é sincronizada pelo servidor: 1,5 segundo de sorteio visual, revelação da letra, **contagem de 5 segundos** e transição automática para a rodada; durante a preparação, nenhuma resposta pode ser enviada. O cronômetro da rodada começa na hora acordada pelo servidor, não na hora em que cada dispositivo recebeu a atualização.
+- A cada nova rodada ocorre outro sorteio e outra contagem. A conferência, votação e pontuação coletiva continuam funcionando como antes.
+- Compatibilidade: o modo Host LAN portátil mantém sua interface de criação/entrada no mesmo endereço, pois utiliza motor de salas local; as alterações de roleta foram aplicadas ao motor online da AnnA Virtual.
+- Implementação integrada em branches `feature/stop-arena-online-acesso-roleta` nos repositórios **anna-eduplay** e **anna-virtual**.
+
 ## AnnA Stop Arena Host LAN — implementação atual (v0.1)
 
 - O **Multiplayer Local** deixa de utilizar salas do Cloudflare: o card inicial aponta para `stop-arena/lan/`, com instruções para iniciar o aplicativo anfitrião.

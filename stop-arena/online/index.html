@@ -55,7 +55,16 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .letter-set button:nth-child(4n){background:#def8f4}
 .letter-set button.excluded{background:#eae8ef;color:#92929a;text-decoration:line-through;opacity:.7}
 @media(max-width:680px){.letter-set{grid-template-columns:repeat(9,minmax(0,1fr))}}
-.review-coop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:13px 0}.review-coop-card{padding:13px;box-shadow:none}.review-word{font-size:19px;font-weight:850;margin:6px 0;color:var(--ink)}.review-votes{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.review-votes .btn{flex:1;min-width:100px}.ai-opinion{padding:9px;border-radius:10px;background:#e8f5ff;color:#245a7d;font-size:12px;line-height:1.5}.review-coop-card select{width:100%;min-height:39px;margin-top:6px}@media(max-width:650px){.review-coop-grid{grid-template-columns:1fr}}</style></head>
+.review-coop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:13px 0}.review-coop-card{padding:13px;box-shadow:none}.review-word{font-size:19px;font-weight:850;margin:6px 0;color:var(--ink)}.review-votes{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.review-votes .btn{flex:1;min-width:100px}.ai-opinion{padding:9px;border-radius:10px;background:#e8f5ff;color:#245a7d;font-size:12px;line-height:1.5}.review-coop-card select{width:100%;min-height:39px;margin-top:6px}@media(max-width:650px){.review-coop-grid{grid-template-columns:1fr}}</style><style>
+.online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
+.online-wheel strong{font-size:90px;line-height:1}
+.online-wheel.spinning{animation:stopwheelspin .32s linear infinite}
+.online-wheel.spinning strong{animation:stopwheelcounter .32s linear infinite}
+.wheel-seconds{font-size:clamp(20px,4vw,30px);font-weight:850;color:#6636be;padding:8px}
+@keyframes stopwheelspin{to{transform:rotate(360deg)}}
+@keyframes stopwheelcounter{to{transform:rotate(-360deg)}}
+@media(prefers-reduced-motion:reduce){.online-wheel.spinning,.online-wheel.spinning strong{animation:none}}
+</style></head>
 <body><header><div class="header"><div class="brand">🎉 Stop Arena <small>AnnA EduPlay · Cooperativo Online 🌐</small></div><a href="../">← Voltar ao jogo</a></div></header>
 <main id="app" aria-live="polite"><h1>🤝 Preparando a sala online</h1></main>
 <footer>AnnA One · Stop Arena Cooperativo · Respostas em MAIÚSCULAS · Validação supervisionada</footer>
@@ -145,12 +154,15 @@ function renderEntry(){
  '<div class="actions"><input style="flex:1;min-width:110px" id="extraCat" maxlength="42" placeholder="Nova categoria">'+btn('Adicionar','addCat','small')+'</div>'+
  '<div class="attention">💡 Mínimo de 6 categorias; as respostas serão avaliadas pelo dicionário local, pela equipe ou com ajuda opcional da IA.</div>'+
  '<div class="actions">'+btn(isLocal?'🏫 Criar sala e gerar PIN':'✨ Criar sala e gerar convite','create','primary fill')+'</div></section>'+
- '<section class="panel"><span class="kicker">📲 ENTRAR EM UMA SALA</span>'+
- '<p class="notice">'+(isLocal?'Recebeu o PIN? Digite os 7 caracteres e seu nome para entrar antes do começo.':'Recebeu um convite? Informe o código da sala e seu nome. Entre antes de a partida começar. <a href="salas/">Ou escolha uma sala no quadro.</a>')+'</p>'+
- '<label for="joinCode">'+(isLocal?'PIN da sala (7 caracteres)':'Código da sala')+'</label><input id="joinCode" maxlength="7" autocapitalize="characters" placeholder="EX.: ABC1234" value="'+esc(entry.joinCode)+'">'+
+ (isLocal?'<section class="panel"><span class="kicker">📲 ENTRAR EM UMA SALA</span>'+
+ '<p class="notice">Recebeu o PIN? Digite os 7 caracteres e seu nome para entrar antes do começo.</p>'+
+ '<label for="joinCode">PIN da sala (7 caracteres)</label><input id="joinCode" maxlength="7" autocapitalize="characters" placeholder="EX.: ABC1234" value="'+esc(entry.joinCode)+'">'+
  '<label for="joinName">Seu nome</label><input id="joinName" maxlength="25" placeholder="Como quer aparecer?" value="'+esc(entry.joinName)+'">'+
- '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div>'+
- '<div class="attention">🌟 Todos precisam colaborar. A equipe inteira compartilha a pontuação e a meta de 70% dos pontos possíveis.</div>'+
+ '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div></section>':
+ '<section class="panel"><span class="kicker">📲 PARTICIPANTES</span>'+
+ '<h2>Entrar em uma sala tem página própria</h2>'+
+ '<p class="notice">Envie aos participantes o PIN ou o link de convite. Eles entram pelo celular, informam nome e PIN, sem ver as configurações do organizador.</p>'+
+ '<p><a class="btn green fill" href="entrar/">🔑 Abrir página para entrar em sala</a></p></section>')+
  '<p id="status" class="status" hidden></p></section></div>';
  checkReadiness();
 }
@@ -165,7 +177,7 @@ async function enter(op){
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
 }
-function link(){return location.origin+location.pathname+'?'+(isLocal?'modo=local&':'')+'sala='+encodeURIComponent(room.code)}
+function link(){return isLocal?location.origin+location.pathname+'?modo=local&sala='+encodeURIComponent(room.code):new URL('entrar/?sala='+encodeURIComponent(room.code),location.href).href}
 async function copyPin(){
  if(!room)return;
  try{await navigator.clipboard.writeText(room.code);status('PIN '+room.code+' copiado.')}
@@ -181,6 +193,10 @@ function setRoom(next){
  const changed=!room||room.version!==next.version||room.stage!==next.stage;
  if(room&&(room.code!==next.code||room.round!==next.round||room.stage==='review'&&next.stage!=='review'))hints={};
  const oldStage=room?.stage;room=next;
+ if(oldStage!==next.stage&&interval){
+  clearInterval(interval);
+  interval=setInterval(poll,next.stage==='roulette'?500:2500);
+ }
  if(screen!=='room'||oldStage!==next.stage||!document.getElementById('onlineRoom')){renderRoom()}
  else if(changed){if(next.stage==='game')syncAnswers();else renderRoom()}
  seenVersion=next.version;
@@ -214,10 +230,18 @@ function renderRoom(){
   body='<section class="panel"><h1>🎊 Sala criada!</h1><p>Compartilhe o código com os participantes. O organizador inicia quando estiverem prontos.</p>'+
   '<div class="roomcode" aria-label="'+(isLocal?'PIN da sala':'Código da sala')+'">'+esc(room.code)+'</div>'+
   (isLocal?'<p class="notice">🔐 Compartilhe este PIN de 7 caracteres com seus colegas. Todos entram pelo próprio aparelho.</p>':'')+ (room.eventCode?'<p class="notice">🏆 Evento '+esc(room.eventCode)+' · até 50 equipes.</p>':'')+
-  '<div class="actions">'+(isLocal?btn('📋 Copiar PIN','copyPin','primary'):'')+btn('🔗 Copiar convite','share',isLocal?'small':'primary')+'</div>'+
+  '<div class="actions">'+btn('📋 Copiar PIN','copyPin','small')+btn('🔗 Copiar convite','share',isLocal?'small':'primary')+(isLocal?'':'<a class="btn green" href="'+esc(link())+'">🔑 Link para participantes</a>')+'</div>'+
   '<h3>🙌 Nossa equipe</h3>'+room.members.map(m=>'<div class="member">🙋 '+esc(m.name)+(m.id===room.viewer?' <small>(você)</small>':'')+'</div>').join('')+
   '<p class="notice">Mínimo de 2 jogadores; máximo de 6. '+room.categories.length+' categorias, '+room.rounds+' rodadas de '+room.duration+'s.</p>'+
   (room.host?'<div class="actions">'+btn('🚀 Iniciar missão','start','green')+btn('🏁 Finalizar jogo','finishGame')+'</div>':'<div class="attention">⏳ Aguardando o organizador começar a partida...</div>')+'</section>';
+ }else if(room.stage==='roulette'){
+  body='<section class="panel" style="text-align:center"><h1>🎡 Sorteio da letra</h1>'+
+   '<p class="notice">Rodada '+room.round+' de '+room.rounds+' · A roleta e a contagem são sincronizadas para todos.</p>'+
+   '<div class="online-wheel" id="onlineWheel" aria-label="Letra sorteada"><strong id="wheelLetter">?</strong></div>'+
+   '<h2 id="wheelMessage" role="status">A roleta está girando...</h2>'+
+   '<div class="wheel-seconds" id="wheelSeconds" aria-live="off"></div>'+
+   (room.host?'<div class="actions" style="justify-content:center">'+btn('🏁 Finalizar jogo','finishGame')+'</div>':'')+
+   '</section>';
  }else if(room.stage==='game'){
   body='<div class="stats"><div class="stat"><small>🔤 LETRA</small><strong>'+esc(room.letter)+'</strong></div>'+
   '<div class="stat"><small>⏱️ TEMPO</small><strong id="countdown">--:--</strong></div>'+
@@ -261,6 +285,7 @@ function renderRoom(){
  }
  app.innerHTML='<div id="onlineRoom">'+header+body+'</div><p id="status" class="status" hidden></p>';
  if(room.stage==='game'){startTimer()}
+ if(room.stage==='roulette'){startRouletteTimer()}
 }
 function syncAnswers(){
  if(!room||room.stage!=='game')return;
@@ -271,6 +296,25 @@ function syncAnswers(){
   if(author)author.textContent='Sua resposta · todos avaliarão após o STOP';
  }
  const pts=document.getElementById('score');if(pts)pts.textContent=room.score;
+}
+function startRouletteTimer(){
+ clearInterval(timer);
+ const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+ const update=()=>{
+  if(!room||room.stage!=='roulette')return;
+  const revealAt=Number(room.revealAt||0),startAt=Number(room.roundStartAt||0);
+  const now=Date.now(),spinning=now<revealAt;
+  const face=document.getElementById('wheelLetter');
+  const message=document.getElementById('wheelMessage');
+  const counter=document.getElementById('wheelSeconds');
+  const disc=document.getElementById('onlineWheel');
+  if(face)face.textContent=spinning?alphabet[Math.floor(now/90)%alphabet.length]:room.letter;
+  if(disc)disc.classList.toggle('spinning',spinning);
+  if(message)message.textContent=spinning?'A roleta está girando...':'Letra '+room.letter+'! Prepare-se para começar.';
+  if(counter)counter.textContent=spinning?'':Math.max(0,Math.ceil((startAt-now)/1000))+' segundos para iniciar a rodada';
+  if(now>=startAt&&!working&&!checking)poll();
+ };
+ update();timer=setInterval(update,120);
 }
 function startTimer(){
  clearInterval(timer);
@@ -353,7 +397,7 @@ app.addEventListener('click',async e=>{
  if(action==='leave')return reset();
  if(action==='ai'){if(window.STOP_ARENA_LAN)return status('🤖 Gemini exige internet. No modo LAN offline, use a votação e a conferência manual.',true);return reviewAI()}
  if(action==='finishGame'){
-  if(!room?.host||!['lobby','game','review'].includes(room.stage))return;
+  if(!room?.host||!['lobby','roulette','game','review'].includes(room.stage))return;
   const answer='Finalizar a partida para todos os participantes?\n\n'+
    'Rodadas concluídas: '+room.history.length+'\nPontuação atual: '+room.score+
    ' pontos.\n\nA rodada atual ainda não concluída não será contabilizada.\nDeseja finalizar?';
