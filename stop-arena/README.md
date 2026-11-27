@@ -1,3 +1,13 @@
+## Antessala Online com moderação e interação (em desenvolvimento)
+
+- Após criar a sala, organizador e participantes aguardam na antessala com o **PIN em destaque**, lista de jogadores e configurações resumidas da partida. Um novo layout responsivo destaca o painel de jogadores e a conversa da equipe.
+- Na antessala online, o organizador pode **remover participantes** pelo botão Remover e **excluir mensagens inadequadas** do chat. Removidos têm o token invalidado, suas mensagens retiradas e o mesmo nome bloqueado naquela sala. A medida não constitui bloqueio permanente de pessoas que retornem com outro nome.
+- **Chat de até 140 caracteres** e reações predefinidas (👋 👏 🎉 👍 😊 🚀) funcionam exclusivamente na fase de antessala, com limitação de frequência e máximo das 40 mensagens mais recentes.
+- Quando o organizador inicia o sorteio, o servidor desativa o chat e emojis, limpa o histórico da conversa e não aceita novas interações desse tipo durante roleta, rodada, conferência ou finalização. A **votação de respostas na conferência** continua permitida, pois é parte do jogo, não do chat.
+- O layout do **organizador** também foi atualizado para separar visualmente as etapas 01 Configurar partida e 02 Convidar jogadores; os controles de criação, entrada e sorteio permanecem compatíveis.
+- O Host LAN portátil mantém sua antessala anterior para não depender das novas ações de chat/moderação não presentes na versão local do motor de salas.
+- Desenvolvido nos branches `feature/stop-arena-antessala-moderacao` dos repositórios `anna-eduplay` e `anna-virtual`. **Não publicado na main nesta etapa.**
+
 ## Cooperativo Online — criação, entrada independente e roleta sincronizada (novembro de 2026)
 
 - A página `stop-arena/online/` fica dedicada ao **organizador**, que configura equipe, categorias, letras, quantidade de rodadas e duração, cria a sala e compartilha PIN e convite.
