@@ -1,3 +1,11 @@
+## Separação das competições — Campeonatos
+
+- O formulário normal de criação de sala online não mostra mais o campo opcional Código do evento nem as explicações de campeonato.
+- O cabeçalho oferece um acesso **🏆 Campeonatos** ao lado de Entrar com PIN e Ver todas as salas, levando à página independente `stop-arena/online/eventos/`.
+- A página existente de eventos continua permitindo organizar campeonatos com várias equipes; seu link **Criar sala de equipe** usa `?evento=CODIGO` e abre a criação da sala em contexto de campeonato, com um aviso compacto e o código aplicado automaticamente ao pedido.
+- Um jogo cooperativo comum continua independente de qualquer campeonato, sem código de evento no pedido ao servidor.
+- Código ajustado somente na branch `feature/stop-arena-online-50-participantes`, sem publicação na `main`.
+
 ## Tela de criação online — layout em colunas
 
 - O formulário do organizador foi dividido em **duas colunas no desktop**: dados/configuração à esquerda e letras/categorias à direita; no celular, as seções são empilhadas para manter a leitura.
