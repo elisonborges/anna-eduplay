@@ -372,7 +372,7 @@ function choose(){
  s.screen='letter';
  const pool=eligibleLetters();
  show(title('Rodada '+s.round+' de '+s.rounds,'Escolha uma letra ou use a roleta.')+
- '<section class="panel"><div class="lettergrid">'+availableLetters().map(l=>'<button data-letter="'+l+'">'+l+'</button>').join('')+'</div><div class="actions">'+button('🎡 Girar roleta','random','primary')+back()+'</div></section>');
+ '<section class="panel"><div class="lettergrid">'+availableLetters().map(l=>'<button data-letter="'+l+'">'+l+'</button>').join('')+'</div><div class="actions">'+button('🎡 Girar roleta','random','primary')+button('🏁 Finalizar jogo','finishGame')+back()+'</div></section>');
 }
 function spin(){
  cancelPreRoundCountdown();
