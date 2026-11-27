@@ -494,6 +494,7 @@ async function consultAI(){
    if(point)point.textContent=points(suggestion.status)?'+'+points(suggestion.status)+' pts':'0 pts';
    evaluated++;
   }
+  const pending=s.results.filter(x=>x.status==='review').length;
   updateReviewSummary();
   save();
   info.textContent='✅ '+evaluated+' resposta(s) conferida(s) · '+uncertain+' dúvida(s) apontada(s) · '+pending+' pendente(s). Você pode corrigir qualquer avaliação.';
