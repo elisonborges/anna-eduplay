@@ -14,7 +14,7 @@
 
 Acesse `stop-arena/online/` ou o cartão **Cooperativo Online** na página inicial.
 
-- Organizadores escolhem modo **Recreativo ou Educacional**, conjunto de categorias, 6 a 12 categorias, 1–20 rodadas e 30–300 segundos.
+- Organizadores escolhem modo **Recreativo ou Educacional**, conjunto de categorias, 6 a 12 categorias, **letras A–Z que participarão**, 1–20 rodadas e 30–300 segundos.
 - Geram um código de **7 caracteres**, link de convite e entram com nome próprio.
 - Os convidados entram pelo link/código **antes** do início; são necessários de 2 a 6 participantes.
 - Cada participante usa seu próprio aparelho conectado à internet. As respostas são compartilhadas e sincronizadas por consultas periódicas ao serviço (~2,5 s), com atualização ao digitar e sem exigir atualização manual da página.
@@ -23,7 +23,7 @@ Acesse `stop-arena/online/` ou o cartão **Cooperativo Online** na página inici
 - Dicionário local compartilhado para validação inicial; o organizador resolve pendências e pode pedir **sugestões ao Gemini**, nunca aprovadas automaticamente.
 - A pontuação é **coletiva**, 10 pontos por resposta aceita, com meta de 70% dos pontos possíveis e resumo da equipe.
 - Tokens individuais temporários ficam na `sessionStorage` do navegador, não no link de convite; o backend não retorna tokens de outros participantes.
-- Salas são armazenadas no Cloudflare Durable Objects (SQLite), isoladas por código, com expiração após 24 horas sem alterações. Sem gravação de dados acadêmicos ou conta de estudante.
+- Salas são armazenadas no Cloudflare Durable Objects (SQLite), isoladas por código, com limpeza automática por alarmes após 24 horas sem alterações. Sem gravação de dados acadêmicos ou conta de estudante.
 - **Limite conhecido:** sincronização por polling, não por WebSocket; reconexões e concorrência podem gerar conflitos de última escrita. O modo não possui chat, placar entre equipes ou acompanhamento remoto de professores.
 - Publicação do GitHub Pages é automática conforme a configuração de produção; o backend exige implantação da classe `StopArenaRoom` e binding `STOP_ARENA_ROOM` no Cloudflare (configuração incluída em `elisonborges/anna-virtual/wrangler.toml`). A gravação no GitHub não prova que a implantação ocorreu.
 - Testes de sintaxe e do motor da sala com servidor simulado foram realizados; **a implantação real e uma partida com dois aparelhos continuam sem confirmação**.
