@@ -291,28 +291,30 @@ async function reviewAI(){
  const items=room.results.map((r,index)=>({...r,index})).filter(r=>String(r.answer||'').trim());
  if(!items.length){status('Não há palavras preenchidas para conferir.');return}
  const code=room.code,letter=room.letter,round=room.round;
- working=true;status('🤖 Consultando o parecer do Gemini...');
+ working=true;let received=0;
  try{
-  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
-  let response;
-  try{response=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({letter,items:items.map(({index,category,answer})=>({index,category,answer}))}),credentials:'omit',signal:controller.signal})}
-  finally{clearTimeout(timeout)}
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw Error((data.error||'Serviço Gemini indisponível')+(data.diagnostico?.providerStatus?' · HTTP '+data.diagnostico.providerStatus:'')+(data.diagnostico?.detail?' · '+String(data.diagnostico.detail).slice(0,150):'')+(data.diagnostico?.type?' · '+data.diagnostico.type:''));
-  if(!Array.isArray(data.suggestions))throw Error('Resposta inesperada da IA');
-  if(!session||!room||room.code!==code||room.round!==round||room.letter!==letter||room.stage!=='review')return;
-  const originals=new Map(items.map(r=>[r.index,r]));
-  let received=0;
-  for(const suggestion of data.suggestions){
-   const i=Number(suggestion.index),original=originals.get(i);
-   if(!original||!['valid','invalid','review'].includes(suggestion.status)||room.results[i]?.answer!==original.answer)continue;
-   const updated=await request({op:'action',...session,action:'aiHint',index:i,suggestion:{status:suggestion.status,reason:String(suggestion.reason||'').slice(0,160),corrected:String(suggestion.corrected||'').slice(0,80)}});
-   if(!updated.room||updated.room.code!==code||updated.room.round!==round)break;
-   room=updated.room;received++;
+  for(let offset=0;offset<items.length;offset+=12){
+   const batch=items.slice(offset,offset+12);
+   status('🤖 Gemini: conferindo '+Math.min(offset+batch.length,items.length)+' de '+items.length+' respostas...');
+   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+   let response;
+   try{response=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({letter,items:batch.map(({category,answer},i)=>({index:i,category,answer}))}),credentials:'omit',signal:controller.signal})}
+   finally{clearTimeout(timeout)}
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw Error((data.error||'Serviço Gemini indisponível')+(data.diagnostico?.providerStatus?' · HTTP '+data.diagnostico.providerStatus:'')+(data.diagnostico?.detail?' · '+String(data.diagnostico.detail).slice(0,150):'')+(data.diagnostico?.type?' · '+data.diagnostico.type:''));
+   if(!Array.isArray(data.suggestions))throw Error('Formato inesperado da IA');
+   if(!session||!room||room.code!==code||room.round!==round||room.letter!==letter||room.stage!=='review')return;
+   for(const suggestion of data.suggestions){
+    const index=Number(suggestion.index),initial=batch[index];
+    if(!Number.isInteger(index)||!initial||!['valid','invalid','review'].includes(suggestion.status)||room.results[initial.index]?.answer!==initial.answer)continue;
+    const updated=await request({op:'action',...session,action:'aiHint',index:initial.index,suggestion:{status:suggestion.status,reason:String(suggestion.reason||'').slice(0,160),corrected:String(suggestion.corrected||'').slice(0,80)}});
+    if(!updated.room||updated.room.code!==code||updated.room.round!==round)break;
+    room=updated.room;received++;
+   }
   }
-  renderRoom();status('🤖 '+received+' parecer(es) compartilhado(s) com a equipe. O Gemini orienta, mas não altera automaticamente as respostas.');
+  renderRoom();status('🤖 '+received+' parecer(es) compartilhado(s). A IA ajuda na decisão, mas não modifica a palavra digitada.');
  }catch(e){
-  renderRoom();status('IA indisponível: '+(e.name==='AbortError'?'tempo esgotado':e.message)+'. Todos podem continuar votando.',true);
+  renderRoom();status('IA indisponível: '+(e.name==='AbortError'?'tempo esgotado':e.message)+'. '+received+' parecer(es) já recebido(s). Continuem a votação.',true);
  }finally{working=false}
 }
 
