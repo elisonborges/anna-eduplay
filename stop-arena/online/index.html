@@ -151,6 +151,50 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .waiting-chat .lobby-chat-compact{margin-top:8px}
 .waiting-exit{margin-top:12px}
 @media(max-width:650px){.lobby-actions-summary{align-items:stretch}.lobby-actions-summary .lobby-details{width:100%}.lobby-links{flex-wrap:wrap}.lobby-chat-compact .lobby-compose{flex-direction:row}}
+
+/* Conferência: orientação sempre visível e parecer de IA destacado. */
+.review-top-alert{position:sticky;top:8px;z-index:18;padding:13px 17px;border:2px solid #e4bb56;border-radius:13px;background:#fff3c9;box-shadow:0 8px 22px #9e732a24;margin:0 0 13px;color:#674400;font-size:14px}
+.review-top-alert strong{display:block;font-size:15px}
+.review-top-alert span{display:block;margin-top:4px}
+.accent-guidance{padding:11px 14px;margin:12px 0 16px;background:#e9fbf0;border:1px solid #97dbb4;border-radius:11px;color:#1b6844;font-size:13px}
+.review-coop-card .ai-opinion{margin:13px 0;padding:13px 15px;border-radius:12px;border:2px solid #7c4ae5;background:#f0eaff;box-shadow:0 5px 18px #6734bf20;color:#3c226d;font-size:14px;line-height:1.55}
+.review-coop-card .ai-opinion strong{display:block;font-size:15px}
+.review-coop-card .ai-opinion p{margin:7px 0;color:#4b3470}
+.review-coop-card .ai-opinion small{display:block;font-size:12px}
+/* Cerimônia de encerramento e pódio por jogador. */
+.final-ceremony{position:relative;overflow:hidden;padding:clamp(18px,4vw,36px);text-align:center}
+.final-header{background:linear-gradient(120deg,#4c218d,#8944d9);border-radius:18px;color:#fff;padding:22px;margin-bottom:18px}
+.final-header h1{color:#fff;margin:7px 0;font-size:clamp(25px,4vw,38px)}
+.final-header p{color:#f9e7ff}
+.final-kicker{font-size:11px;letter-spacing:1.7px;font-weight:900;color:#ffe6a6}
+.final-team-score{font-size:15px;color:#5f3c98;font-weight:850;margin:15px 0}
+.final-reveal-intro{font-size:clamp(17px,3vw,22px);font-weight:850;margin:16px 0;color:#4d268b;min-height:30px}
+.podium-list{display:flex;align-items:end;justify-content:center;gap:14px;flex-wrap:wrap;margin:22px 0}
+.podium-rank{position:relative;flex:1 1 190px;max-width:290px;min-height:170px;padding:18px 13px;border:2px solid #d9c8ef;border-radius:17px;background:linear-gradient(180deg,#fff,#f4edff);box-shadow:0 9px 20px #4a26871a;transition:opacity .6s,transform .7s}
+.podium-rank-1{border-color:#efca5a;background:linear-gradient(160deg,#fff3c0,#fffdf2);min-height:225px}
+.podium-rank-2{border-color:#c8ccda;background:linear-gradient(160deg,#f1f4ff,#fff);min-height:197px}
+.podium-rank-3{border-color:#d9a56c;background:linear-gradient(160deg,#fff0e1,#fff);min-height:175px}
+.podium-hidden{opacity:0;transform:translateY(26px) scale(.93);pointer-events:none}
+.podium-place{font-size:16px;font-weight:900;color:#4c2b7b}
+.podium-avatars{font-size:clamp(30px,4vw,42px);margin:11px 0;display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.podium-rank h2{font-size:clamp(15px,2vw,20px);overflow-wrap:anywhere;margin:6px 0}
+.podium-points{font-weight:900;font-size:20px;color:#5327a0}
+.podium-tie{background:#eae2ff;color:#582fa0;border-radius:20px;padding:7px 10px;font-size:12px}
+.champion-announce{position:relative;overflow:hidden;border:2px solid #f2c64c;border-radius:22px;background:linear-gradient(110deg,#5520a3,#902fda,#b758e6);color:#fff;padding:25px 14px;margin:19px auto;max-width:660px;min-height:190px;transition:opacity .7s,transform .7s}
+.champion-announce h2{color:#ffe67b;font-size:clamp(20px,4vw,30px);position:relative;z-index:2}
+.champion-announce p,.champion-announce strong{font-size:clamp(17px,3vw,24px);color:white;position:relative;z-index:2}
+.champion-cup{font-size:50px;animation:champ-bounce 1.25s ease-in-out infinite alternate;position:relative;z-index:2}
+.firework-field{position:absolute;inset:0;pointer-events:none;z-index:1}
+.firework-field i{position:absolute;left:calc(10% + mod(var(--i),9)*10%);top:calc(12% + mod(var(--i),4)*17%);width:6px;height:16px;border-radius:3px;background:var(--spark,#ffe66c);opacity:0;animation:firework-pop 1.8s ease-out infinite;animation-delay:calc(var(--i)*.12s)}
+.firework-field i:nth-child(3n){--spark:#63ebff}
+.firework-field i:nth-child(3n + 1){--spark:#ff86d4}
+@keyframes firework-pop{0%{transform:translateY(0) scale(.2) rotate(0);opacity:0}20%{opacity:1}100%{transform:translateY(-105px) scale(.9) rotate(220deg);opacity:0}}
+@keyframes champ-bounce{from{transform:scale(1) rotate(-5deg)}to{transform:scale(1.14) rotate(5deg)}}
+.final-info{margin:20px auto;background:#f3ecff;padding:16px;border-radius:14px;max-width:560px}
+.final-details{text-align:left;margin:18px 0;border:1px solid #dfd2f2;border-radius:12px;padding:13px}
+.final-details summary{cursor:pointer;font-weight:800;color:#5a3297}
+@media(prefers-reduced-motion:reduce){.champion-cup,.firework-field i{animation:none}.podium-rank,.champion-announce{transition:none}}
+@media(max-width:620px){.podium-list{gap:8px}.podium-rank{min-width:100%;min-height:140px}.podium-rank-1{min-height:170px}}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -340,7 +384,7 @@ function renderRoom(){
  if(!room)return renderEntry();
  screen='room';clearInterval(timer);
  const spectator=room.members.find(m=>m.id===room.viewer)?.plays===false;
- const header=!isLocal&&room.stage==='lobby'?'':('<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">'+(isLocal?'PIN ':'Sala ')+esc(room.code)+' · '+room.members.length+'/'+(isLocal?6:50)+' participantes</div></div><div class="actions" style="margin:0">'+btn('🔗 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>');
+ const header=isLocal?'<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">PIN '+esc(room.code)+' · '+room.members.length+'/6 participantes</div></div><div class="actions" style="margin:0">'+btn('🔗 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>':'';
  let body='';
  if(room.stage==='lobby'){
  if(isLocal){  body='<section class="panel"><h1>🎊 Sala criada!</h1><p>Compartilhe o código com os participantes. O organizador inicia quando estiverem prontos.</p>'+
@@ -400,8 +444,11 @@ function renderRoom(){
   const votesNeeded=Math.min(2,room.members.filter(m=>m.plays!==false).length);
   const waiting=room.results.filter(r=>r.answer&&!r.finalized&&Object.keys(r.votes||{}).length<votesNeeded).length;
   const credited=new Set();
-  body='<section class="panel"><h1>🔎 Conferência em equipe</h1><p class="notice">Todos veem as respostas preenchidas. Cada participante pode votar ✅ ou ❌. Com opiniões diferentes, o Gemini ajuda e o organizador decide. Respostas vazias não são avaliadas.</p>'+
-  '<p class="notice">Cada categoria vale no máximo 10 pontos para a equipe, mesmo que vários jogadores acertem.</p><div class="answers review-coop-grid">'+room.results.map((r,i)=>{
+  body='<div class="review-top-alert" role="status" aria-live="polite"><strong>🟡 '+pending+' pendente(s) · '+waiting+' resposta(s) aguardando voto(s) ou decisão final.</strong> <span>'+(room.host?'Você pode resolver as divergências.':'O organizador resolve as divergências.')+'</span></div>'+
+  '<section class="panel"><h1>🔎 Conferência em equipe</h1><p class="notice">Todos veem as respostas preenchidas. Cada participante pode votar ✅ ou ❌. Com opiniões diferentes, o Gemini ajuda e o organizador decide. Respostas vazias não são avaliadas.</p>'+
+  '<p class="notice">Cada categoria vale no máximo 10 pontos para a equipe, mesmo que vários jogadores acertem.</p>'+
+  '<div class="accent-guidance">✍️ <strong>Acentuação:</strong> ausência ou diferença de acentos, isoladamente, não torna uma resposta inválida. Verifique o significado e a categoria.</div>'+
+  '<div class="answers review-coop-grid">'+room.results.map((r,i)=>{
    const filled=!!String(r.answer||'').trim();
    const votes=r.votes||{},mine=votes[room.viewer];
    const agree=Object.values(votes).filter(v=>v==='valid').length,disagree=Object.values(votes).filter(v=>v==='invalid').length;
@@ -411,23 +458,53 @@ function renderRoom(){
     (!filled?'<p class="notice">— Campo vazio · 0 pontos · sem avaliação</p>':
      '<div class="review-votes"><button class="btn '+(mine==='valid'?'green':'secondary')+'" data-vote="'+i+'" data-vote-status="valid" '+(r.finalized||spectator?'disabled':'')+'>✅ Aceitar ('+agree+')</button><button class="btn '+(mine==='invalid'?'stop':'secondary')+'" data-vote="'+i+'" data-vote-status="invalid" '+(r.finalized||spectator?'disabled':'')+'>❌ Recusar ('+disagree+')</button></div>'+
      '<p class="notice">Situação: <strong>'+({valid:'✅ Aceita',review:'🟡 Revisar',invalid:'❌ Recusada'})[r.status]+'</strong> · '+(r.status==='valid'&&!credited.has(r.categoryIndex??room.categories.indexOf(r.category))?(credited.add(r.categoryIndex??room.categories.indexOf(r.category)),10):0)+' pontos para a equipe</p>'+
-     (ai?'<p class="ai-opinion">🤖 Parecer da IA: '+esc(({valid:'Aceitar',invalid:'Recusar',review:'Em dúvida'})[ai.status])+' · '+esc(ai.reason||'')+(ai.corrected?' · ✍️ Grafia sugerida: '+esc(ai.corrected):'')+'</p>':'')+
+     (ai?'<div class="ai-opinion" role="note"><strong>🤖 PARECER DA IA · '+esc(({valid:'✅ Sugere aceitar',invalid:'⚠️ Sugere recusar',review:'🟡 Recomenda revisão'})[ai.status])+'</strong><p>'+esc(ai.reason||'Sem justificativa informada.')+'</p>'+(ai.corrected?'<small>✍️ Grafia sugerida: '+esc(ai.corrected)+' — acentuação, por si só, não invalida a resposta.</small>':'')+'</div>':'')+
      (hints[i]?'<p class="notice">'+esc(hints[i])+'</p>':'')+
      (room.host?'<label class="notice" for="finalGrade'+i+'">Decisão final do organizador</label><select id="finalGrade'+i+'" data-grade="'+i+'">'+['review','valid','invalid'].map(v=>'<option value="'+v+'" '+(r.finalized&&r.status===v?'selected':v==='review'&&!r.finalized?'selected':'')+'>'+({review:'— Aguardar votos',valid:'✅ Confirmar válida',invalid:'❌ Confirmar inválida'})[v]+'</option>').join('')+'</select>':'')
     )+'</article>';
   }).join('')+'</div>'+
-  '<div class="attention">🟡 '+pending+' pendente(s) · '+waiting+' resposta(s) aguardando voto(s) ou decisão final. '+(room.host?'Você pode resolver as divergências.':'A decisão final das divergências é do organizador.')+'</div>'+
+  ''+
   (room.host?'<div class="actions">'+btn('🏁 Finalizar jogo','finishGame')+(window.STOP_ARENA_LAN?'':btn('🤖 Consultar IA como desempate','ai'))+'<button class="btn primary" data-act="next" '+(pending||waiting?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Seu voto ajuda a equipe a conferir as respostas.</p>')+
   '</section>';
 
  }else{
   const goal=Math.ceil(room.categories.length*room.rounds*10*.7),reached=room.score>=goal;
-  body='<section class="panel"><h1>'+(room.finishedEarly?'🏁 Partida finalizada':reached?'🏆 Missão cumprida!':'🤝 Missão concluída!')+'</h1>'+
-  '<div class="score">'+room.score+' pontos</div><p class="goal">'+(room.finishedEarly?'A partida foi finalizada pelo organizador. Apenas as rodadas concluídas foram contabilizadas.':reached?'🎉 A equipe alcançou a meta de '+goal+' pontos!':'💪 Meta de '+goal+' pontos. Que tal tentar novamente?')+'</p>'+
-  '<p class="notice">⭐ '+room.members.length+' participantes · '+room.history.length+' rodadas concluídas</p>'+
-  '<div style="overflow:auto"><table><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos</th></tr></thead><tbody>'+
-  room.history.map(x=>'<tr><td>'+x.round+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+'</tbody></table></div>'+
-  '<div class="actions">'+btn('🎉 Criar outra sala','leave','primary')+'</div></section>';
+  const tracked=!isLocal&&room.scoreTrackingComplete&&room.playerScores&&room.history.length>0;
+  const members=room.members.filter(m=>m.plays!==false);
+  const ranked=tracked?members.map(m=>({name:m.name,emoji:m.emoji||'😀',score:Number(room.playerScores[m.id]||0)}))
+    .sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'pt-BR')):[];
+  const levels=[...new Set(ranked.map(p=>p.score))].slice(0,3);
+  const positions=levels.map((score,i)=>({place:i+1,score,players:ranked.filter(p=>p.score===score)}));
+  const champions=positions.find(p=>p.place===1)?.players||[];
+  const podiumOrder=[3,2,1];
+  body='<section class="panel final-ceremony">'+
+  '<div class="final-header"><span class="final-kicker">STOP ARENA · GRANDE FINAL</span><h1>🏁 Partida finalizada!</h1>'+
+  '<p>'+(room.finishedEarly?'A partida foi encerrada pelo organizador. Só as rodadas concluídas contam.':'Parabéns! A partida chegou ao fim.')+'</p></div>'+
+  '<div class="final-team-score">⭐ '+room.score+' pontos coletivos · '+room.history.length+' rodada(s) concluída(s)</div>'+
+  (tracked?'<div class="final-reveal-intro" id="finalRevealIntro" role="status" aria-live="polite">🥁 Prepare-se para conhecer os vencedores...</div>'+
+   '<div class="podium-list" aria-label="Pódio do Stop Arena">'+podiumOrder.map(n=>{
+    const rank=positions.find(p=>p.place===n);
+    if(!rank)return '';
+    return '<article class="podium-rank podium-rank-'+n+' podium-hidden" data-podium-reveal="'+n+'">'+
+     '<div class="podium-place">'+(n===1?'🥇':n===2?'🥈':'🥉')+' '+n+'º lugar</div>'+
+     '<div class="podium-avatars">'+rank.players.map(p=>'<span title="'+esc(p.name)+'">'+esc(p.emoji)+'</span>').join('')+'</div>'+
+     '<h2>'+rank.players.map(p=>esc(p.name)).join(' · ')+'</h2>'+
+     '<p class="podium-points">'+rank.score+' pontos</p>'+
+     (rank.players.length>1?'<div class="podium-tie">🤝 Empate entre '+rank.players.length+' jogadores</div>':'')+
+     '</article>';
+   }).join('')+'</div>'+
+   '<div class="champion-announce podium-hidden" id="championAnnounce" role="status">'+
+   '<div class="champion-cup">🏆</div><h2>'+(champions.length>1?'🎉 CAMPEÕES EMPATADOS!':'🎉 TEMOS UM CAMPEÃO!')+'</h2>'+
+   '<p>'+champions.map(p=>esc(p.name)).join(' · ')+'</p><strong>'+Number(positions[0]?.score||0)+' pontos</strong>'+
+   '<div class="firework-field" aria-hidden="true">'+Array.from({length:18},(_,i)=>'<i style="--i:'+i+'"></i>').join('')+'</div>'+
+   '</div>':
+   '<div class="final-info"><h2>👏 Obrigado por participar!</h2><p>'+(room.history.length===0?'Nenhuma rodada foi concluída; não há classificação individual.':'Esta sala começou antes da atualização da pontuação individual. O placar coletivo foi preservado, sem inventar uma classificação.')+'</p></div>')+
+  '<details class="final-details"><summary>📋 Ver resultados por rodada</summary>'+
+   '<div style="overflow:auto"><table><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos coletivos</th></tr></thead><tbody>'+
+   room.history.map(x=>'<tr><td>'+x.round+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+
+   '</tbody></table></div></details>'+
+  '<div class="actions" style="justify-content:center">'+btn('🎉 Criar outra sala','leave','primary')+'</div></section>';
+
  }
  const keepFocus=document.activeElement?.id==='lobbyText';
  app.innerHTML='<div id="onlineRoom">'+header+body+'</div><p id="status" class="status" hidden></p>';
@@ -437,6 +514,7 @@ function renderRoom(){
  }
  if(room.stage==='game'){startTimer()}
  if(room.stage==='roulette'){startRouletteTimer()}
+ if(room.stage==='end'&&!isLocal){startPodiumTimer()}
 }
 function syncAnswers(){
  if(!room||room.stage!=='game')return;
@@ -447,6 +525,30 @@ function syncAnswers(){
   if(author)author.textContent='Sua resposta · todos avaliarão após o STOP';
  }
  const pts=document.getElementById('score');if(pts)pts.textContent=room.score;
+}
+function startPodiumTimer(){
+ clearInterval(timer);
+ if(!room||room.stage!=='end'||!room.scoreTrackingComplete||!room.playerScores||!room.history.length)return;
+ const start=Number(room.endAt||Date.now());
+ const update=()=>{
+  if(!room||room.stage!=='end')return;
+  const elapsed=Math.max(0,Date.now()-start);
+  const schedule={3:1600,2:4300,1:7100};
+  let current='🥁 Aguardando o resultado...';
+  for(const place of [3,2,1]){
+   const el=document.querySelector('[data-podium-reveal="'+place+'"]');
+   if(el&&elapsed>=schedule[place]){
+    el.classList.remove('podium-hidden');
+    current=place===1?'🏆 O campeão está sendo revelado!':place===2?'🥈 Revelando o segundo lugar...':'🥉 Revelando o terceiro lugar...';
+   }
+  }
+  const headline=document.getElementById('finalRevealIntro');
+  if(headline)headline.textContent=elapsed>=7900?'🎊 Parabéns a todos os participantes!':current;
+  const champion=document.getElementById('championAnnounce');
+  if(champion&&elapsed>=7900)champion.classList.remove('podium-hidden');
+  if(elapsed>=9000)clearInterval(timer);
+ };
+ update();timer=setInterval(update,180);
 }
 function startRouletteTimer(){
  clearInterval(timer);
