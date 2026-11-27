@@ -52,7 +52,6 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 
 .letter-set{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px;margin:8px 0}
 .letter-set button{padding:5px 0;min-height:28px;border-radius:7px;border:1px solid #d2b8ee;color:#4a267e;background:#f1e6ff;font-size:12px;font-weight:800}
-.letter-set button:nth-child(4n){background:#def8f4}
 .letter-set button.excluded{background:#eae8ef;color:#92929a;text-decoration:line-through;opacity:.7}
 @media(max-width:680px){.letter-set{grid-template-columns:repeat(9,minmax(0,1fr))}}
 .review-coop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:13px 0}.review-coop-card{padding:13px;box-shadow:none}.review-word{font-size:19px;font-weight:850;margin:6px 0;color:var(--ink)}.review-votes{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.review-votes .btn{flex:1;min-width:100px}.ai-opinion{padding:9px;border-radius:10px;background:#e8f5ff;color:#245a7d;font-size:12px;line-height:1.5}.review-coop-card select{width:100%;min-height:39px;margin-top:6px}@media(max-width:650px){.review-coop-grid{grid-template-columns:1fr}}
@@ -114,6 +113,8 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .teacher-toggle{display:flex;align-items:center;gap:9px;margin:13px 0 2px;font-weight:700;cursor:pointer}
 .teacher-toggle input{width:20px;min-height:20px;accent-color:#7130c3;flex:0 0 20px}
 .custom-number{min-width:0}.custom-number input{margin-top:7px}
+.round-time-column{display:flex;flex-direction:column;gap:10px;width:100%;max-width:260px;margin-top:12px}
+.round-time-column .custom-number select,.round-time-column .custom-number input{width:100%;box-sizing:border-box}
 .category-library{margin:13px 0;border:1px solid #dfd6f3;padding:11px;border-radius:12px;background:#faf8ff;max-height:190px;overflow-y:auto}
 .category-library>strong,.picked-categories>strong{display:block;font-size:12px;margin-bottom:8px;color:#58428a}
 .suggestion-chip{background:#f0e8ff;border:1px solid #cbb9ed;border-radius:9px;color:#5d2997;padding:7px 9px;font-size:12px;font-weight:750;cursor:pointer}
@@ -216,9 +217,8 @@ function renderEntry(){
  (isLocal?'':'<label class="teacher-toggle"><input type="checkbox" id="teacherPlays" '+(entry.teacherPlays?'checked':'')+'><span>O professor também vai jogar</span></label><p class="notice">Desmarcado: o professor apenas organiza e confere. A sala pode ter 1 a 49 jogadores convidados, além do organizador.</p>')+
  (!isLocal&&championshipMode?'<div class="championship-notice"><strong>🏆 Campeonato '+esc(entry.eventCode)+'</strong><span>Esta sala seguirá as regras definidas pelo organizador do campeonato.</span><a href="eventos/">Consultar campeonato</a></div>':'')+
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
- '<div>'+numericField('rounds',entry.rounds,[1,3,5,10,20],1,20,'')+'</div></div>'+
- numericField('duration',entry.duration,[30,60,90,120,180,300],30,300,'segundos')+
- (isLocal?'':'</section><section class="panel organizer-rules"><span class="kicker">02 · REGRAS DO JOGO</span><h2>🔠 Letras e categorias</h2>')+
+ '</div><div class="round-time-column">'+numericField('rounds',entry.rounds,[1,3,5,10,20],1,20,'')+numericField('duration',entry.duration,[30,60,90,120,180,300],30,300,'segundos')+'</div>'+
+ (isLocal?'':'</section><section class="panel organizer-rules"><span class="kicker">02 · REGRAS DO JOGO</span><h2>Letras e categorias</h2>')+
  '<div class="actions"><strong>🔠 Letras disponíveis</strong>'+btn('↺ Restaurar letras','resetLetters','small')+'</div>'+
  '<p class="notice">💡 Toque nas letras para ativar ou desativar o sorteio. Pelo menos uma precisa ficar ativa.</p>'+
  '<div class="letter-set">'+[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map(x=>'<button type="button" data-letter-toggle="'+x+'" class="'+(letters.includes(x)?'active':'excluded')+'" aria-pressed="'+letters.includes(x)+'">'+x+'</button>').join('')+'</div>'+
