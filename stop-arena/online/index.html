@@ -511,7 +511,7 @@ app.addEventListener('click',async e=>{
   else letters.push(letter);
   letters.sort();renderEntry();return;
  }
- if(b.dataset.remove!==undefined){captureEntry();if(categories.length<=6)return status('Mantenha pelo menos 6 categorias.',true);categories.splice(Number(b.dataset.remove),1);renderEntry();return}
+ if(b.dataset.remove!==undefined){captureEntry();categories.splice(Number(b.dataset.remove),1);renderEntry();return}
  if(!b.dataset.act)return;
  const action=b.dataset.act;
  if(action==='resetLetters'){captureEntry();letters=[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];renderEntry();return}
