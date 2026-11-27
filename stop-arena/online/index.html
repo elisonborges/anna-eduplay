@@ -68,7 +68,11 @@ const queryCode=new URLSearchParams(location.search).get('sala')||'';
 const entry={name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[...PRESETS.recreativo.Clássico];
 let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='';
-try{const saved=JSON.parse(sessionStorage.getItem(KEY)||'null');if(saved?.code&&saved?.token)session=saved}catch{}
+try{
+ const saved=JSON.parse(sessionStorage.getItem(KEY)||'null');
+ if(saved?.code&&saved?.token&&(!queryCode||upper(queryCode)===saved.code))session=saved;
+ else if(saved&&queryCode)sessionStorage.removeItem(KEY);
+}catch{}
 const status=(msg,isError=false)=>{let el=document.getElementById('status');if(el){el.textContent=msg||'';el.className='status'+(isError?' error':'');el.hidden=!msg}};
 const saveSession=()=>{try{sessionStorage.setItem(KEY,JSON.stringify(session))}catch{}};
 const reset=()=>{session=null;room=null;screen='';seenVersion=-1;clearInterval(interval);clearInterval(timer);interval=null;timer=null;try{sessionStorage.removeItem(KEY)}catch{};renderEntry()};
@@ -159,7 +163,8 @@ function startPolling(){
 async function poll(){
  if(!session||checking||working)return;
  checking=true;
- try{const result=await request({op:'state',...session});lastError='';setRoom(result.room);status('')}
+ const current=session;
+ try{const result=await request({op:'state',...current});if(!session||session.token!==current.token)return;lastError='';setRoom(result.room);status('')}
  catch(e){lastError=e.message;status('Sem atualização: '+e.message,true)}
  finally{checking=false}
 }
