@@ -93,6 +93,8 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .organizer-shortcuts .organizer-join{margin:0;display:inline-flex;align-items:center;justify-content:center;min-height:43px}
 @media(max-width:760px){.organizer-layout{grid-template-columns:1fr}.organizer-shortcuts .organizer-join{flex:1 1 210px;text-align:center}}
 @media(max-width:480px){.organizer-shortcuts{flex-direction:column;align-items:stretch}.organizer-shortcuts .organizer-join{flex:none;width:100%}}
+.championship-notice{display:flex;flex-direction:column;gap:5px;margin:11px 0;padding:12px;background:#f3eeff;border:1px solid #d6c3fb;border-radius:12px;color:#4c2783;font-size:12px}
+.championship-notice strong{font-size:14px}.championship-notice a{color:#5d2aa9;font-weight:750}
 /* Participantes em fileira horizontal, com emoji escolhido e nome. */
 .lobby-layout{display:flex;flex-direction:column;align-items:stretch}
 .lobby-layout>.panel{width:100%}
@@ -134,8 +136,9 @@ if(isLocal){
  if(subtitle)subtitle.textContent='AnnA EduPlay · Multiplayer Local 🏫';
 }
 const queryCode=params.get('sala')||'';
-const queryEvent=new URLSearchParams(location.search).get('evento')||'';
-const entry={emoji:'😀',name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:upper(queryEvent).slice(0,7),rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
+const queryEvent=upper(new URLSearchParams(location.search).get('evento')||'').trim();
+const championshipMode=/^[A-HJ-NP-Z2-9]{7}$/.test(queryEvent);
+const entry={emoji:'😀',name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:championshipMode?queryEvent:'',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[...PRESETS.recreativo.Clássico];
 let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='',lobbyDraft='';
@@ -174,7 +177,7 @@ const userName=id=>room?.members.find(m=>m.id===id)?.name||'Equipe';
 const playerEmojis=['😀','😎','🤓','🥳','🤖','🦊','🐼','🐯','🦁','🐸','🦄','🚀'];
 const emojiSelector=(id,value)=>'<label for="'+id+'">Seu emoji na equipe</label><select id="'+id+'" aria-label="Escolha seu emoji">'+playerEmojis.map(e=>'<option value="'+e+'" '+(value===e?'selected':'')+'>'+e+'</option>').join('')+'</select>';
 function captureEntry(){
- for(const [key,id] of [['name','ownerName'],['team','teamName'],['eventCode','eventCode'],['joinName','joinName'],['joinCode','joinCode'],['emoji','hostEmoji']]){
+ for(const [key,id] of [['name','ownerName'],['team','teamName'],['joinName','joinName'],['joinCode','joinCode'],['emoji','hostEmoji']]){
   const el=document.getElementById(id);if(el)entry[key]=el.value;
  }
  for(const [key,id] of [['mode','mode'],['preset','preset'],['rounds','rounds'],['duration','duration']]){
@@ -183,16 +186,14 @@ function captureEntry(){
 }
 function renderEntry(){
  screen='entry';clearInterval(interval);clearInterval(timer);interval=null;timer=null;
- app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<section class="organizer-hero"><span class="organizer-kicker">AnnA EduPlay · Stop Arena Online</span><h1>🎮 Organize sua partida</h1><p>Configure o jogo, crie a sala e compartilhe o PIN.</p><div class="organizer-shortcuts"><a class="btn organizer-join" href="entrar/">🔑 Sou participante · entrar com PIN</a><a class="btn organizer-join" href="salas/">🏠 Ver todas as salas</a></div></section>')+
+ app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<section class="organizer-hero"><span class="organizer-kicker">AnnA EduPlay · Stop Arena Online</span><h1>'+(championshipMode?'🏆 Criar equipe no campeonato':'🎮 Organize sua partida')+'</h1><p>'+(championshipMode?'Esta sala fará parte de um campeonato com regras compartilhadas.':'Configure o jogo, crie a sala e compartilhe o PIN.')+'</p><div class="organizer-shortcuts"><a class="btn organizer-join" href="entrar/">🔑 Sou participante · entrar com PIN</a><a class="btn organizer-join" href="salas/">🏠 Ver todas as salas</a><a class="btn organizer-join" href="eventos/">🏆 Campeonatos</a></div></section>')+
  (isLocal?'<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>':'')+
  ''+
  '<div class="layout organizer-layout"><section class="panel organizer-config"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
  '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
  (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
- (isLocal?'':'<label for="eventCode">Código do evento (opcional; até 50 equipes)</label><input id="eventCode" maxlength="7" placeholder="Código de 7 caracteres" value="'+esc(entry.eventCode)+'">'+
- '<p class="notice">🏆 Se participar de um evento, as regras definidas pelo organizador prevalecem: categorias, letras, duração e número de rodadas iguais para todas as equipes.</p>'+
- '<p class="notice"><a href="eventos/">🏆 Criar evento ou ver placar de equipes</a></p>')+
+ (!isLocal&&championshipMode?'<div class="championship-notice"><strong>🏆 Campeonato '+esc(entry.eventCode)+'</strong><span>Esta sala seguirá as regras definidas pelo organizador do campeonato.</span><a href="eventos/">Consultar campeonato</a></div>':'')+
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
  '<div><label for="rounds">Rodadas</label><select id="rounds">'+[1,3,5,10,20].map(n=>'<option value="'+n+'" '+(entry.rounds===n?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div>'+
  '<label for="duration">Tempo por rodada</label><select id="duration">'+[30,60,90,120,180,300].map(n=>'<option value="'+n+'" '+(entry.duration===n?'selected':'')+'>'+n+' segundos</option>').join('')+'</select>'+
@@ -220,7 +221,7 @@ async function enter(op){
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
-  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':upper(entry.eventCode).trim(),emoji:isLocal?undefined:entry.emoji,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':(championshipMode?entry.eventCode:''),emoji:isLocal?undefined:entry.emoji,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
   const data=await request(payload);
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
