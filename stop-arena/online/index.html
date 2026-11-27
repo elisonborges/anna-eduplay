@@ -71,8 +71,12 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'
 const upper=x=>String(x??'').toLocaleUpperCase('pt-BR');
 const btn=(title,act,cls='')=>'<button class="btn '+cls+'" data-act="'+act+'">'+title+'</button>';
 const params=new URLSearchParams(location.search);
-const isLocal=Boolean(window.STOP_ARENA_LAN)||params.get('modo')==='local';
-if(isLocal)document.title='Multiplayer Local | Stop Arena · AnnA EduPlay';
+const isLocal=Boolean(window.STOP_ARENA_LAN);
+if(isLocal){
+ document.title='Multiplayer Local | Stop Arena · AnnA EduPlay';
+ const subtitle=document.querySelector('.brand small');
+ if(subtitle)subtitle.textContent='AnnA EduPlay · Multiplayer Local 🏫';
+}
 const queryCode=params.get('sala')||'';
 const queryEvent=new URLSearchParams(location.search).get('evento')||'';
 const entry={name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:upper(queryEvent).slice(0,7),rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
