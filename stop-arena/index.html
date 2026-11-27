@@ -273,6 +273,12 @@ a.online-mode:hover{transform:translateY(-2px)}
 @media(max-width:600px){.play-answers,.review-grid{grid-template-columns:1fr}.review-hero{padding:14px}.play-hero{padding:15px}.review-answer{flex-wrap:nowrap}.review-answer-actions{flex-direction:column;width:auto}.review-toolbar{align-items:stretch}.review-buttons{justify-content:space-between}.review-buttons .primary{flex:1}.play-actions-hint{display:none}.play-actions .btn{flex:1}}
 @media(max-width:360px){.review-answer{flex-wrap:wrap}.review-answer-actions{flex-direction:row;width:100%}.review-stat{padding:8px 3px;font-size:11px}.review-stats{gap:5px}}
 @media(prefers-reduced-motion:reduce){.play-answer{transition:none}}
+
+/* Cinco segundos para preparar a rodada após o sorteio. */
+.pre-round-count{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:14px auto;padding:10px 14px;width:fit-content;border-radius:15px;background:color-mix(in srgb,var(--card) 75%,#e1d2ff);border:1px solid var(--edge);color:var(--ink);font-weight:750}
+.pre-round-count[hidden]{display:none}
+.pre-round-count strong{display:grid;place-items:center;width:57px;height:57px;border-radius:50%;background:#6935c3;color:white;font-size:32px;line-height:1;box-shadow:0 5px 13px #45228c3c}
+@media(max-width:420px){.pre-round-count{gap:8px;font-size:12px}.pre-round-count strong{width:49px;height:49px;font-size:28px}}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -297,7 +303,7 @@ const app=document.getElementById('app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
 const fresh=()=>({screen:'home',mode:'recreativo',preset:'Clássico',categories:[...presets.recreativo.Clássico],name:'Jogador',playStyle:'solo',difficulty:'normal',computerAnswers:[],computerResults:[],teamName:'Equipe Stop',members:['Jogador 1','Jogador 2'],contributors:[],rounds:5,duration:90,rule:'random',excluded:[],round:1,letter:'',used:[],answers:[],results:[],history:[],deadline:0,score:0,endReason:''});
-let s=fresh(),timer=null,rouletteTimer=null;
+let s=fresh(),timer=null,rouletteTimer=null,preRoundTimer=null,preRoundDeadline=0;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
 try{let data=JSON.parse(localStorage.getItem(KEY)||'null');if(data&&typeof data==='object'&&Array.isArray(data.categories)&&Array.isArray(data.history))s={...fresh(),...data}}catch(e){}
 const title=(t,d='')=>'<div class="hrow"><div><h1>'+esc(t)+'</h1><p class="sub">'+esc(d)+'</p></div></div>';
@@ -369,6 +375,7 @@ function choose(){
  '<section class="panel"><div class="lettergrid">'+availableLetters().map(l=>'<button data-letter="'+l+'">'+l+'</button>').join('')+'</div><div class="actions">'+button('🎡 Girar roleta','random','primary')+back()+'</div></section>');
 }
 function spin(){
+ cancelPreRoundCountdown();
  const pool=eligibleLetters();
  if(!pool.length)return alert('Selecione ao menos uma letra.');
  const target=pool[Math.floor(Math.random()*pool.length)];
@@ -377,7 +384,7 @@ function spin(){
  show(title('Sorteio da letra','Rodada '+s.round+' de '+s.rounds)+
  '<section class="panel roulette-panel"><p class="eyebrow" id="wheelStatus" role="status">A roleta está girando...</p>'+
  '<div class="roulette-disc rolling" id="rouletteDisc" aria-hidden="true"><strong id="wheelLetter">?</strong></div>'+
- '<p class="notice" id="wheelHint">Preparando a próxima rodada</p><div class="actions" style="justify-content:center">'+button('Começar rodada →','beginSelected','primary')+'</div></section>');
+ '<p class="notice" id="wheelHint">Preparando a próxima rodada</p><div class="pre-round-count" id="preRoundCount" role="status" aria-live="off" hidden><span>Começando em</span><strong id="preRoundSeconds">5</strong><span>segundos</span></div><div class="actions" style="justify-content:center">'+button('▶ Começar rodada agora','beginSelected','primary')+'</div></section>');
  const btn=app.querySelector('[data-a="beginSelected"]');btn.disabled=true;
  const face=document.getElementById('wheelLetter');
  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -391,10 +398,30 @@ function spin(){
    clearInterval(rouletteTimer);rouletteTimer=null;
    document.getElementById('rouletteDisc').classList.remove('rolling');
    document.getElementById('wheelStatus').textContent='A letra sorteada é...';
-   document.getElementById('wheelHint').textContent='Letra '+target+'! Pronto para responder?';
-   btn.disabled=false;btn.focus();
+   document.getElementById('wheelHint').textContent='Letra '+target+'! Prepare suas respostas!';
+   btn.disabled=false;
+   startPreRoundCountdown(target);
   }
  },reduce?60:95);
+}
+function cancelPreRoundCountdown(){
+ clearInterval(preRoundTimer);preRoundTimer=null;preRoundDeadline=0;
+}
+function startPreRoundCountdown(letter){
+ cancelPreRoundCountdown();
+ if(s.screen!=='roulette')return;
+ preRoundDeadline=Date.now()+5000;
+ const panel=document.getElementById('preRoundCount');
+ if(panel)panel.hidden=false;
+ const tickPreRound=()=>{
+  if(s.screen!=='roulette'||s.letter!==letter){cancelPreRoundCountdown();return}
+  const remaining=Math.max(0,Math.ceil((preRoundDeadline-Date.now())/1000));
+  const seconds=document.getElementById('preRoundSeconds');
+  if(seconds)seconds.textContent=remaining;
+  if(remaining===0){cancelPreRoundCountdown();begin(letter)}
+ };
+ tickPreRound();
+ preRoundTimer=setInterval(tickPreRound,100);
 }
 function nextRound(){
  s.answers=s.categories.map(()=>'');s.contributors=s.categories.map(()=>'');s.results=[];s.computerAnswers=[];s.computerResults=[];s.endReason='';
@@ -402,6 +429,8 @@ function nextRound(){
 }
 function begin(l){
  if(!availableLetters().includes(l))return;
+ cancelPreRoundCountdown();
+ clearInterval(rouletteTimer);rouletteTimer=null;
  s.letter=l;
  if(!s.used.includes(l))s.used.push(l);
  s.deadline=s.duration?Date.now()+s.duration*1000:0;
@@ -561,7 +590,7 @@ function renderEnd(){
  '<table class="scoretable"><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Seus pontos</th>'+(isBot?'<th>🤖 Computador</th>':'')+'</tr></thead><tbody>'+s.history.map((h,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(h.letter)+'</td><td>'+h.valid+'</td><td>'+h.score+'</td>'+(isBot?'<td>'+(h.botScore||0)+'</td>':'')+'</tr>').join('')+'</tbody></table>'+
  '<div class="actions" style="margin-top:15px">'+back()+button('Jogar novamente','again','primary')+'</div></section>');
 }
-function render(){document.body.classList.remove('keyboard-open');clearInterval(timer);clearInterval(rouletteTimer);if(s.screen==='home')renderHome();else if(s.screen==='setup')renderSetup();else if(s.screen==='letter')choose();else if(s.screen==='game')renderGame();else if(s.screen==='result')renderResult();else if(s.screen==='end')renderEnd();else{s.screen='home';renderHome()}}
+function render(){document.body.classList.remove('keyboard-open');clearInterval(timer);clearInterval(rouletteTimer);cancelPreRoundCountdown();if(s.screen==='home')renderHome();else if(s.screen==='setup')renderSetup();else if(s.screen==='letter')choose();else if(s.screen==='game')renderGame();else if(s.screen==='result')renderResult();else if(s.screen==='end')renderEnd();else{s.screen='home';renderHome()}}
 function start(){
  const raw=document.getElementById('rounds').value.trim();
  if(!/^\d+$/.test(raw)||Number(raw)<1||Number(raw)>50){alert('Defina de 1 a 50 rodadas.');document.getElementById('rounds').focus();return}
