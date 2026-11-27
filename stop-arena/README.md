@@ -1,3 +1,27 @@
+## Ajuste da tela de criação — participantes compactos
+
+- A configuração de sala ocupa a largura disponível, com as categorias, letras e opções mantidas.
+- O antigo cartão lateral grande de participantes é substituído por uma faixa horizontal compacta, com ícone, texto curto e link direto para entrar com PIN.
+- A antessala dos jogadores permanece com cartões horizontais, emoji escolhido e nome; esta mudança da tela de criação não interfere na dinâmica da partida.
+
+## Antessala — jogadores em linha com emoji próprio
+
+- A lista da antessala online agora é uma **fileira horizontal de cartões**, com rolagem lateral em telas estreitas, sem empilhar cada jogador verticalmente.
+- Cada participante escolhe um emoji ao entrar pelo link de PIN. O organizador escolhe seu emoji ao criar a sala. O servidor valida a escolha e compartilha o emoji com todos.
+- Cada cartão mostra **emoji grande, nome e identificação** (organizador, participante ou você); o organizador continua com o botão Remover para os demais.
+- A antessala mantém chat e emojis temporários separados dos emojis de identificação; o chat é bloqueado quando a partida inicia.
+- Alterações guardadas nas branches `feature/stop-arena-antessala-moderacao`, incluídas nesta publicação.
+
+## Antessala Online com moderação e interação (em desenvolvimento)
+
+- Após criar a sala, organizador e participantes aguardam na antessala com o **PIN em destaque**, lista de jogadores e configurações resumidas da partida. Um novo layout responsivo destaca o painel de jogadores e a conversa da equipe.
+- Na antessala online, o organizador pode **remover participantes** pelo botão Remover e **excluir mensagens inadequadas** do chat. Removidos têm o token invalidado, suas mensagens retiradas e o mesmo nome bloqueado naquela sala. A medida não constitui bloqueio permanente de pessoas que retornem com outro nome.
+- **Chat de até 140 caracteres** e reações predefinidas (👋 👏 🎉 👍 😊 🚀) funcionam exclusivamente na fase de antessala, com limitação de frequência e máximo das 40 mensagens mais recentes.
+- Quando o organizador inicia o sorteio, o servidor desativa o chat e emojis, limpa o histórico da conversa e não aceita novas interações desse tipo durante roleta, rodada, conferência ou finalização. A **votação de respostas na conferência** continua permitida, pois é parte do jogo, não do chat.
+- O layout do **organizador** também foi atualizado para separar visualmente as etapas 01 Configurar partida e 02 Convidar jogadores; os controles de criação, entrada e sorteio permanecem compatíveis.
+- O Host LAN portátil mantém sua antessala anterior para não depender das novas ações de chat/moderação não presentes na versão local do motor de salas.
+- Desenvolvido nos branches `feature/stop-arena-antessala-moderacao` dos repositórios `anna-eduplay` e `anna-virtual`. Publicação na `main` autorizada após esta revisão.
+
 ## Cooperativo Online — criação, entrada independente e roleta sincronizada (novembro de 2026)
 
 - A página `stop-arena/online/` fica dedicada ao **organizador**, que configura equipe, categorias, letras, quantidade de rodadas e duração, cria a sala e compartilha PIN e convite.

@@ -55,7 +55,51 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .letter-set button:nth-child(4n){background:#def8f4}
 .letter-set button.excluded{background:#eae8ef;color:#92929a;text-decoration:line-through;opacity:.7}
 @media(max-width:680px){.letter-set{grid-template-columns:repeat(9,minmax(0,1fr))}}
-.review-coop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:13px 0}.review-coop-card{padding:13px;box-shadow:none}.review-word{font-size:19px;font-weight:850;margin:6px 0;color:var(--ink)}.review-votes{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.review-votes .btn{flex:1;min-width:100px}.ai-opinion{padding:9px;border-radius:10px;background:#e8f5ff;color:#245a7d;font-size:12px;line-height:1.5}.review-coop-card select{width:100%;min-height:39px;margin-top:6px}@media(max-width:650px){.review-coop-grid{grid-template-columns:1fr}}</style><style>
+.review-coop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:13px 0}.review-coop-card{padding:13px;box-shadow:none}.review-word{font-size:19px;font-weight:850;margin:6px 0;color:var(--ink)}.review-votes{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.review-votes .btn{flex:1;min-width:100px}.ai-opinion{padding:9px;border-radius:10px;background:#e8f5ff;color:#245a7d;font-size:12px;line-height:1.5}.review-coop-card select{width:100%;min-height:39px;margin-top:6px}@media(max-width:650px){.review-coop-grid{grid-template-columns:1fr}}
+.lobby-hero{border-radius:20px;padding:24px;background:linear-gradient(110deg,#472196,#8951d1);color:white;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:14px}
+.lobby-hero h1{font-size:clamp(23px,4vw,34px)}.lobby-hero p{color:#f0e8ff}.lobby-hero span{font-size:11px;font-weight:850;letter-spacing:1px}
+.lobby-pin{min-width:180px;background:white;border-radius:15px;color:#3d2471;padding:15px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.lobby-pin strong{font-size:30px;letter-spacing:3px}.lobby-pin small{font-size:11px}
+.lobby-links{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.lobby-layout{display:grid;grid-template-columns:1fr 1.15fr;gap:15px;align-items:start}.lobby-layout .panel{margin:0}
+.lobby-layout h2{font-size:19px}.lobby-player{display:flex;align-items:center;gap:10px;border:1px solid #e6ddf5;border-radius:12px;padding:9px;margin:8px 0}
+.lobby-avatar{display:grid;place-items:center;background:#e9ddff;color:#5425a0;width:38px;height:38px;border-radius:50%;font-weight:900}
+.lobby-player-name{display:flex;flex-direction:column;flex:1;min-width:0}.lobby-player-name strong{overflow-wrap:anywhere}.lobby-player-name small{color:#746884}
+.lobby-remove{font-size:12px!important;background:#fff0f0!important;color:#9f3244!important;padding:9px!important;border:1px solid #eebbbc!important}
+.lobby-details{font-size:12px;background:#f3edff;padding:10px;border-radius:10px;margin:12px 0}
+.lobby-start{background:#f5f0ff;padding:13px;border-radius:12px}.lobby-start p{font-size:13px}
+.lobby-feed{height:235px;overflow-y:auto;background:#f9f7ff;border:1px solid #e7def6;padding:12px;border-radius:13px}
+.lobby-message{padding:6px;margin:4px 0;overflow-wrap:anywhere}.lobby-message strong{color:#6234a7}.lobby-delete{float:right;border:0;background:transparent;color:#a22c3b;font-weight:900;cursor:pointer;margin-left:8px}
+.lobby-emojis{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.lobby-emojis button{font-size:22px;background:#f1eaff;border:1px solid #dbcef4;border-radius:11px;padding:7px 11px;cursor:pointer}
+.lobby-compose{display:flex;gap:9px}.lobby-compose input{flex:1;min-width:0}.lobby-compose button{width:auto}
+@media(max-width:720px){.lobby-layout{grid-template-columns:1fr}.lobby-pin{width:100%}.lobby-links .btn{flex:1}}
+
+.organizer-hero{background:linear-gradient(117deg,#47229a,#6b32bc 58%,#9b55d7);border-radius:22px;color:white;padding:clamp(23px,4vw,38px);margin:0 0 17px;box-shadow:0 12px 30px #47229a24}
+.organizer-hero h1{font-size:clamp(25px,4.5vw,36px);margin:8px 0;color:white}.organizer-hero p{color:#efe6ff;max-width:560px;font-size:14px}
+.organizer-kicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d8ffcc}
+.organizer-join{display:inline-flex;margin-top:12px;color:#45208e!important;background:#fff!important;text-decoration:none;border-radius:12px;padding:11px 14px;font-size:13px}
+.organizer-layout{display:flex;flex-direction:column;gap:12px;align-items:stretch;max-width:100%}.organizer-layout>.panel{box-shadow:0 8px 25px #50358b13}
+.organizer-layout .kicker{font-size:11px;letter-spacing:1.1px;color:#7137af}
+.organizer-layout h2{font-size:20px}.organizer-config{width:100%}
+.organizer-participants{display:flex;align-items:center;gap:12px;padding:11px 15px;border:1px solid #e0d8f0;border-radius:14px;background:#fbfaff;min-height:68px}
+.participant-symbol{display:grid;place-items:center;width:40px;height:40px;flex-shrink:0;background:#eee6ff;border-radius:12px;font-size:21px}
+.participant-copy{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}
+.participant-copy strong{font-size:14px;color:#3c2b65}
+.participant-copy small{font-size:12px;color:#6a6183}
+.participant-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;white-space:nowrap;min-height:38px!important;padding:8px 12px!important;font-size:12px!important;color:#6230b8!important;background:#f0e8ff!important;box-shadow:none!important}
+@media(max-width:480px){.organizer-participants{flex-wrap:wrap;padding:11px}.participant-copy{min-width:150px}.participant-link{width:100%}}
+
+@media(max-width:720px){.organizer-join{width:100%;justify-content:center}}
+/* Participantes em fileira horizontal, com emoji escolhido e nome. */
+.lobby-layout{display:flex;flex-direction:column;align-items:stretch}
+.lobby-layout>.panel{width:100%}
+.lobby-player-row{display:flex;gap:12px;overflow-x:auto;padding:6px 2px 14px;scroll-snap-type:x proximity}
+.lobby-player{flex:0 0 145px;min-height:150px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:flex-start;gap:7px;padding:13px 8px;margin:0;scroll-snap-align:start}
+.lobby-avatar{font-size:39px;line-height:1.2;width:64px;height:64px;border-radius:18px;background:#f0e9ff}
+.lobby-player-name{align-items:center;width:100%}.lobby-player-name strong{font-size:14px;overflow-wrap:anywhere}
+.lobby-remove{font-size:11px!important;padding:6px 9px!important;margin-top:auto}
+@media(max-width:720px){.lobby-layout{display:flex;flex-direction:column}.lobby-player-row{gap:9px}.lobby-player{flex-basis:128px;min-height:148px}}
+</style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
 .online-wheel.spinning{animation:stopwheelspin .32s linear infinite}
@@ -88,10 +132,10 @@ if(isLocal){
 }
 const queryCode=params.get('sala')||'';
 const queryEvent=new URLSearchParams(location.search).get('evento')||'';
-const entry={name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:upper(queryEvent).slice(0,7),rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
+const entry={emoji:'😀',name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:upper(queryEvent).slice(0,7),rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[...PRESETS.recreativo.Clássico];
 let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='';
+let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='',lobbyDraft='';
 try{
  const saved=JSON.parse(sessionStorage.getItem(KEY)||'null');
  if(saved?.code&&saved?.token&&(!queryCode||upper(queryCode)===saved.code))session=saved;
@@ -124,8 +168,10 @@ async function request(payload){
  }finally{clearTimeout(timeout)}
 }
 const userName=id=>room?.members.find(m=>m.id===id)?.name||'Equipe';
+const playerEmojis=['😀','😎','🤓','🥳','🤖','🦊','🐼','🐯','🦁','🐸','🦄','🚀'];
+const emojiSelector=(id,value)=>'<label for="'+id+'">Seu emoji na equipe</label><select id="'+id+'" aria-label="Escolha seu emoji">'+playerEmojis.map(e=>'<option value="'+e+'" '+(value===e?'selected':'')+'>'+e+'</option>').join('')+'</select>';
 function captureEntry(){
- for(const [key,id] of [['name','ownerName'],['team','teamName'],['eventCode','eventCode'],['joinName','joinName'],['joinCode','joinCode']]){
+ for(const [key,id] of [['name','ownerName'],['team','teamName'],['eventCode','eventCode'],['joinName','joinName'],['joinCode','joinCode'],['emoji','hostEmoji']]){
   const el=document.getElementById(id);if(el)entry[key]=el.value;
  }
  for(const [key,id] of [['mode','mode'],['preset','preset'],['rounds','rounds'],['duration','duration']]){
@@ -134,11 +180,12 @@ function captureEntry(){
 }
 function renderEntry(){
  screen='entry';clearInterval(interval);clearInterval(timer);interval=null;timer=null;
- app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<h1>🌐 Cooperativo Online</h1><p class="sub">Crie uma sala e convide a equipe. Cada participante usa seu próprio aparelho, com respostas compartilhadas!</p>')+
+ app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<section class="organizer-hero"><span class="organizer-kicker">AnnA EduPlay · Stop Arena Online</span><h1>🎮 Organize sua partida</h1><p>Configure o jogo, crie uma sala e compartilhe o PIN. Os participantes entram por um link próprio.</p><a class="btn organizer-join" href="entrar/">🔑 Sou participante · entrar com PIN</a></section>')+
  '<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>'+
  (isLocal?'':'<section class="panel" style="margin:13px 0;background:linear-gradient(105deg,#e4fff4,#eaf3ff)"><div class="actions" style="justify-content:space-between;margin-top:0"><div><strong>🏠 Quadro de salas criadas</strong><p class="notice">Veja nomes das salas, participantes conectados e vagas disponíveis.</p></div><a class="btn primary" href="salas/">Ver todas as salas →</a></div></section>')+
- '<div class="layout"><section class="panel"><span class="kicker">🏠 CRIAR SALA</span>'+
+ '<div class="layout organizer-layout"><section class="panel organizer-config"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
  '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
+ (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
  (isLocal?'':'<label for="eventCode">Código do evento (opcional; até 50 equipes)</label><input id="eventCode" maxlength="7" placeholder="Código de 7 caracteres" value="'+esc(entry.eventCode)+'">'+
  '<p class="notice">🏆 Se participar de um evento, as regras definidas pelo organizador prevalecem: categorias, letras, duração e número de rodadas iguais para todas as equipes.</p>'+
@@ -159,10 +206,7 @@ function renderEntry(){
  '<label for="joinCode">PIN da sala (7 caracteres)</label><input id="joinCode" maxlength="7" autocapitalize="characters" placeholder="EX.: ABC1234" value="'+esc(entry.joinCode)+'">'+
  '<label for="joinName">Seu nome</label><input id="joinName" maxlength="25" placeholder="Como quer aparecer?" value="'+esc(entry.joinName)+'">'+
  '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div></section>':
- '<section class="panel"><span class="kicker">📲 PARTICIPANTES</span>'+
- '<h2>Entrar em uma sala tem página própria</h2>'+
- '<p class="notice">Envie aos participantes o PIN ou o link de convite. Eles entram pelo celular, informam nome e PIN, sem ver as configurações do organizador.</p>'+
- '<p><a class="btn green fill" href="entrar/">🔑 Abrir página para entrar em sala</a></p></section>')+
+ '<section class="organizer-participants" aria-label="Acesso de participantes"><span class="participant-symbol" aria-hidden="true">👥</span><div class="participant-copy"><strong>É participante?</strong><small>Entre com seu nome e o PIN recebido.</small></div><a class="btn participant-link" href="entrar/">🔑 Entrar com PIN →</a></section>')+
  '<p id="status" class="status" hidden></p></section></div>';
  checkReadiness();
 }
@@ -172,7 +216,7 @@ async function enter(op){
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
-  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':upper(entry.eventCode).trim(),categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':upper(entry.eventCode).trim(),emoji:isLocal?undefined:entry.emoji,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
   const data=await request(payload);
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
@@ -193,6 +237,7 @@ function setRoom(next){
  const changed=!room||room.version!==next.version||room.stage!==next.stage;
  if(room&&(room.code!==next.code||room.round!==next.round||room.stage==='review'&&next.stage!=='review'))hints={};
  const oldStage=room?.stage;room=next;
+ if(oldStage==='lobby'&&next.stage!=='lobby')lobbyDraft='';
  if(oldStage!==next.stage&&interval){
   clearInterval(interval);
   interval=setInterval(poll,next.stage==='roulette'?500:2500);
@@ -209,7 +254,15 @@ async function poll(){
  checking=true;
  const current=session;
  try{const result=await request({op:'state',...current});if(!session||session.token!==current.token)return;lastError='';setRoom(result.room);status('')}
- catch(e){lastError=e.message;status('Sem atualização: '+e.message,true)}
+ catch(e){
+  if(!isLocal&&/não autorizado|removido pelo organizador/i.test(e.message)){
+   session=null;room=null;clearInterval(interval);clearInterval(timer);interval=null;timer=null;
+   try{sessionStorage.removeItem(KEY)}catch{}
+   app.innerHTML='<section class="panel" style="max-width:550px;margin:35px auto;text-align:center"><h1>🚫 Acesso encerrado</h1><p>O organizador removeu sua participação desta sala. Entre em contato com ele se precisar de autorização.</p><a class="btn" href="entrar/">Voltar</a></section>';
+   return;
+  }
+  lastError=e.message;status('Sem atualização: '+e.message,true)
+ }
  finally{checking=false}
 }
 async function act(action,extra={}){
@@ -227,13 +280,30 @@ function renderRoom(){
  const header='<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">'+(isLocal?'PIN ':'Sala ')+esc(room.code)+' · '+room.members.length+'/6 participantes</div></div><div class="actions" style="margin:0">'+btn('📋 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>';
  let body='';
  if(room.stage==='lobby'){
-  body='<section class="panel"><h1>🎊 Sala criada!</h1><p>Compartilhe o código com os participantes. O organizador inicia quando estiverem prontos.</p>'+
+ if(isLocal){  body='<section class="panel"><h1>🎊 Sala criada!</h1><p>Compartilhe o código com os participantes. O organizador inicia quando estiverem prontos.</p>'+
   '<div class="roomcode" aria-label="'+(isLocal?'PIN da sala':'Código da sala')+'">'+esc(room.code)+'</div>'+
   (isLocal?'<p class="notice">🔐 Compartilhe este PIN de 7 caracteres com seus colegas. Todos entram pelo próprio aparelho.</p>':'')+ (room.eventCode?'<p class="notice">🏆 Evento '+esc(room.eventCode)+' · até 50 equipes.</p>':'')+
   '<div class="actions">'+btn('📋 Copiar PIN','copyPin','small')+btn('🔗 Copiar convite','share',isLocal?'small':'primary')+(isLocal?'':'<a class="btn green" href="'+esc(link())+'">🔑 Link para participantes</a>')+'</div>'+
   '<h3>🙌 Nossa equipe</h3>'+room.members.map(m=>'<div class="member">🙋 '+esc(m.name)+(m.id===room.viewer?' <small>(você)</small>':'')+'</div>').join('')+
   '<p class="notice">Mínimo de 2 jogadores; máximo de 6. '+room.categories.length+' categorias, '+room.rounds+' rodadas de '+room.duration+'s.</p>'+
   (room.host?'<div class="actions">'+btn('🚀 Iniciar missão','start','green')+btn('🏁 Finalizar jogo','finishGame')+'</div>':'<div class="attention">⏳ Aguardando o organizador começar a partida...</div>')+'</section>';
+
+ }else{
+const chat=(room.lobbyMessages||[]).slice(-40);
+body='<div class="lobby-hero"><div><span>● ANTESSALA · '+(room.host?'ORGANIZADOR':'PARTICIPANTE')+'</span><h1>🏠 '+esc(room.team)+'</h1><p>Compartilhe o PIN e receba os jogadores antes de iniciar.</p></div><div class="lobby-pin"><small>PIN DE ACESSO</small><strong>'+esc(room.code)+'</strong><small>'+room.members.length+' de 6 participantes</small></div></div>'+
+'<div class="lobby-links">'+btn('📋 Copiar PIN','copyPin','small')+btn('🔗 Copiar convite','share','primary')+'<a class="btn green" href="'+esc(link())+'">Link dos participantes</a></div>'+
+'<div class="lobby-layout"><section class="panel"><h2>👥 Jogadores ('+room.members.length+'/6)</h2><p class="notice">O organizador pode remover participantes antes de iniciar.</p>'+
+'<div class="lobby-player-row">'+room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.emoji||'😀')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você':m.id===room.members[0].id?'Organizador':'Jogador')+'</small></span>'+
+(room.host&&m.id!==room.viewer?'<button class="btn lobby-remove" data-kick="'+esc(m.id)+'" data-kick-name="'+esc(m.name)+'">Remover</button>':'')+'</div>').join('')+'</div>'+
+'<div class="lobby-details">🎯 '+room.categories.length+' categorias · 🔁 '+room.rounds+' rodadas · ⏱️ '+room.duration+'s</div>'+
+(room.host?'<div class="lobby-start"><p>Ao começar, chat e emojis são desativados para todos.</p>'+btn('🎡 Sortear letra e começar','start','green fill')+btn('🏁 Finalizar jogo','finishGame','small')+'</div>':'<div class="attention">⏳ Aguardando o organizador iniciar a partida...</div>')+
+'</section><section class="panel"><h2>💬 Conversa da equipe</h2><p class="notice">Mensagens e emojis disponíveis apenas nesta antessala.</p>'+
+'<div class="lobby-feed" id="lobbyFeed" role="log">'+(chat.length?chat.map(m=>'<p class="lobby-message"><strong>'+esc(m.name||'Antessala')+':</strong> '+esc(m.text)+
+ (room.host&&m.by!=='system'?'<button class="lobby-delete" data-lobby-delete="'+esc(m.id)+'" aria-label="Excluir mensagem de '+esc(m.name)+'">✕</button>':'')+'</p>').join(''):'<p class="notice">👋 Dê boas-vindas à equipe!</p>')+'</div>'+
+'<div class="lobby-emojis">'+['👋','👏','🎉','👍','😊','🚀'].map(e=>'<button data-lobby-emoji="'+e+'" aria-label="Enviar '+e+'">'+e+'</button>').join('')+'</div>'+
+'<form id="lobbyForm" class="lobby-compose"><input id="lobbyText" maxlength="140" value="'+esc(lobbyDraft)+'" placeholder="Escreva uma mensagem..." aria-label="Mensagem para a equipe"><button class="btn primary" type="submit">Enviar</button></form></section></div>';
+
+ }
  }else if(room.stage==='roulette'){
   body='<section class="panel" style="text-align:center"><h1>🎡 Sorteio da letra</h1>'+
    '<p class="notice">Rodada '+room.round+' de '+room.rounds+' · A roleta e a contagem são sincronizadas para todos.</p>'+
@@ -283,7 +353,12 @@ function renderRoom(){
   room.history.map(x=>'<tr><td>'+x.round+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+'</tbody></table></div>'+
   '<div class="actions">'+btn('🎉 Criar outra sala','leave','primary')+'</div></section>';
  }
+ const keepFocus=document.activeElement?.id==='lobbyText';
  app.innerHTML='<div id="onlineRoom">'+header+body+'</div><p id="status" class="status" hidden></p>';
+ if(room.stage==='lobby'&&!isLocal){
+  const feed=document.getElementById('lobbyFeed');if(feed)feed.scrollTop=feed.scrollHeight;
+  if(keepFocus){const field=document.getElementById('lobbyText');if(field){field.focus();field.setSelectionRange(field.value.length,field.value.length)}}
+ }
  if(room.stage==='game'){startTimer()}
  if(room.stage==='roulette'){startRouletteTimer()}
 }
@@ -377,6 +452,19 @@ async function reviewAI(){
 
 app.addEventListener('click',async e=>{
  const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.lobbyDelete!==undefined){
+  if(isLocal||!room?.host||room.stage!=='lobby')return;
+  return act('deleteLobbyMessage',{messageId:b.dataset.lobbyDelete});
+ }
+ if(b.dataset.kick!==undefined){
+  if(isLocal||!room?.host||room.stage!=='lobby')return;
+  if(!confirm('Remover '+b.dataset.kickName+' da sala? A pessoa não poderá voltar usando o mesmo nome.'))return;
+  return act('kick',{memberId:b.dataset.kick});
+ }
+ if(b.dataset.lobbyEmoji!==undefined){
+  if(isLocal||room?.stage!=='lobby')return;
+  return act('lobbyEmoji',{text:b.dataset.lobbyEmoji});
+ }
  if(b.dataset.vote!==undefined){
   if(working)return;
   return act('vote',{index:Number(b.dataset.vote),status:b.dataset.voteStatus});
@@ -407,6 +495,16 @@ app.addEventListener('click',async e=>{
  if(action==='stop'){try{await flushDrafts();await act('stop')}catch(err){status(err.message,true)}return}
  if(['start','next'].includes(action))return act(action);
 });
+app.addEventListener('submit',async e=>{
+ if(e.target.id!=='lobbyForm')return;
+ e.preventDefault();
+ if(isLocal||room?.stage!=='lobby'||working)return;
+ const message=(document.getElementById('lobbyText')?.value||'').trim();
+ if(!message)return;
+ await act('lobbyMessage',{text:message});
+ lobbyDraft='';
+ const field=document.getElementById('lobbyText');if(field)field.value='';
+});
 app.addEventListener('change',e=>{
  const el=e.target;
  if(el.id==='mode'){captureEntry();entry.preset=Object.keys(PRESETS[entry.mode])[0];categories=[...PRESETS[entry.mode][entry.preset]];renderEntry();return}
@@ -415,6 +513,7 @@ app.addEventListener('change',e=>{
  if(['rounds','duration','ownerName','teamName','joinCode','joinName'].includes(el.id))captureEntry();
 });
 app.addEventListener('input',e=>{
+ if(e.target.id==='lobbyText'){lobbyDraft=e.target.value;return}
  if(e.target.dataset.answer!==undefined){
   const field=e.target,index=Number(field.dataset.answer);
   const next=upper(field.value);
