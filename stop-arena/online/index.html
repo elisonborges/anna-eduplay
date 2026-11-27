@@ -110,6 +110,15 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .emoji-compact{width:86px;flex:0 0 86px}
 .emoji-compact select{width:100%;min-height:43px;font-size:23px;text-align:center;padding:5px 9px}
 @media(max-width:480px){.emoji-compact{width:78px;flex-basis:78px}}
+
+.teacher-toggle{display:flex;align-items:center;gap:9px;margin:13px 0 2px;font-weight:700;cursor:pointer}
+.teacher-toggle input{width:20px;min-height:20px;accent-color:#7130c3;flex:0 0 20px}
+.custom-number{min-width:0}.custom-number input{margin-top:7px}
+.category-library{margin:13px 0;border:1px solid #dfd6f3;padding:11px;border-radius:12px;background:#faf8ff;max-height:190px;overflow-y:auto}
+.category-library>strong,.picked-categories>strong{display:block;font-size:12px;margin-bottom:8px;color:#58428a}
+.suggestion-chip{background:#f0e8ff;border:1px solid #cbb9ed;border-radius:9px;color:#5d2997;padding:7px 9px;font-size:12px;font-weight:750;cursor:pointer}
+.suggestion-chip:disabled{opacity:.45;cursor:not-allowed}
+.picked-categories{margin:9px 0}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -144,7 +153,7 @@ if(isLocal){
 const queryCode=params.get('sala')||'';
 const queryEvent=upper(new URLSearchParams(location.search).get('evento')||'').trim();
 const championshipMode=/^[A-HJ-NP-Z2-9]{7}$/.test(queryEvent);
-const entry={emoji:'😀',name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:championshipMode?queryEvent:'',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
+const entry={emoji:'😀',name:'',team:'',teacherPlays:false,mode:'recreativo',preset:'Clássico',eventCode:championshipMode?queryEvent:'',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[...PRESETS.recreativo.Clássico];
 let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='',lobbyDraft='';
@@ -180,14 +189,19 @@ async function request(payload){
  }finally{clearTimeout(timeout)}
 }
 const userName=id=>room?.members.find(m=>m.id===id)?.name||'Equipe';
-const playerEmojis=['😀','😎','🤓','🥳','🤖','🦊','🐼','🐯','🦁','🐸','🦄','🚀'];
-const emojiSelector=(id,value)=>'<div class="emoji-compact"><label for="'+id+'">Emoji</label><select id="'+id+'" aria-label="Escolha seu emoji na equipe">'+playerEmojis.map(e=>'<option value="'+e+'" '+(value===e?'selected':'')+'>'+e+'</option>').join('')+'</select></div>';
+const playerEmojis=["😀","😎","🤓","🥳","🤖","🦊","🐼","🐯","🦁","🐸","🦄","🚀","😁","😺","🐻","🐨","🐵","🐶","🐱","🐰","🐲","🦋","🐢","🐙","🦖","🌟","🔥","⚡","🌈","🎯","🎮","🏆","💡","🍀","🍕","⚽","🎨","🎸","🧠","👽","😇","😜","🥰","😴","🦉","🐧","🐬","🦕"];
+const emojiSelector=(id,value)=>'<div class="emoji-compact"><label for="'+id+'">Emoji</label><select id="'+id+'" aria-label="Escolha seu emoji">'+playerEmojis.map(e=>'<option value="'+e+'" '+(value===e?'selected':'')+'>'+e+'</option>').join('')+'</select></div>';
+const allCategoryOptions=[...new Set(Object.values(PRESETS).flatMap(group=>Object.values(group).flat()))];
+const suggestedCategories=()=>allCategoryOptions.filter(x=>!categories.some(y=>y.toLocaleLowerCase('pt-BR')===x.toLocaleLowerCase('pt-BR')));
+const numericField=(id,value,defaults,min,max,unit)=>'<div class="custom-number"><label for="'+id+'">'+(id==='rounds'?'Rodadas':'Tempo por rodada')+'</label><select id="'+id+'" aria-label="Escolha '+(id==='rounds'?'rodadas':'tempo')+'">'+defaults.map(v=>'<option value="'+v+'" '+(Number(value)===v?'selected':'')+'>'+v+(unit?' '+unit:'')+'</option>').join('')+'<option value="custom" '+(defaults.includes(Number(value))?'':'selected')+'>Personalizar</option></select><input id="'+id+'Custom" type="number" min="'+min+'" max="'+max+'" value="'+value+'" '+(defaults.includes(Number(value))?'hidden':'')+' aria-label="'+(id==='rounds'?'Rodadas personalizadas':'Tempo personalizado em segundos')+'"></div>';
 function captureEntry(){
  for(const [key,id] of [['name','ownerName'],['team','teamName'],['joinName','joinName'],['joinCode','joinCode'],['emoji','hostEmoji']]){
   const el=document.getElementById(id);if(el)entry[key]=el.value;
  }
+ const teacherCheckbox=document.getElementById('teacherPlays');
+ if(teacherCheckbox)entry.teacherPlays=teacherCheckbox.checked;
  for(const [key,id] of [['mode','mode'],['preset','preset'],['rounds','rounds'],['duration','duration']]){
-  const el=document.getElementById(id);if(el)entry[key]=key==='preset'||key==='mode'?el.value:Number(el.value);
+  const el=document.getElementById(id);if(el)entry[key]=key==='preset'||key==='mode'?el.value:Number(el.value==='custom'?(document.getElementById(id+'Custom')?.value||''):el.value);
  }
 }
 function renderEntry(){
@@ -196,21 +210,24 @@ function renderEntry(){
  (isLocal?'<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>':'')+
  ''+
  '<div class="layout organizer-layout"><section class="panel organizer-config"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
- '<div class="name-emoji-row"><div class="name-compact"><label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'"></div>'+
+ '<div class="name-emoji-row"><div class="name-compact"><label for="ownerName">'+(isLocal?'Seu nome':'Nome do professor')+'</label><input id="ownerName" maxlength="25" placeholder="Nome do professor" value="'+esc(entry.name)+'"></div>'+
  (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+'</div>'+
- '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
+ '<label for="teamName">'+(championshipMode?'Nome da equipe':'Nome da sala')+'</label><input id="teamName" maxlength="35" placeholder="'+(championshipMode?'Ex.: Equipe 7º A':'Ex.: Sala de Stop do 7º ano')+'" value="'+esc(entry.team)+'">'+
+ (isLocal?'':'<label class="teacher-toggle"><input type="checkbox" id="teacherPlays" '+(entry.teacherPlays?'checked':'')+'><span>O professor também vai jogar</span></label><p class="notice">Desmarcado: o professor apenas organiza e confere. A sala pode ter 1 a 49 jogadores convidados, além do organizador.</p>')+
  (!isLocal&&championshipMode?'<div class="championship-notice"><strong>🏆 Campeonato '+esc(entry.eventCode)+'</strong><span>Esta sala seguirá as regras definidas pelo organizador do campeonato.</span><a href="eventos/">Consultar campeonato</a></div>':'')+
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
- '<div><label for="rounds">Rodadas</label><select id="rounds">'+[1,3,5,10,20].map(n=>'<option value="'+n+'" '+(entry.rounds===n?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div>'+
- '<label for="duration">Tempo por rodada</label><select id="duration">'+[30,60,90,120,180,300].map(n=>'<option value="'+n+'" '+(entry.duration===n?'selected':'')+'>'+n+' segundos</option>').join('')+'</select>'+
+ '<div>'+numericField('rounds',entry.rounds,[1,3,5,10,20],1,20,'')+'</div></div>'+
+ numericField('duration',entry.duration,[30,60,90,120,180,300],30,300,'segundos')+
  (isLocal?'':'</section><section class="panel organizer-rules"><span class="kicker">02 · REGRAS DO JOGO</span><h2>🔠 Letras e categorias</h2>')+
- '<div class="actions"><strong>🔠 Letras disponíveis</strong><span class="hint">Toque para excluir</span></div>'+
+ '<div class="actions"><strong>🔠 Letras disponíveis</strong>'+btn('↺ Restaurar letras','resetLetters','small')+'</div>'+
+ '<p class="notice">💡 Toque nas letras para ativar ou desativar o sorteio. Pelo menos uma precisa ficar ativa.</p>'+
  '<div class="letter-set">'+[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map(x=>'<button type="button" data-letter-toggle="'+x+'" class="'+(letters.includes(x)?'active':'excluded')+'" aria-pressed="'+letters.includes(x)+'">'+x+'</button>').join('')+'</div>'+
- '<div class="attention">💡 Letras riscadas não entram no sorteio. Pelo menos uma deve permanecer.</div>'+
+ ''+
  '<div class="actions"><strong>🎯 Categorias da partida</strong><span class="hint">'+categories.length+' de 12</span></div>'+
- '<div class="chips">'+categories.map((x,i)=>'<span class="chip">'+esc(x)+' <button type="button" data-remove="'+i+'" title="Remover">×</button></span>').join('')+'</div>'+
- '<div class="actions"><input style="flex:1;min-width:110px" id="extraCat" maxlength="42" placeholder="Nova categoria">'+btn('Adicionar','addCat','small')+'</div>'+
- '<div class="attention">💡 Mínimo de 6 categorias; as respostas serão avaliadas pelo dicionário local, pela equipe ou com ajuda opcional da IA.</div>'+
+ '<p class="notice">💡 Escolha de 6 a 12 categorias. Use + para incluir uma sugestão; remova das escolhidas com ×.</p>'+
+ '<div class="picked-categories"><strong>Selecionadas</strong><div class="chips">'+categories.map((x,i)=>'<span class="chip">'+esc(x)+' <button type="button" data-remove="'+i+'" title="Remover categoria '+esc(x)+'">×</button></span>').join('')+'</div></div>'+
+ '<div class="category-library"><strong>Adicionar categorias sugeridas</strong><div class="chips suggestion-chips">'+allCategoryOptions.map(x=>'<button type="button" class="suggestion-chip" data-add-suggestion="'+esc(x)+'" '+(categories.some(y=>y.toLocaleLowerCase('pt-BR')===x.toLocaleLowerCase('pt-BR'))||categories.length>=12?'disabled':'')+'>+ '+esc(x)+'</button>').join('')+'</div></div>'+
+ '<div class="actions"><input style="flex:1;min-width:110px" id="extraCat" maxlength="42" placeholder="Ou escreva outra categoria">'+btn('Adicionar','addCat','small')+'</div>'+
  '<div class="actions">'+btn(isLocal?'🏫 Criar sala e gerar PIN':'✨ Criar sala e gerar convite','create','primary fill')+'</div></section>'+
  (isLocal?'<section class="panel"><span class="kicker">📲 ENTRAR EM UMA SALA</span>'+
  '<p class="notice">Recebeu o PIN? Digite os 7 caracteres e seu nome para entrar antes do começo.</p>'+
@@ -223,11 +240,11 @@ function renderEntry(){
 }
 async function enter(op){
  if(working)return;captureEntry();
- if(op==='create'&&(!entry.name.trim()||!entry.team.trim()||categories.length<6||categories.length>12)){status('Informe seu nome, equipe e pelo menos 6 categorias.',true);return}
+ if(op==='create'&&(!entry.name.trim()||!entry.team.trim()||categories.length<6||categories.length>12||!Number.isInteger(entry.rounds)||entry.rounds<1||entry.rounds>20||!Number.isInteger(entry.duration)||entry.duration<30||entry.duration>300)){status('Preencha o professor, o nome da sala, de 6 a 12 categorias, de 1 a 20 rodadas e duração de 30 a 300 segundos.',true);return}
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
-  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':(championshipMode?entry.eventCode:''),emoji:isLocal?undefined:entry.emoji,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':(championshipMode?entry.eventCode:''),emoji:isLocal?undefined:entry.emoji,teacherPlays:isLocal?true:entry.teacherPlays,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
   const data=await request(payload);
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
@@ -480,6 +497,12 @@ app.addEventListener('click',async e=>{
   if(working)return;
   return act('vote',{index:Number(b.dataset.vote),status:b.dataset.voteStatus});
  }
+ if(b.dataset.addSuggestion!==undefined){
+  captureEntry();const cat=b.dataset.addSuggestion;
+  if(categories.length>=12)return status('Máximo de 12 categorias.',true);
+  if(!categories.some(x=>x.toLocaleLowerCase('pt-BR')===cat.toLocaleLowerCase('pt-BR')))categories.push(cat);
+  renderEntry();return;
+ }
  if(b.dataset.letterToggle!==undefined){
   captureEntry();const letter=b.dataset.letterToggle;
   if(letters.includes(letter)){if(letters.length===1)return status('Pelo menos uma letra deve permanecer.',true);letters=letters.filter(x=>x!==letter)}
@@ -489,6 +512,7 @@ app.addEventListener('click',async e=>{
  if(b.dataset.remove!==undefined){captureEntry();if(categories.length<=6)return status('Mantenha pelo menos 6 categorias.',true);categories.splice(Number(b.dataset.remove),1);renderEntry();return}
  if(!b.dataset.act)return;
  const action=b.dataset.act;
+ if(action==='resetLetters'){captureEntry();letters=[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];renderEntry();return}
  if(action==='addCat'){captureEntry();const cat=document.getElementById('extraCat')?.value.trim().slice(0,42);if(!cat)return;if(categories.length>=12)return status('Máximo de 12 categorias.',true);if(categories.some(x=>x.toLocaleLowerCase('pt-BR')===cat.toLocaleLowerCase('pt-BR')))return status('Categoria já adicionada.',true);categories.push(cat);renderEntry();return}
  if(action==='create'||action==='join')return enter(action);
  if(action==='share')return share();
@@ -520,8 +544,14 @@ app.addEventListener('change',e=>{
  const el=e.target;
  if(el.id==='mode'){captureEntry();entry.preset=Object.keys(PRESETS[entry.mode])[0];categories=[...PRESETS[entry.mode][entry.preset]];renderEntry();return}
  if(el.id==='preset'){captureEntry();categories=[...PRESETS[entry.mode][entry.preset]];renderEntry();return}
+ if(el.id==='rounds'||el.id==='duration'){
+  const custom=document.getElementById(el.id+'Custom');
+  if(custom)custom.hidden=el.value!=='custom';
+  if(el.value!=='custom')entry[el.id]=Number(el.value);
+  return;
+ }
  if(el.dataset.grade!==undefined){if(el.value!=='review')act('grade',{index:Number(el.dataset.grade),status:el.value});return}
- if(['rounds','duration','ownerName','teamName','joinCode','joinName'].includes(el.id))captureEntry();
+ if(['teacherPlays','roundsCustom','durationCustom','ownerName','teamName','joinCode','joinName','hostEmoji'].includes(el.id))captureEntry();
 });
 app.addEventListener('input',e=>{
  if(e.target.id==='lobbyText'){lobbyDraft=e.target.value;return}
