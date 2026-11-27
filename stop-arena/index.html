@@ -154,6 +154,67 @@ a.online-mode:hover{transform:translateY(-2px)}
 .computer-score-grid div{text-align:center;padding:13px;border-radius:12px;border:1px solid var(--edge);background:var(--card)}
 .computer-score-grid small,.computer-score-grid span{display:block;color:var(--muted)}
 .computer-score-grid strong{display:block;font-size:clamp(28px,5vw,44px);color:var(--accent)}
+
+/* Experimento visual: cards em formato retrato com ícones destacados e animações leves.
+   Apenas a tela inicial; não altera a estrutura de jogo. */
+.mode-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,1.7vw,20px);align-items:stretch;margin-block:15px 19px}
+.mode-gallery .mode{
+ position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+ text-align:center;min-width:0;min-height:265px;gap:0;padding:clamp(14px,2vw,22px);
+ border:1px solid color-mix(in srgb,var(--edge) 65%,#9c79d6);
+ border-radius:22px;background:var(--card);color:var(--ink);box-shadow:0 8px 22px #28207512;
+ text-decoration:none;overflow:hidden;isolation:isolate;
+ transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+.mode-gallery .mode::before{
+ content:"";position:absolute;inset:0 0 auto;height:42%;background:var(--mode-wash);
+ opacity:.95;z-index:-1;pointer-events:none;
+}
+.mode-gallery .mode::after{
+ content:"";position:absolute;top:-50px;right:-40px;width:125px;height:125px;
+ background:radial-gradient(circle,#ffffff73,transparent 70%);border-radius:50%;pointer-events:none;
+}
+.mode-gallery .mode-recreativo{--mode-wash:linear-gradient(145deg,#ffe9bf,#fff1df);--mode-ring:#e6ac47}
+.mode-gallery .mode-computador{--mode-wash:linear-gradient(145deg,#dde5ff,#ebe6ff);--mode-ring:#9b8af4}
+.mode-gallery .mode-educacional{--mode-wash:linear-gradient(145deg,#d6f3ee,#e6fff8);--mode-ring:#60bfa5}
+.mode-gallery .mode-cooperativo{--mode-wash:linear-gradient(145deg,#ffe1e9,#fff0f3);--mode-ring:#ef91ae}
+.mode-gallery .mode-online{--mode-wash:linear-gradient(145deg,#d8eeff,#e9f7ff);--mode-ring:#7bbce8}
+.mode-gallery .mode-art{
+ display:grid;place-items:center;flex-shrink:0;width:clamp(82px,8vw,106px);height:clamp(82px,8vw,106px);
+ margin:0 auto 15px;border-radius:29px;
+ background:color-mix(in srgb,var(--card) 82%,var(--mode-ring));
+ border:2px solid var(--mode-ring);box-shadow:0 7px 22px #28207512, inset 0 1px 5px #ffffffc0;
+ transform:rotate(-5deg);transition:transform .25s ease;
+}
+.mode-gallery .mode-symbol{display:block;font-size:clamp(40px,4vw,55px);line-height:1;filter:drop-shadow(0 3px 2px #2222)}
+.mode-gallery .mode-copy{display:flex;flex:1;flex-direction:column;align-items:center;gap:7px}
+.mode-gallery .mode-copy strong{font-size:clamp(16px,1.65vw,20px);line-height:1.22;letter-spacing:-.02em}
+.mode-gallery .mode-copy small{font-size:12.5px;line-height:1.45;color:var(--muted);max-width:25ch}
+.mode-gallery .mode em{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
+ margin-top:17px;padding:10px 6px;border-radius:11px;
+ background:color-mix(in srgb,var(--mode-ring) 22%,var(--card));font-size:12px;font-style:normal;
+ font-weight:850;color:var(--ink)}
+.mode-gallery .mode em span{font-size:18px;line-height:1;transition:transform .22s ease}
+.mode-gallery .mode:hover{transform:translateY(-5px);border-color:var(--mode-ring);box-shadow:0 14px 30px #28207524}
+.mode-gallery .mode:hover .mode-art{transform:rotate(0deg) scale(1.065)}
+.mode-gallery .mode:hover em span{transform:translateX(4px)}
+.mode-gallery .mode:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+:root[data-theme=dark] .mode-gallery .mode{background:var(--card);color:var(--ink)}
+:root[data-theme=dark] .mode-gallery .mode::before{opacity:.18}
+:root[data-theme=dark] .mode-gallery .mode-art{background:color-mix(in srgb,var(--card) 77%,var(--mode-ring))}
+:root[data-theme=dark] .mode-gallery .mode em{background:color-mix(in srgb,var(--card) 78%,var(--mode-ring))}
+@media(max-width:800px){.mode-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.mode-gallery .mode{min-height:245px}}
+@media(max-width:480px){
+ .mode-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .mode-gallery .mode{min-height:222px;padding:13px 9px;border-radius:17px}
+ .mode-gallery .mode-art{width:72px;height:72px;margin-bottom:12px;border-radius:22px}
+ .mode-gallery .mode-symbol{font-size:39px}
+ .mode-gallery .mode-copy strong{font-size:15px}
+ .mode-gallery .mode-copy small{font-size:11px;line-height:1.35}
+ .mode-gallery .mode em{margin-top:11px;padding:8px 3px;font-size:10.5px}
+}
+@media(max-width:330px){.mode-gallery{grid-template-columns:1fr}.mode-gallery .mode{min-height:205px}}
+@media(prefers-reduced-motion:reduce){.mode-gallery .mode,.mode-gallery .mode-art,.mode-gallery .mode em span{transition:none}.mode-gallery .mode:hover,.mode-gallery .mode:hover .mode-art{transform:none}}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -185,11 +246,15 @@ const title=(t,d='')=>'<div class="hrow"><div><h1>'+esc(t)+'</h1><p class="sub">
 function show(html){app.innerHTML=html;save()}
 const button=(t,act,cls='secondary')=>'<button class="btn '+cls+'" data-a="'+act+'">'+t+'</button>';
 const back=()=>button('← Início','home');
-function renderHome(){show(title('🎉 Stop Arena','Escolha sua aventura: individual ou em equipe!')+
- '<div class="gridmodes"><button class="mode" data-mode="recreativo"><span>🏆</span><strong>Recreativo individual</strong><small>Stop clássico, no seu ritmo.</small><em>Jogar →</em></button><button class="mode" data-bot="1"><span>🤖</span><strong>Contra o computador</strong><small>Desafie um rival virtual offline, com três dificuldades.</small><em>Desafiar →</em></button>'+
- '<button class="mode" data-mode="educacional"><span>🎓</span><strong>Educacional</strong><small>Atividades para aprender brincando.</small><em>Aprender →</em></button>'+
- '<button class="mode cooperative-mode" data-coop="1"><span>🤝</span><strong>Cooperativo local</strong><small>2 a 6 pessoas no mesmo aparelho. Uma equipe, uma pontuação!</small><em>Jogar em equipe →</em></button><a class="mode online-mode" href="online/"><span>🌐</span><strong>Cooperativo Online</strong><small>Crie uma sala, compartilhe o código e jogue em vários celulares com respostas sincronizadas.</small><em>Criar ou entrar na sala →</em></a></div>'+
- '<section class="panel"><strong>✨ Jogo individual e cooperativo local</strong><p class="notice">No cooperativo local, todos usam o mesmo aparelho. No cooperativo online, cada participante acessa a sala pelo próprio celular, com respostas sincronizadas e conferência supervisionada.</p><details style="margin-top:9px"><summary style="cursor:pointer;font-weight:800;color:var(--accent)">Sobre este módulo</summary><p class="notice">Stop Arena é um módulo do AnnA EduPlay, ecossistema AnnA One. Projeto educacional de Elison Borges. Os dados permanecem no navegador. As salas online utilizam conexão com o servidor e precisam de internet. As partidas locais continuam armazenadas no navegador.</p></details></section>')}
+function renderHome(){show(title('🎉 Stop Arena','Escolha como jogar. Cada aventura tem seu próprio desafio!')+
+ '<div class="gridmodes mode-gallery" aria-label="Modos de jogo">'+
+ '<button class="mode mode-recreativo" data-mode="recreativo"><span class="mode-art" aria-hidden="true"><span class="mode-symbol">🎯</span></span><span class="mode-copy"><strong>Recreativo individual</strong><small>Desafie seus próprios recordes no Stop clássico.</small></span><em>Começar partida <span aria-hidden="true">→</span></em></button>'+
+ '<button class="mode mode-computador" data-bot="1"><span class="mode-art" aria-hidden="true"><span class="mode-symbol">🦾</span></span><span class="mode-copy"><strong>Contra o computador</strong><small>Um rival offline com três níveis de dificuldade.</small></span><em>Enfrentar rival <span aria-hidden="true">→</span></em></button>'+
+ '<button class="mode mode-educacional" data-mode="educacional"><span class="mode-art" aria-hidden="true"><span class="mode-symbol">🧩</span></span><span class="mode-copy"><strong>Educacional</strong><small>Aprenda com desafios de palavras e conteúdos escolares.</small></span><em>Aprender jogando <span aria-hidden="true">→</span></em></button>'+
+ '<button class="mode mode-cooperativo" data-coop="1"><span class="mode-art" aria-hidden="true"><span class="mode-symbol">🤝</span></span><span class="mode-copy"><strong>Cooperativo local</strong><small>Até seis pessoas, uma equipe e um aparelho.</small></span><em>Formar equipe <span aria-hidden="true">→</span></em></button>'+
+ '<a class="mode mode-online" href="online/"><span class="mode-art" aria-hidden="true"><span class="mode-symbol">🌐</span></span><span class="mode-copy"><strong>Cooperativo Online</strong><small>Crie salas e conecte participantes pelo celular.</small></span><em>Criar ou entrar <span aria-hidden="true">→</span></em></a>'+
+ '</div>'+
+ '<section class="panel"><strong>✨ Escolha sua aventura</strong><p class="notice">Individual, contra o computador, cooperativo local ou em salas online. Os modos locais funcionam sem internet; o Cooperativo Online depende do servidor.</p><details style="margin-top:9px"><summary style="cursor:pointer;font-weight:800;color:var(--accent)">Sobre este módulo</summary><p class="notice">Stop Arena é um módulo do AnnA EduPlay, ecossistema AnnA One. Projeto educacional de Elison Borges. As partidas locais são armazenadas no navegador. As salas online exigem conexão.</p></details></section>')}
 function renderSetup(){
  const opts=Object.keys(presets[s.mode]);
  const choices=[1,3,5,10];
