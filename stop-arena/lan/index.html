@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Multiplayer Local · Stop Arena</title>
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<style>
+:root{font:16px system-ui,sans-serif;color:#2a2350;background:#f8f5ff}
+*{box-sizing:border-box}body{margin:0}header{background:linear-gradient(110deg,#4e1f9d,#9941cf);color:white;padding:25px 16px}
+main{max-width:850px;margin:auto;padding:22px 16px}
+section{background:white;border:1px solid #e5dbfa;box-shadow:0 8px 30px #3c197512;border-radius:20px;padding:24px;margin:16px 0}
+h1{margin:0 0 8px;font-size:clamp(26px,5vw,38px)}h2{font-size:20px}
+p,li{line-height:1.6}ol li{margin-bottom:9px}
+a{color:#6531bf;font-weight:700}a.btn{display:inline-block;padding:13px 17px;color:white;background:#6834b8;border-radius:12px;text-decoration:none}
+.tip{background:#f4f0ff;border-radius:14px;padding:14px;border-left:4px solid #8043c2}
+</style></head>
+<body><header><main><p>🏫 AnnA EduPlay · Stop Arena</p><h1>Multiplayer Local</h1><p>Um computador anfitrião, vários celulares e uma sala com PIN — sem internet durante o jogo.</p></main></header>
+<main><section><h2>Como iniciar</h2><ol>
+<li>No computador do professor, prepare o pacote <strong>AnnA Stop Arena Host LAN</strong>, incluindo o Node.js portátil.</li>
+<li>Abra <strong>Iniciar-Stop-Arena-LAN.cmd</strong>. O servidor exibirá o endereço da rede, como <code>http://192.168.1.10:8788</code>.</li>
+<li>Abra esse endereço no navegador do anfitrião e toque em <strong>Criar sala</strong>. Copie o PIN.</li>
+<li>Os alunos abrem <strong>o mesmo endereço IP e porta</strong> em seus aparelhos, informam o PIN e entram na equipe.</li>
+<li>O organizador inicia a rodada e todos jogam normalmente, conferindo as palavras juntos.</li></ol>
+<div class="tip"><strong>Sem internet:</strong> o computador anfitrião e os celulares devem conseguir se comunicar pela LAN. Estar no mesmo Wi-Fi não basta se o roteador bloquear a comunicação entre clientes. O Windows pode solicitar autorização do firewall.</div>
+</section><section><h2>Arquivos em desenvolvimento</h2>
+<p>O motor LAN inicial está no diretório <code>stop-arena/host/</code> do projeto. A distribuição executável completa para Windows e os testes em celulares ainda estão pendentes de validação física.</p>
+<p><a class="btn" href="https://github.com/elisonborges/anna-eduplay/tree/feature/stop-arena-host-lan/stop-arena/host/">Ver projeto do Host LAN</a></p>
+<p><a href="../">← Voltar ao Stop Arena</a></p></section></main></body></html>
