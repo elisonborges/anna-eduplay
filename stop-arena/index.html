@@ -235,6 +235,44 @@ a.online-mode:hover{transform:translateY(-2px)}
 @media(max-width:620px){.home-hero-title{gap:13px;align-items:flex-start}.home-hero{padding:20px 17px;border-radius:18px}.home-adventure{max-width:145px;padding:11px 12px}.home-adventure strong{font-size:15px}.home-adventure small{font-size:11px}.home-hero h1{font-size:clamp(31px,7.2vw,46px)}}
 @media(max-width:390px){.home-hero-title{flex-direction:column;gap:15px}.home-adventure{max-width:none;width:100%;padding:11px 13px;gap:3px}.home-adventure>span{display:none}.home-hero h1{font-size:37px}}
 @media(prefers-reduced-motion:reduce){.home-spark{animation:none}}
+
+/* Stop Arena - revisão divertida + campos de resposta compactos */
+.play-hero,.review-hero{border-radius:21px;padding:clamp(15px,2.6vw,25px);background:linear-gradient(120deg,#5228b0,#8943dc);color:#fff;box-shadow:0 12px 26px #542a9740;margin-bottom:14px}
+.play-head{display:flex;align-items:start;justify-content:space-between;gap:12px}.play-head h1,.review-hero h1{color:#fff;font-size:clamp(23px,3.3vw,35px);line-height:1.15;margin:8px 0}.play-head p{margin:0;color:#f3e7ff;font-size:13px}.play-eyebrow{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#ecd9ff}
+.play-head .btn{background:#ffffff25;color:#fff;border:1px solid #ffffff85;flex-shrink:0}
+.letter-bubble{display:inline-grid;place-items:center;min-width:51px;min-height:51px;padding:3px 9px;border-radius:16px;color:#5222a3;background:#fff1b4;box-shadow:0 4px 12px #2f197855}
+.play-info{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}.play-info>span{background:#ffffff20;border:1px solid #ffffff3b;padding:7px 12px;border-radius:12px;font-size:13px}.play-info b{font-size:17px}
+.play-hero .progress{margin:13px 0 0;background:#ffffff55;height:8px;border-radius:999px}.play-hero .progress #bar{background:#ffe588;border-radius:999px}
+.play-note{border-radius:12px;padding:10px 13px;background:var(--card);font-size:12px;color:var(--ink)}
+.play-surface{background:var(--card);padding:clamp(12px,2.1vw,20px);border:1px solid var(--edge);border-radius:19px;box-shadow:0 5px 20px #3f24751a}
+.play-section-title{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:13px}.play-section-title strong{font-size:17px;color:var(--ink)}.play-section-title small{font-size:11px;color:var(--muted)}
+.play-answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.play-answer{padding:12px;border:1.5px solid var(--edge);border-radius:14px;background:var(--bg);transition:border-color .15s,box-shadow .15s}
+.play-answer label:first-child{display:flex;align-items:center;gap:8px;margin-bottom:9px;font-size:13px}
+.play-answer label:first-child>small{margin-left:auto;font-size:10px;color:var(--muted)}
+.answer-emoji{display:inline-grid;place-items:center;width:29px;height:29px;background:#e9e1ff;border-radius:9px;font-size:17px;flex-shrink:0}
+.play-answer input.ans{min-height:49px;font-size:17px;font-weight:800;letter-spacing:.025em;border:1.5px solid var(--edge);background:var(--card);width:100%;border-radius:10px;color:var(--ink)}
+.play-answer:focus-within{border-color:#9c5cec;box-shadow:0 0 0 3px #9755ec22}.play-answer.is-filled{border-color:#84d2af}
+.play-answer.is-filled input.ans{border-color:#7fcaab}
+.play-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px}.play-actions-hint{font-size:11px;color:var(--muted);margin-right:auto}.play-stop{min-width:155px;min-height:46px;border-radius:12px}
+.review-hero{background:linear-gradient(120deg,#5d2bac,#8c45d8);padding-bottom:17px}
+.review-hero h1{margin:6px 0 12px}.review-chips{display:flex;flex-wrap:wrap;gap:7px}.review-chips>span{background:#ffffff22;border:1px solid #ffffff57;border-radius:11px;padding:6px 10px;font-size:12px}
+.review-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}.review-stat{border-radius:13px;padding:12px 10px;background:#fff;color:#313052;text-align:center;font-size:14px;font-weight:750}.review-stat b{font-size:clamp(19px,3vw,28px)}.review-stat.accepted{background:#d8f8de;color:#146a38}.review-stat.pending{background:#fff1bf;color:#82520f}.review-stat.total{background:#fff0c5;color:#6b3b02}
+.review-help{border-radius:12px;background:#e8f5ff;color:#245070;border:1px solid #c3e3ff;padding:10px 13px;font-size:12px;line-height:1.5;margin:12px 0}
+.review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:13px 0}
+.review-answer{display:flex;align-items:center;gap:10px;border-radius:16px;padding:12px;background:var(--card);border:1px solid var(--edge);box-shadow:0 5px 14px #49307512;min-width:0}
+.review-answer-icon{flex-shrink:0;display:grid;place-items:center;width:45px;height:45px;background:#f2e2ff;border-radius:14px;font-size:24px}
+.review-answer:nth-child(4n+2) .review-answer-icon{background:#ffebf1}.review-answer:nth-child(4n+3) .review-answer-icon{background:#e2f9f7}.review-answer:nth-child(4n+4) .review-answer-icon{background:#fff3d6}
+.review-answer-main{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}.review-answer-main strong{font-size:12px;color:var(--muted)}.review-answer-main b{font-size:17px;color:var(--ink);overflow-wrap:anywhere}.review-answer-main small{font-size:10px;color:var(--muted);line-height:1.2}
+.review-answer-actions{display:flex;flex-direction:column;align-items:end;gap:5px;flex-shrink:0}.review-answer-actions select{max-width:118px;min-height:34px;background:var(--input);color:var(--ink);border:1px solid var(--edge);border-radius:9px;padding:5px;font-size:12px}
+.review-points{font-size:12px;color:#198151;background:#e3f8e8;padding:5px 8px;border-radius:999px}
+.review-message{border-radius:13px;padding:13px;text-align:center;font-size:14px;font-weight:850;margin:15px 0}.review-message.all-ready{background:#e4f9ef;border:1px solid #89d8ad;color:#17653b}.review-message.has-pending{background:#fff0cf;border:1px solid #f2cf8c;color:#855917}
+.review-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.review-ai{display:flex;flex-direction:column;gap:5px}.review-buttons{display:flex;align-items:center;gap:9px}.review-buttons .btn{min-height:43px}.review-buttons .primary{font-size:14px;box-shadow:0 6px 15px #7430d83a}
+.review-ai .btn:disabled{opacity:.5;cursor:not-allowed}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:800px){.review-grid{grid-template-columns:1fr 1fr}.review-answer{flex-wrap:wrap}.review-answer-actions{flex-direction:row;width:100%;justify-content:space-between}.review-answer-main{min-width:0}}
+@media(max-width:600px){.play-answers,.review-grid{grid-template-columns:1fr}.review-hero{padding:14px}.play-hero{padding:15px}.review-answer{flex-wrap:nowrap}.review-answer-actions{flex-direction:column;width:auto}.review-toolbar{align-items:stretch}.review-buttons{justify-content:space-between}.review-buttons .primary{flex:1}.play-actions-hint{display:none}.play-actions .btn{flex:1}}
+@media(max-width:360px){.review-answer{flex-wrap:wrap}.review-answer-actions{flex-direction:row;width:100%}.review-stat{padding:8px 3px;font-size:11px}.review-stats{gap:5px}}
+@media(prefers-reduced-motion:reduce){.play-answer{transition:none}}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -373,24 +411,25 @@ function begin(l){
 const timeText=n=>n===null?'∞':String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
 function remaining(){return s.duration?Math.max(0,Math.ceil((s.deadline-Date.now())/1000)):null}
 function tick(){if(s.screen!=='game')return;let n=remaining();let t=document.getElementById('countdown');if(t)t.textContent=timeText(n);let bar=document.getElementById('bar');if(bar)bar.style.width=(n===null?100:n/s.duration*100)+'%';if(n===0)finish('Tempo esgotado')}
+const categoryEmoji=cat=>({
+ 'Nome':'👤','Animal':'🐾','CEP':'📍','Cor':'🎨','Objeto':'🎁','Fruta':'🍐','Profissão':'🧑‍🚀','Comida':'🍕','Bebida':'🥤','PHC':'🫀','Parte do corpo':'🫀','Flor':'🌼','Forma geométrica':'📐',
+ 'Planta':'🌱','Ciências':'🔬','Tecnologia':'💻','Filme':'🎬','Esporte':'🏅','Marca':'🏷️','Verbo':'⚡'
+})[cat]||'✏️';
 function renderGame(){
- const n=remaining();
- if(n===0){finish('Tempo esgotado');return}
- show('<div class="game-head"><div><span class="eyebrow">'+(s.mode==='educacional'?'Modo Educacional':'Modo Recreativo')+'</span><h1>Respostas com a letra '+esc(s.letter)+'</h1></div>'+button('Sair','quit')+'</div>'+
- (s.playStyle==='computer'?'<div class="coop-game-banner"><strong>🤖 Contra o computador · '+esc(({facil:'Fácil',normal:'Normal',dificil:'Difícil'})[s.difficulty]||'Normal')+'</strong><span>Respostas do adversário ficam ocultas até o STOP!</span></div>':'')+
- (s.playStyle==='coop'?'<div class="coop-game-banner"><strong>🤝 '+esc(s.teamName||'Equipe Stop')+'</strong><span>Meta: '+Math.ceil(s.categories.length*10*s.rounds*.7)+' pontos · '+s.members.length+' participantes</span></div>':'')+
- '<div class="game-toolbar"><div class="stats">'+
- '<div class="stat letter"><small>🔤 Letra</small><strong>'+esc(s.letter)+'</strong></div>'+
- '<div class="stat"><small>⏱️ Tempo</small><strong id="countdown" role="timer">'+timeText(n)+'</strong></div>'+
- '<div class="stat"><small>🎯 Rodada</small><strong>'+s.round+'/'+s.rounds+'</strong></div>'+
- '<div class="stat"><small>✍️ Respostas</small><strong id="filled">0/'+s.categories.length+'</strong></div>'+
- '</div><div class="progress" aria-hidden="true"><div id="bar" style="width:100%"></div></div></div>'+
- '<section class="panel gamepanel"><div class="answers">'+
- s.categories.map((c,i)=>'<div class="answer"><label for="ans'+i+'"'+meaningTitle(c)+'>'+esc(c)+sigla(c)+'</label><input id="ans'+i+'" class="ans" data-i="'+i+'" maxlength="80" autocomplete="off" enterkeyhint="next" placeholder="'+esc(s.letter)+'…" value="'+esc(String(s.answers[i]||'').toLocaleUpperCase('pt-BR'))+'">'+(s.playStyle==='coop'?'<label class="contributor-label" for="contrib'+i+'">🙋 Quem contribuiu?</label><select id="contrib'+i+'" class="contributor" data-contributor="'+i+'" aria-label="Participante responsável por '+esc(c)+'"><option value="">Equipe inteira</option>'+s.members.map((person,j)=>'<option value="'+j+'" '+(String((s.contributors||[])[i])===String(j)?'selected':'')+'>'+esc(person)+'</option>').join('')+'</select>':'')+'</div>').join('')+
- '</div><div class="actions game-actions">'+button('Limpar','clear')+'<span class="notice">'+(s.playStyle==='coop'?'🤝 Pontuação coletiva · 10 pontos por válida':'Conferência manual · 10 pontos por válida')+'</span><button class="btn stop right" data-a="stop">✋ STOP!</button></div></section>');
- updateFilled();clearInterval(timer);timer=setInterval(tick,250)
+ const n=remaining();if(n===0){finish('Tempo esgotado');return}
+ const filled=s.answers.filter(x=>String(x||'').trim()).length;
+ show('<section class="play-hero"><div class="play-head"><div><span class="play-eyebrow">'+(s.mode==='educacional'?'🎓 Educacional':s.playStyle==='computer'?'🤖 Contra o computador':'🎮 Stop Arena')+'</span><h1>Palavras com <span class="letter-bubble">'+esc(s.letter)+'</span></h1><p>Preencha suas respostas antes que o tempo acabe!</p></div>'+button('✕ Sair','quit')+'</div>'+
+ '<div class="play-info"><span>⏱️ <b id="countdown" role="timer">'+timeText(n)+'</b></span><span>🎯 Rodada <b>'+s.round+'/'+s.rounds+'</b></span><span>✏️ <b id="filled">'+filled+'/'+s.categories.length+'</b> completas</span></div><div class="progress" aria-hidden="true"><div id="bar" style="width:100%"></div></div></section>'+
+ (s.playStyle==='computer'?'<p class="play-note">🤖 O computador também está jogando. As respostas dele só aparecem depois do STOP.</p>':'')+
+ (s.playStyle==='coop'?'<p class="play-note">🤝 '+esc(s.teamName)+' · '+s.members.length+' participantes · pontuação compartilhada</p>':'')+
+ '<section class="play-surface"><div class="play-section-title"><strong>✍️ Suas respostas</strong><small>Toque em um campo e digite. Enter avança para o próximo.</small></div><div class="answers play-answers">'+
+ s.categories.map((cat,i)=>'<div class="answer play-answer '+(String(s.answers[i]||'').trim()?'is-filled':'')+'"><label for="ans'+i+'"'+meaningTitle(cat)+'><span class="answer-emoji" aria-hidden="true">'+categoryEmoji(cat)+'</span><span>'+esc(cat)+sigla(cat)+'</span><small>'+(i+1)+'/'+s.categories.length+'</small></label><input id="ans'+i+'" class="ans" data-i="'+i+'" maxlength="80" autocomplete="off" enterkeyhint="'+(i===s.categories.length-1?'done':'next')+'" placeholder="Letra '+esc(s.letter)+'..." value="'+esc(String(s.answers[i]||'').toLocaleUpperCase('pt-BR'))+'">'+
+ (s.playStyle==='coop'?'<label class="contributor-label" for="contrib'+i+'">🙋 Quem contribuiu?</label><select id="contrib'+i+'" class="contributor" data-contributor="'+i+'" aria-label="Participante responsável por '+esc(cat)+'"><option value="">Equipe inteira</option>'+s.members.map((person,j)=>'<option value="'+j+'" '+(String((s.contributors||[])[i])===String(j)?'selected':'')+'>'+esc(person)+'</option>').join('')+'</select>':'')+'</div>').join('')+
+ '</div><div class="play-actions">'+button('↺ Limpar','clear')+'<span class="play-actions-hint">💾 Respostas salvas neste navegador</span><button class="btn stop play-stop" data-a="stop">✋ STOP!</button></div></section>');
+ clearInterval(timer);timer=setInterval(tick,250);
 }
-function updateFilled(){let el=document.getElementById('filled');if(el)el.textContent=s.answers.filter(x=>String(x||'').trim()).length+'/'+s.categories.length}
+
+function updateFilled(){const filled=s.answers.filter(x=>String(x||'').trim()).length;let el=document.getElementById('filled');if(el)el.textContent=filled+'/'+s.categories.length}
 function finish(reason){if(s.screen!=='game')return;clearInterval(timer);s.endReason=reason;s.results=s.categories.map((category,i)=>{const answer=String(s.answers[i]||'').trim().toLocaleUpperCase('pt-BR');return{category,answer,contributor:String((s.contributors||[])[i]??''),...classify(category,answer,s.letter)}});s.screen='result';renderResult()}
 const localWords={"Animal":["macaco","morcego","mico","mula","leão","lobo","lagarto","jacaré","cachorro","cavalo","cobra","coelho","coruja","gato","galinha","girafa","elefante","urso","pato","porco","peixe","rato","raposa","sapo","tigre","tartaruga","zebra","abelha","aranha","arara","borboleta","baleia","formiga","vaca"],"Cor":["amarelo","azul","bege","branco","cinza","dourado","laranja","lilás","magenta","marrom","preto","prata","rosa","roxo","turquesa","verde","vermelho","violeta"],"Fruta":["abacaxi","abacate","acerola","ameixa","amora","banana","caju","caqui","cereja","coco","figo","goiaba","jaca","kiwi","laranja","limão","maçã","mamão","manga","maracujá","melancia","melão","morango","pera","pêssego","pitanga","romã","tangerina","uva"],"Objeto":["anel","agulha","armário","balde","bola","boneca","borracha","cadeira","caderno","caneta","chave","colher","copo","escova","espelho","faca","fone","garrafa","garfo","geladeira","janela","lápis","livro","mesa","mochila","óculos","panela","papel","pente","porta","prato","relógio","tesoura","telefone","televisão","vaso"],"Profissão":["advogado","arquiteto","ator","bombeiro","cientista","cozinheiro","dentista","designer","eletricista","enfermeiro","engenheiro","farmacêutico","fotógrafo","jornalista","médico","motorista","músico","padeiro","pedreiro","piloto","policial","professor","psicólogo","veterinário"],"Comida":["arroz","bolo","brigadeiro","batata","churrasco","coxinha","feijão","farofa","frango","hambúrguer","lasanha","macarrão","moqueca","omelete","pão","pastel","pizza","quibe","risoto","salada","sopa","tapioca","torta"],"PHC":["braço","boca","cabeça","coração","costela","dedo","dente","estômago","fígado","joelho","mão","nariz","olho","orelha","pé","perna","pulmão","rim"],"CEP":["manaus","maceió","maranhão","méxico","minas gerais","natal","paraná","pernambuco","piauí","portugal","recife","rio de janeiro","rio grande do sul","salvador","são paulo","sergipe","teresina","tocantins","uruguai","vitória","brasil","belém","bahia","curitiba","ceará","fortaleza","frança","goiânia","goiás","japão","joão pessoa","londres","lisboa","argentina","alagoas","amazonas","acre","alemanha","angola","austrália"],"Flor":["azaleia","begônia","cravo","dália","girassol","hortênsia","jasmim","lavanda","margarida","orquídea","rosa","tulipa","violeta"],"Forma geométrica":["círculo","cubo","cilindro","esfera","hexágono","losango","oval","pentágono","quadrado","retângulo","triângulo"],"Bebida":["água","café","chá","guaraná","iogurte","leite","limonada","refrigerante","suco","vitamina"],"Parte do corpo":["braço","boca","cabeça","coração","costela","dedo","dente","estômago","fígado","joelho","mão","nariz","olho","orelha","pé","perna","pulmão","rim"]};
 const wordIndex=Object.fromEntries(Object.entries(localWords).map(([key,values])=>[norm(key),new Set(values.map(norm))]));
@@ -447,23 +486,35 @@ async function consultAI(){
 
 const points=x=>x==='valid'?10:0;
 const roundScore=()=>s.results.reduce((a,r)=>a+points(r.status),0);
+function updateReviewSummary(){
+ const accepted=s.results.filter(r=>r.status==='valid').length;
+ const pending=s.results.filter(r=>r.status==='review').length;
+ for(const [id,value] of [['reviewAccepted',accepted],['reviewPending',pending],['roundScore',roundScore()]]){const el=document.getElementById(id);if(el)el.textContent=value}
+ const pendingEl=document.getElementById('pendingCount');if(pendingEl)pendingEl.textContent=pending+' resposta(s) aguardando revisão.';
+ const message=document.getElementById('reviewMessage');if(message){
+  message.className='review-message '+(pending?'has-pending':'all-ready');
+  message.textContent=pending?'🟡 Faltam '+pending+' resposta(s) para conferir. Use a IA ou escolha a avaliação.':'🎉 Tudo conferido! Pode seguir para a próxima rodada.';
+ }
+ const next=app.querySelector('[data-a="confirm"]');if(next)next.disabled=pending>0;
+ const ai=app.querySelector('[data-a="consultAI"]');if(ai)ai.disabled=pending===0;
+}
 function renderResult(){
  const pending=s.results.filter(r=>r.status==='review').length;
- show(title('🔎 Conferir respostas','Letra '+s.letter+' · '+s.endReason)+
- '<section class="panel"><p class="validation-guide">🧠 <strong>Validação local:</strong> ✅ reconhecidas, ❌ letra incorreta, 🟡 aguardando revisão. O dicionário é parcial e não encontrar uma palavra não significa que esteja errada.</p>'+
- (s.playStyle==='coop'?'<p class="notice">🤝 Todos compartilham os pontos das respostas válidas.</p>':'')+
- '<div style="overflow:auto"><table class="scoretable validation-table"><thead><tr><th>Categoria e resposta</th><th>Avaliação</th><th>Pontos</th></tr></thead><tbody>'+
- s.results.map((r,i)=>'<tr><td><strong>'+esc(r.category)+'</strong><div>'+esc(String(r.answer||'—').toLocaleUpperCase('pt-BR'))+'</div><small class="notice" id="reason'+i+'">'+esc(r.reason||'Revisão manual')+'</small></td><td><select data-status="'+i+'" aria-label="Validar '+esc(r.category)+'">'+
+ const accepted=s.results.filter(r=>r.status==='valid').length;
+ show('<section class="review-hero"><div class="review-top"><div><span class="play-eyebrow">🎉 Stop Arena · Conferência</span><h1>🔎 Conferindo rodada</h1><div class="review-chips"><span>🔤 Letra <b>'+esc(s.letter)+'</b></span><span>🎯 Rodada <b>'+s.round+'/'+s.rounds+'</b></span><span>✋ '+esc(s.endReason||'STOP solicitado')+'</span></div></div></div>'+
+ '<div class="review-stats"><div class="review-stat accepted">✅ <b id="reviewAccepted">'+accepted+'</b> aceitas</div><div class="review-stat pending">🟡 <b id="reviewPending">'+pending+'</b> pendentes</div><div class="review-stat total">🏆 <b id="roundScore">'+roundScore()+'</b> pontos</div></div></section>'+
+ '<div class="review-help">💡 <strong>Conferência inteligente:</strong> palavras reconhecidas são aceitas; outras podem ser conferidas pela IA ou por você. A decisão pode ser corrigida.</div>'+
+ (s.playStyle==='coop'?'<p class="play-note">🤝 Todos colaboram e compartilham os pontos!</p>':'')+
+ '<section class="review-grid" aria-label="Respostas da rodada">'+
+ s.results.map((r,i)=>'<article class="review-answer" data-review-card="'+i+'"><span class="review-answer-icon" aria-hidden="true">'+categoryEmoji(r.category)+'</span><div class="review-answer-main"><strong>'+esc(r.category)+'</strong><b>'+esc(String(r.answer||'—').toLocaleUpperCase('pt-BR'))+'</b><small id="reason'+i+'">'+esc(r.reason||'Revisão manual')+'</small></div><div class="review-answer-actions"><select data-status="'+i+'" aria-label="Avaliar '+esc(r.category)+'">'+
  ['valid','review','invalid','empty'].map(status=>'<option value="'+status+'" '+(r.status===status?'selected':'')+'>'+labels[status]+'</option>').join('')+
- '</select></td><td id="pt'+i+'">'+points(r.status)+'</td></tr>').join('')+'</tbody></table></div>'+
- (s.playStyle==='computer'?'<div class="computer-review"><h3>🤖 Respostas do computador</h3><p class="notice">Todas foram escolhidas no início da rodada, exclusivamente do dicionário local.</p><div style="overflow:auto"><table class="scoretable"><thead><tr><th>Categoria</th><th>Resposta</th><th>Pontos</th></tr></thead><tbody>'+s.computerResults.map(item=>'<tr><td>'+esc(item.category)+'</td><td>'+esc(item.answer||'—')+'</td><td>'+(item.status==='valid'?'10':'0')+'</td></tr>').join('')+'</tbody></table></div><div class="hrow"><strong>🤖 Pontos do computador nesta rodada</strong><span class="score">'+computerRoundScore()+'</span></div></div>':'')+
- '<p class="notice" id="pendingCount">'+pending+' resposta(s) aguardando revisão.</p>'+
- '<div class="actions validation-actions">'+button('✨ Consultar IA (opcional)','consultAI')+
- '<span id="aiFeedback" class="notice" role="status">Requer serviço seguro de IA configurado.</span></div>'+
- '<div class="hrow" style="margin-top:12px"><strong>'+(s.playStyle==='computer'?'🙋 Seus pontos nesta rodada':'Pontos confirmados')+'</strong><span class="score" id="roundScore">'+roundScore()+'</span></div>'+
- '<div class="actions">'+button('Refazer rodada','retry')+
- '<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'Resultado final →':'Próxima rodada →')+'</button></div></section>');
+ '</select><strong class="review-points" id="pt'+i+'">'+(points(r.status)?'+'+points(r.status)+' pts':'0 pts')+'</strong></div></article>').join('')+'</section>'+
+ (s.playStyle==='computer'?'<section class="panel computer-review"><h3>🤖 Respostas do computador</h3><p class="notice">O adversário preparou suas palavras antes da rodada.</p><div class="review-grid">'+s.computerResults.map(item=>'<div class="review-answer"><span class="review-answer-icon">'+categoryEmoji(item.category)+'</span><div class="review-answer-main"><strong>'+esc(item.category)+'</strong><b>'+esc(item.answer||'—')+'</b></div><strong class="review-points">'+(item.status==='valid'?'+10 pts':'0 pts')+'</strong></div>').join('')+'</div><p><strong>🤖 Computador: '+computerRoundScore()+' pontos nesta rodada</strong></p></section>':'')+
+ '<div id="reviewMessage" class="review-message '+(pending?'has-pending':'all-ready')+'">'+(pending?'🟡 Faltam '+pending+' resposta(s) para conferir. Use a IA ou escolha a avaliação.':'🎉 Tudo conferido! Pode seguir para a próxima rodada.')+'</div>'+
+ '<div class="review-toolbar"><div class="review-ai">'+button('🤖 Conferir pendentes com IA','consultAI')+'<span id="aiFeedback" class="notice" role="status">'+(pending?'Consulta opcional; revisão manual sempre disponível.':'Não há respostas pendentes.')+'</span></div><div class="review-buttons">'+button('↺ Refazer','retry')+'<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'🏆 Resultado final →':'➡ Próxima rodada')+'</button></div></div>'+
+ '<p id="pendingCount" class="sr-only">'+pending+' resposta(s) aguardando revisão.</p>');
 }
+
 function renderEnd(){
  const total=s.history.reduce((a,h)=>a+h.score,0),isTeam=s.playStyle==='coop',isBot=s.playStyle==='computer';
  const computerTotal=isBot?s.history.reduce((a,h)=>a+(h.botScore||0),0):0;
@@ -561,7 +612,7 @@ app.addEventListener('click', e => {
       if (confirm('Limpar respostas?')) {
         s.answers = s.categories.map(() => '');
         s.contributors = s.categories.map(()=>'');
-        document.querySelectorAll('.ans').forEach(x => {x.value = '';});
+        document.querySelectorAll('.ans').forEach(x => {x.value = '';x.closest('.play-answer')?.classList.remove('is-filled')});
         updateFilled(); save();
       }
       break;
@@ -600,9 +651,10 @@ app.addEventListener('input',e=>{
   try{field.setSelectionRange(start,end)}catch(error){}
  }
  s.answers[Number(field.dataset.i)]=upper;
+ field.closest('.play-answer')?.classList.toggle('is-filled',!!upper.trim());
  updateFilled();save();
 });
-app.addEventListener('change',e=>{if(e.target.dataset.status!==undefined){const i=Number(e.target.dataset.status);s.results[i].status=e.target.value;s.results[i].reason='Revisão manual';document.getElementById('reason'+i).textContent='Decisão manual';document.getElementById('pt'+i).textContent=points(e.target.value);document.getElementById('roundScore').textContent=roundScore();const pending=s.results.filter(r=>r.status==='review').length;document.getElementById('pendingCount').textContent=pending+' resposta(s) aguardando revisão.';const btn=app.querySelector('[data-a="confirm"]');if(btn)btn.disabled=pending>0;save()}});
+app.addEventListener('change',e=>{if(e.target.dataset.status!==undefined){const i=Number(e.target.dataset.status);s.results[i].status=e.target.value;s.results[i].reason='Revisão manual';document.getElementById('reason'+i).textContent='Decisão manual';document.getElementById('pt'+i).textContent=points(e.target.value)?'+'+points(e.target.value)+' pts':'0 pts';updateReviewSummary();save()}});
 app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('ans')){e.preventDefault();let arr=[...app.querySelectorAll('.ans')];arr[arr.indexOf(e.target)+1]?.focus()}if(e.key==='Enter'&&e.target.id==='newCategory'){e.preventDefault();app.querySelector('[data-a="add"]').click()}});
 let theme='light';try{theme=localStorage.getItem('anna.eduplay.stoparena.theme')||'light'}catch(e){}document.documentElement.dataset.theme=theme;document.getElementById('theme').addEventListener('click',()=>{theme=theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('anna.eduplay.stoparena.theme',theme)}catch(e){}});
 // Atualiza partidas antigas salvas antes da regra de respostas em MAIÚSCULAS.
