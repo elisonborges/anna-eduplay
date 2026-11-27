@@ -1,3 +1,12 @@
+## Roleta — preparação de cinco segundos
+
+- Depois de a roleta revelar a letra, aparece a contagem regressiva visual **5, 4, 3, 2, 1**; ao terminar, a rodada começa automaticamente.
+- O botão **▶ Começar rodada agora** é liberado assim que a roleta para e permite iniciar sem esperar os cinco segundos.
+- O cronômetro da partida só começa quando a tela de respostas é aberta, não durante o sorteio nem a preparação.
+- Ao iniciar a rodada ou abandonar a tela, o temporizador de preparação é cancelado para impedir inícios duplicados.
+- Aplicado à roleta das modalidades locais (Individual, Educacional, Contra o Computador e Cooperativo Local). As salas online não têm roleta visual nessa interface; seu início continua controlado pelo organizador.
+- Implementado na branch de desenvolvimento **feature/stop-arena-validacao-compartilhada**, ainda sem publicação na versão principal.
+
 ## Conferência conjunta das respostas — revisão em desenvolvimento
 
 - Cada participante de uma sala online mantém suas próprias respostas por categoria durante a rodada. Após o STOP, todos os participantes autorizados veem as palavras preenchidas por cada integrante, com autoria identificada.
