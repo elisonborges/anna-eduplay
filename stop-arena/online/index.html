@@ -104,6 +104,12 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .lobby-player-name{align-items:center;width:100%}.lobby-player-name strong{font-size:14px;overflow-wrap:anywhere}
 .lobby-remove{font-size:11px!important;padding:6px 9px!important;margin-top:auto}
 @media(max-width:720px){.lobby-layout{display:flex;flex-direction:column}.lobby-player-row{gap:9px}.lobby-player{flex-basis:128px;min-height:148px}}
+/* Nome ocupa o espaço principal; emoji usa apenas um seletor curto à direita. */
+.name-emoji-row{display:flex;align-items:end;gap:10px}
+.name-compact{flex:1;min-width:0}
+.emoji-compact{width:86px;flex:0 0 86px}
+.emoji-compact select{width:100%;min-height:43px;font-size:23px;text-align:center;padding:5px 9px}
+@media(max-width:480px){.emoji-compact{width:78px;flex-basis:78px}}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -175,7 +181,7 @@ async function request(payload){
 }
 const userName=id=>room?.members.find(m=>m.id===id)?.name||'Equipe';
 const playerEmojis=['😀','😎','🤓','🥳','🤖','🦊','🐼','🐯','🦁','🐸','🦄','🚀'];
-const emojiSelector=(id,value)=>'<label for="'+id+'">Seu emoji na equipe</label><select id="'+id+'" aria-label="Escolha seu emoji">'+playerEmojis.map(e=>'<option value="'+e+'" '+(value===e?'selected':'')+'>'+e+'</option>').join('')+'</select>';
+const emojiSelector=(id,value)=>'<div class="emoji-compact"><label for="'+id+'">Emoji</label><select id="'+id+'" aria-label="Escolha seu emoji na equipe">'+playerEmojis.map(e=>'<option value="'+e+'" '+(value===e?'selected':'')+'>'+e+'</option>').join('')+'</select></div>';
 function captureEntry(){
  for(const [key,id] of [['name','ownerName'],['team','teamName'],['joinName','joinName'],['joinCode','joinCode'],['emoji','hostEmoji']]){
   const el=document.getElementById(id);if(el)entry[key]=el.value;
@@ -190,8 +196,8 @@ function renderEntry(){
  (isLocal?'<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>':'')+
  ''+
  '<div class="layout organizer-layout"><section class="panel organizer-config"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
- '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
- (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+
+ '<div class="name-emoji-row"><div class="name-compact"><label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'"></div>'+
+ (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+'</div>'+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
  (!isLocal&&championshipMode?'<div class="championship-notice"><strong>🏆 Campeonato '+esc(entry.eventCode)+'</strong><span>Esta sala seguirá as regras definidas pelo organizador do campeonato.</span><a href="eventos/">Consultar campeonato</a></div>':'')+
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
