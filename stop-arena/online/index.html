@@ -65,7 +65,7 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'
 const upper=x=>String(x??'').toLocaleUpperCase('pt-BR');
 const btn=(title,act,cls='')=>'<button class="btn '+cls+'" data-act="'+act+'">'+title+'</button>';
 const queryCode=new URLSearchParams(location.search).get('sala')||'';
-const entry={name:'',team:'Equipe Campeã',preset:'Clássico',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
+const entry={name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[...PRESETS.recreativo.Clássico];
 let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='';
 try{const saved=JSON.parse(sessionStorage.getItem(KEY)||'null');if(saved?.code&&saved?.token)session=saved}catch{}
@@ -86,8 +86,8 @@ function captureEntry(){
  for(const [key,id] of [['name','ownerName'],['team','teamName'],['joinName','joinName'],['joinCode','joinCode']]){
   const el=document.getElementById(id);if(el)entry[key]=el.value;
  }
- for(const [key,id] of [['preset','preset'],['rounds','rounds'],['duration','duration']]){
-  const el=document.getElementById(id);if(el)entry[key]=key==='preset'?el.value:Number(el.value);
+ for(const [key,id] of [['mode','mode'],['preset','preset'],['rounds','rounds'],['duration','duration']]){
+  const el=document.getElementById(id);if(el)entry[key]=key==='preset'||key==='mode'?el.value:Number(el.value);
  }
 }
 function renderEntry(){
@@ -96,7 +96,7 @@ function renderEntry(){
  '<div class="layout"><section class="panel"><span class="kicker">🏠 CRIAR SALA</span>'+
  '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
- '<div class="fieldrow"><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS.recreativo).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
+ '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
  '<div><label for="rounds">Rodadas</label><select id="rounds">'+[1,3,5,10,20].map(n=>'<option value="'+n+'" '+(entry.rounds===n?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div>'+
  '<label for="duration">Tempo por rodada</label><select id="duration">'+[30,60,90,120,180,300].map(n=>'<option value="'+n+'" '+(entry.duration===n?'selected':'')+'>'+n+' segundos</option>').join('')+'</select>'+
  '<div class="actions"><strong>🎯 Categorias da partida</strong><span class="hint">'+categories.length+' de 12</span></div>'+
@@ -268,7 +268,8 @@ app.addEventListener('click',async e=>{
 });
 app.addEventListener('change',e=>{
  const el=e.target;
- if(el.id==='preset'){captureEntry();categories=[...PRESETS.recreativo[entry.preset]];renderEntry();return}
+ if(el.id==='mode'){captureEntry();entry.preset=Object.keys(PRESETS[entry.mode])[0];categories=[...PRESETS[entry.mode][entry.preset]];renderEntry();return}
+ if(el.id==='preset'){captureEntry();categories=[...PRESETS[entry.mode][entry.preset]];renderEntry();return}
  if(el.dataset.grade!==undefined){act('grade',{index:Number(el.dataset.grade),status:el.value});return}
  if(['rounds','duration','ownerName','teamName','joinCode','joinName'].includes(el.id))captureEntry();
 });
