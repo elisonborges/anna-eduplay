@@ -1,3 +1,14 @@
+## Conferência conjunta das respostas — revisão em desenvolvimento
+
+- Cada participante de uma sala online mantém suas próprias respostas por categoria durante a rodada. Após o STOP, todos os participantes autorizados veem as palavras preenchidas por cada integrante, com autoria identificada.
+- Qualquer participante pode votar **Aceitar** ou **Recusar** em cada resposta não vazia. Dois votos concordantes definem o status provisório; divergências permanecem pendentes. O organizador pode decidir e encerrar uma divergência.
+- Nenhum participante pode votar, corrigir ou atribuir pontos a respostas vazias. Na tela individual, o seletor de uma resposta em branco fica desabilitado; na sala online, ela aparece como não preenchida.
+- A IA atua como parecer de desempate e ortografia, compartilhado no estado persistente da sala. Nunca substitui automaticamente palavras digitadas nem concede pontuação com base apenas na correção sugerida.
+- Os resultados coletivos contabilizam **no máximo 10 pontos por categoria**, mesmo com diversas palavras corretas enviadas por jogadores diferentes. O histórico da sala preserva a pontuação consolidada.
+- Com 2 a 6 participantes e 6 a 12 categorias, a conferência pode envolver até 72 respostas; consultas Gemini são divididas em lotes de até 12 entradas, com índices traduzidos de volta para a resposta original.
+- O Worker informa o status HTTP e a mensagem resumida do provedor nos erros Gemini; o erro 502 observado não teve causa específica verificada em produção. Se a IA falhar, a revisão manual permanece disponível.
+- Alterações em `feature/stop-arena-validacao-compartilhada` de `anna-eduplay` e `anna-virtual`. Ainda não publicadas na `main` nem validadas com o Gemini real e dois celulares.
+
 ## Sugestões ortográficas do Gemini (em desenvolvimento)
 
 - O botão **🤖 Conferir escrita com IA** permite revisar a adequação à categoria e a grafia das respostas preenchidas, mesmo quando já reconhecidas localmente.
