@@ -1,4 +1,17 @@
-# Stop Arena — validação v0.2 (protótipo integrado)
+# Stop Arena — validação e modalidades
+
+## Recreativo contra o computador — protótipo offline (branch de desenvolvimento)
+
+- Na página inicial, o botão **🤖 Contra o computador** abre a mesma configuração de categorias, letras, tempo e rodadas do jogo Recreativo, com dificuldade **Fácil, Normal ou Difícil**.
+- O adversário usa **exclusivamente respostas existentes no dicionário local**. Categorias não presentes no dicionário ou sem palavra iniciada pela letra sorteada ficam sem resposta; o computador não inventa palavras.
+- Respostas do computador são escolhidas **antes da rodada** e **mantidas ocultas até STOP**. A dificuldade influencia a probabilidade de preencher cada categoria: Fácil 35%, Normal 65%, Difícil 92%, quando existe uma opção conhecida.
+- O jogador recebe a conferência local habitual e pode revisar manualmente palavras desconhecidas; o computador pontua somente suas palavras existentes no dicionário.
+- Resultados por rodada e placar final são separados para jogador e computador. Respostas e histórico ficam em `localStorage`.
+- **Sem internet e sem chave de API**: este não é o futuro adversário generativo Gemini. O modo Cooperativo e o Recreativo individual continuam preservados.
+- Estágio atual: código gravado em `feature/stop-arena-computador-offline`, sintaxe JavaScript aprovada e simulação de pontuação com dicionário existente. **Ainda não implantado no site principal nem validado visualmente no navegador.**
+- Próxima evolução, separada: adversário Gemini conectado ao backend, com cotas, validação de respostas e preservação do jogo offline como alternativa.
+
+
 
 ## Cooperativo local (primeira versão jogável)
 - A tela inicial oferece **🤝 Cooperativo**, além de Recreativo e Educacional individuais.
