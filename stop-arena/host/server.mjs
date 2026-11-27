@@ -1,6 +1,7 @@
 // AnnA Stop Arena Host LAN v0.1 — servidor sem dependências npm.
 // Requer Node.js 20+ portátil (runtime/node.exe na distribuição Windows).
 import http from 'node:http';
+import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
@@ -113,4 +114,7 @@ server.listen(port,bind,()=>{
  console.log('Neste computador: http://localhost:'+port);
  for(const ip of addresses())console.log('Na rede local:   http://'+ip+':'+port);
  console.log('Abra o endereço acima. Pressione Ctrl+C para encerrar.\n');
+ if(process.platform==='win32'&&process.env.STOP_ARENA_NO_BROWSER!=='1'){
+  execFile('rundll32.exe',['url.dll,FileProtocolHandler','http://localhost:'+port+'/'],{windowsHide:true},()=>{});
+ }
 });
