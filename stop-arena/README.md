@@ -1,5 +1,15 @@
 # Stop Arena — validação v0.2 (protótipo integrado)
 
+## Cooperativo local (primeira versão jogável)
+- A tela inicial oferece **🤝 Cooperativo**, além de Recreativo e Educacional individuais.
+- Equipe com **2 a 6 participantes**, nome personalizável e respostas compartilhadas no **mesmo dispositivo**.
+- As respostas continuam em MAIÚSCULAS e utilizam validação local, revisão manual e botão opcional de consulta à IA.
+- Pontuação **única** da equipe: 10 pontos por resposta validada. Meta coletiva de **70% dos pontos possíveis**.
+- Em cada resposta há registro **opcional** da pessoa que contribuiu. O relatório final mostra contribuições sem ranking competitivo.
+- Os dados continuam no `localStorage`, preservando a partida na mesma instalação do navegador.
+- **Não é sala online:** não há convite, código de sala, sincronização entre dispositivos nem colaboração simultânea pela rede. Esses recursos exigem backend de sessão/realtime em etapa futura.
+- Validação visual e teste de partida completa no navegador ainda pendentes.
+
 ## Respostas em MAIÚSCULAS
 - Respostas são convertidas em letras maiúsculas durante a digitação, com acentos preservados.
 - Texto em maiúsculas é mantido no salvamento e na conferência.
