@@ -146,6 +146,14 @@ a.online-mode{text-decoration:none;display:flex;flex-direction:column;color:inhe
 a.online-mode:before{content:"✧";color:#18aed0}
 a.online-mode:hover{transform:translateY(-2px)}
 :root[data-theme=dark] a.online-mode{background:linear-gradient(145deg,#173d57,#2e305c);color:var(--ink)}
+
+/* Adversário offline: resultados só aparecem depois do STOP */
+.computer-review{background:var(--card);padding:13px;border:1px solid var(--edge);border-radius:12px;margin-top:14px}
+.computer-review h3{margin:0 0 5px;font-size:17px}
+.computer-score-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.computer-score-grid div{text-align:center;padding:13px;border-radius:12px;border:1px solid var(--edge);background:var(--card)}
+.computer-score-grid small,.computer-score-grid span{display:block;color:var(--muted)}
+.computer-score-grid strong{display:block;font-size:clamp(28px,5vw,44px);color:var(--accent)}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -169,7 +177,7 @@ const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const app=document.getElementById('app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
-const fresh=()=>({screen:'home',mode:'recreativo',preset:'Clássico',categories:[...presets.recreativo.Clássico],name:'Jogador',playStyle:'solo',teamName:'Equipe Stop',members:['Jogador 1','Jogador 2'],contributors:[],rounds:5,duration:90,rule:'random',excluded:[],round:1,letter:'',used:[],answers:[],results:[],history:[],deadline:0,score:0,endReason:''});
+const fresh=()=>({screen:'home',mode:'recreativo',preset:'Clássico',categories:[...presets.recreativo.Clássico],name:'Jogador',playStyle:'solo',difficulty:'normal',computerAnswers:[],computerResults:[],teamName:'Equipe Stop',members:['Jogador 1','Jogador 2'],contributors:[],rounds:5,duration:90,rule:'random',excluded:[],round:1,letter:'',used:[],answers:[],results:[],history:[],deadline:0,score:0,endReason:''});
 let s=fresh(),timer=null,rouletteTimer=null;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
 try{let data=JSON.parse(localStorage.getItem(KEY)||'null');if(data&&typeof data==='object'&&Array.isArray(data.categories)&&Array.isArray(data.history))s={...fresh(),...data}}catch(e){}
@@ -178,7 +186,7 @@ function show(html){app.innerHTML=html;save()}
 const button=(t,act,cls='secondary')=>'<button class="btn '+cls+'" data-a="'+act+'">'+t+'</button>';
 const back=()=>button('← Início','home');
 function renderHome(){show(title('🎉 Stop Arena','Escolha sua aventura: individual ou em equipe!')+
- '<div class="gridmodes"><button class="mode" data-mode="recreativo"><span>🏆</span><strong>Recreativo</strong><small>Stop clássico com categorias divertidas.</small><em>Jogar →</em></button>'+
+ '<div class="gridmodes"><button class="mode" data-mode="recreativo"><span>🏆</span><strong>Recreativo individual</strong><small>Stop clássico, no seu ritmo.</small><em>Jogar →</em></button><button class="mode" data-bot="1"><span>🤖</span><strong>Contra o computador</strong><small>Desafie um rival virtual offline, com três dificuldades.</small><em>Desafiar →</em></button>'+
  '<button class="mode" data-mode="educacional"><span>🎓</span><strong>Educacional</strong><small>Atividades para aprender brincando.</small><em>Aprender →</em></button>'+
  '<button class="mode cooperative-mode" data-coop="1"><span>🤝</span><strong>Cooperativo local</strong><small>2 a 6 pessoas no mesmo aparelho. Uma equipe, uma pontuação!</small><em>Jogar em equipe →</em></button><a class="mode online-mode" href="online/"><span>🌐</span><strong>Cooperativo Online</strong><small>Crie uma sala, compartilhe o código e jogue em vários celulares com respostas sincronizadas.</small><em>Criar ou entrar na sala →</em></a></div>'+
  '<section class="panel"><strong>✨ Jogo individual e cooperativo local</strong><p class="notice">No cooperativo local, todos usam o mesmo aparelho. No cooperativo online, cada participante acessa a sala pelo próprio celular, com respostas sincronizadas e conferência supervisionada.</p><details style="margin-top:9px"><summary style="cursor:pointer;font-weight:800;color:var(--accent)">Sobre este módulo</summary><p class="notice">Stop Arena é um módulo do AnnA EduPlay, ecossistema AnnA One. Projeto educacional de Elison Borges. Os dados permanecem no navegador. As salas online utilizam conexão com o servidor e precisam de internet. As partidas locais continuam armazenadas no navegador.</p></details></section>')}
@@ -188,6 +196,7 @@ function renderSetup(){
  const rounds=s.rounds;
  show(title(s.playStyle==='coop'?'🤝 Configurar equipe':'Configurar partida',s.mode==='educacional'?'Modo Educacional · atividades por conteúdo':'Modo Recreativo · categorias clássicas')+
  '<div class="grid2 setup-grid"><section class="panel">'+
+ (s.playStyle==='computer'?'<div class="coop-setup"><strong>🤖 Seu adversário virtual</strong><p class="notice">O computador usa apenas respostas do dicionário local e prepara as respostas ao iniciar a rodada. Não precisa de internet nem de API.</p><div class="field"><label for="difficulty">Dificuldade</label><select id="difficulty">'+[['facil','🟢 Fácil'],['normal','🟡 Normal'],['dificil','🔴 Difícil']].map(([value,label])=>'<option value="'+value+'" '+(s.difficulty===value?'selected':'')+'>'+label+'</option>').join('')+'</select></div></div>':'')+
  (s.playStyle==='coop'?'<div class="coop-setup"><strong>🤝 Nossa equipe</strong><p class="notice">De 2 a 6 pessoas, colaborando no mesmo aparelho.</p><div class="field"><label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(s.teamName||'Equipe Stop')+'"></div><div class="field"><label for="teamMembers">Participantes (separe por vírgula ou linha)</label><textarea id="teamMembers" rows="3" maxlength="200" placeholder="Ex.: Ana, João, Maria">'+esc((s.members||[]).join(', '))+'</textarea></div><p class="notice">A meta será alcançar 70% da pontuação máxima. Todos pontuam juntos!</p></div>':'')+
  '<div class="formgrid">'+
  '<div class="field"><label for="player">Nome ou apelido</label><input id="player" maxlength="25" value="'+esc(s.name)+'"></div>'+
@@ -210,6 +219,7 @@ function captureSetup(){
   const members=document.getElementById('teamMembers');
   if(members)s.members=members.value.split(/[,\n;]+/).map(x=>x.trim().slice(0,25)).filter(Boolean);
  }
+ const difficulty=document.getElementById('difficulty');if(difficulty)s.difficulty=difficulty.value;
  const player=document.getElementById('player');
  if(player)s.name=player.value.trim().slice(0,25)||'Jogador';
  const duration=document.getElementById('duration');
@@ -264,7 +274,7 @@ function spin(){
  },reduce?60:95);
 }
 function nextRound(){
- s.answers=s.categories.map(()=>'');s.contributors=s.categories.map(()=>'');s.results=[];s.endReason='';
+ s.answers=s.categories.map(()=>'');s.contributors=s.categories.map(()=>'');s.results=[];s.computerAnswers=[];s.computerResults=[];s.endReason='';
  if(s.rule==='manual')choose();else spin();
 }
 function begin(l){
@@ -272,6 +282,7 @@ function begin(l){
  s.letter=l;
  if(!s.used.includes(l))s.used.push(l);
  s.deadline=s.duration?Date.now()+s.duration*1000:0;
+ if(s.playStyle==='computer')prepareComputerAnswers();
  s.screen='game';renderGame();
 }
 const timeText=n=>n===null?'∞':String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
@@ -281,6 +292,7 @@ function renderGame(){
  const n=remaining();
  if(n===0){finish('Tempo esgotado');return}
  show('<div class="game-head"><div><span class="eyebrow">'+(s.mode==='educacional'?'Modo Educacional':'Modo Recreativo')+'</span><h1>Respostas com a letra '+esc(s.letter)+'</h1></div>'+button('Sair','quit')+'</div>'+
+ (s.playStyle==='computer'?'<div class="coop-game-banner"><strong>🤖 Contra o computador · '+esc(({facil:'Fácil',normal:'Normal',dificil:'Difícil'})[s.difficulty]||'Normal')+'</strong><span>Respostas do adversário ficam ocultas até o STOP!</span></div>':'')+
  (s.playStyle==='coop'?'<div class="coop-game-banner"><strong>🤝 '+esc(s.teamName||'Equipe Stop')+'</strong><span>Meta: '+Math.ceil(s.categories.length*10*s.rounds*.7)+' pontos · '+s.members.length+' participantes</span></div>':'')+
  '<div class="game-toolbar"><div class="stats">'+
  '<div class="stat letter"><small>🔤 Letra</small><strong>'+esc(s.letter)+'</strong></div>'+
@@ -297,6 +309,22 @@ function updateFilled(){let el=document.getElementById('filled');if(el)el.textCo
 function finish(reason){if(s.screen!=='game')return;clearInterval(timer);s.endReason=reason;s.results=s.categories.map((category,i)=>{const answer=String(s.answers[i]||'').trim().toLocaleUpperCase('pt-BR');return{category,answer,contributor:String((s.contributors||[])[i]??''),...classify(category,answer,s.letter)}});s.screen='result';renderResult()}
 const localWords={"Animal":["macaco","morcego","mico","mula","leão","lobo","lagarto","jacaré","cachorro","cavalo","cobra","coelho","coruja","gato","galinha","girafa","elefante","urso","pato","porco","peixe","rato","raposa","sapo","tigre","tartaruga","zebra","abelha","aranha","arara","borboleta","baleia","formiga","vaca"],"Cor":["amarelo","azul","bege","branco","cinza","dourado","laranja","lilás","magenta","marrom","preto","prata","rosa","roxo","turquesa","verde","vermelho","violeta"],"Fruta":["abacaxi","abacate","acerola","ameixa","amora","banana","caju","caqui","cereja","coco","figo","goiaba","jaca","kiwi","laranja","limão","maçã","mamão","manga","maracujá","melancia","melão","morango","pera","pêssego","pitanga","romã","tangerina","uva"],"Objeto":["anel","agulha","armário","balde","bola","boneca","borracha","cadeira","caderno","caneta","chave","colher","copo","escova","espelho","faca","fone","garrafa","garfo","geladeira","janela","lápis","livro","mesa","mochila","óculos","panela","papel","pente","porta","prato","relógio","tesoura","telefone","televisão","vaso"],"Profissão":["advogado","arquiteto","ator","bombeiro","cientista","cozinheiro","dentista","designer","eletricista","enfermeiro","engenheiro","farmacêutico","fotógrafo","jornalista","médico","motorista","músico","padeiro","pedreiro","piloto","policial","professor","psicólogo","veterinário"],"Comida":["arroz","bolo","brigadeiro","batata","churrasco","coxinha","feijão","farofa","frango","hambúrguer","lasanha","macarrão","moqueca","omelete","pão","pastel","pizza","quibe","risoto","salada","sopa","tapioca","torta"],"PHC":["braço","boca","cabeça","coração","costela","dedo","dente","estômago","fígado","joelho","mão","nariz","olho","orelha","pé","perna","pulmão","rim"],"CEP":["manaus","maceió","maranhão","méxico","minas gerais","natal","paraná","pernambuco","piauí","portugal","recife","rio de janeiro","rio grande do sul","salvador","são paulo","sergipe","teresina","tocantins","uruguai","vitória","brasil","belém","bahia","curitiba","ceará","fortaleza","frança","goiânia","goiás","japão","joão pessoa","londres","lisboa","argentina","alagoas","amazonas","acre","alemanha","angola","austrália"],"Flor":["azaleia","begônia","cravo","dália","girassol","hortênsia","jasmim","lavanda","margarida","orquídea","rosa","tulipa","violeta"],"Forma geométrica":["círculo","cubo","cilindro","esfera","hexágono","losango","oval","pentágono","quadrado","retângulo","triângulo"],"Bebida":["água","café","chá","guaraná","iogurte","leite","limonada","refrigerante","suco","vitamina"],"Parte do corpo":["braço","boca","cabeça","coração","costela","dedo","dente","estômago","fígado","joelho","mão","nariz","olho","orelha","pé","perna","pulmão","rim"]};
 const wordIndex=Object.fromEntries(Object.entries(localWords).map(([key,values])=>[norm(key),new Set(values.map(norm))]));
+// Adversário offline: escolhe apenas palavras conhecidas, antes de iniciar o cronômetro.
+function prepareComputerAnswers(){
+ const probability=({facil:.35,normal:.65,dificil:.92})[s.difficulty]??.65;
+ // Conjuntos de respostas aceitas pelo próprio dicionário local.
+ s.computerAnswers=s.categories.map(category=>{
+  const pool=localWords[Object.keys(localWords).find(key=>norm(key)===norm(category))]||[];
+  const matches=pool.filter(word=>norm(word).startsWith(norm(s.letter)));
+  if(!matches.length||Math.random()>probability)return '';
+  return String(matches[Math.floor(Math.random()*matches.length)]).toLocaleUpperCase('pt-BR');
+ });
+ s.computerResults=s.computerAnswers.map((answer,i)=>({
+  category:s.categories[i],answer,status:answer?'valid':'empty',
+  reason:answer?'Reconhecida no dicionário local':'Sem resposta conhecida'
+ }));
+}
+const computerRoundScore=()=>s.computerResults.reduce((sum,item)=>sum+(item.status==='valid'?10:0),0);
 const AI_ENDPOINT='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/validate';
 const labels={valid:'✅ Aceita',invalid:'❌ Inválida',review:'🟡 Revisar',empty:'— Vazia'};
 function classify(category,answer,letter){
@@ -343,24 +371,27 @@ function renderResult(){
  s.results.map((r,i)=>'<tr><td><strong>'+esc(r.category)+'</strong><div>'+esc(String(r.answer||'—').toLocaleUpperCase('pt-BR'))+'</div><small class="notice" id="reason'+i+'">'+esc(r.reason||'Revisão manual')+'</small></td><td><select data-status="'+i+'" aria-label="Validar '+esc(r.category)+'">'+
  ['valid','review','invalid','empty'].map(status=>'<option value="'+status+'" '+(r.status===status?'selected':'')+'>'+labels[status]+'</option>').join('')+
  '</select></td><td id="pt'+i+'">'+points(r.status)+'</td></tr>').join('')+'</tbody></table></div>'+
+ (s.playStyle==='computer'?'<div class="computer-review"><h3>🤖 Respostas do computador</h3><p class="notice">Todas foram escolhidas no início da rodada, exclusivamente do dicionário local.</p><div style="overflow:auto"><table class="scoretable"><thead><tr><th>Categoria</th><th>Resposta</th><th>Pontos</th></tr></thead><tbody>'+s.computerResults.map(item=>'<tr><td>'+esc(item.category)+'</td><td>'+esc(item.answer||'—')+'</td><td>'+(item.status==='valid'?'10':'0')+'</td></tr>').join('')+'</tbody></table></div><div class="hrow"><strong>🤖 Pontos do computador nesta rodada</strong><span class="score">'+computerRoundScore()+'</span></div></div>':'')+
  '<p class="notice" id="pendingCount">'+pending+' resposta(s) aguardando revisão.</p>'+
  '<div class="actions validation-actions">'+button('✨ Consultar IA (opcional)','consultAI')+
  '<span id="aiFeedback" class="notice" role="status">Requer serviço seguro de IA configurado.</span></div>'+
- '<div class="hrow" style="margin-top:12px"><strong>Pontos confirmados</strong><span class="score" id="roundScore">'+roundScore()+'</span></div>'+
+ '<div class="hrow" style="margin-top:12px"><strong>'+(s.playStyle==='computer'?'🙋 Seus pontos nesta rodada':'Pontos confirmados')+'</strong><span class="score" id="roundScore">'+roundScore()+'</span></div>'+
  '<div class="actions">'+button('Refazer rodada','retry')+
  '<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'Resultado final →':'Próxima rodada →')+'</button></div></section>');
 }
 function renderEnd(){
- const total=s.history.reduce((a,h)=>a+h.score,0),isTeam=s.playStyle==='coop';
+ const total=s.history.reduce((a,h)=>a+h.score,0),isTeam=s.playStyle==='coop',isBot=s.playStyle==='computer';
+ const computerTotal=isBot?s.history.reduce((a,h)=>a+(h.botScore||0),0):0;
  const goal=Math.ceil(s.categories.length*10*s.rounds*.7);
  const contributionCounts=(s.members||[]).map((name,i)=>({name,count:s.history.reduce((n,h)=>n+(h.contributors||[]).filter(x=>x===String(i)).length,0)}));
- show(title(isTeam?(total>=goal?'🏆 Missão cumprida!':'🤝 Juntos somos mais fortes!'):'Partida concluída!',
- isTeam?esc(s.teamName||'Equipe Stop')+' · meta '+goal+' pontos':'Modo '+(s.mode==='educacional'?'Educacional':'Recreativo')+' · '+esc(s.name))+
- '<section class="panel"><div class="score" style="font-size:44px;text-align:center">'+total+' pontos</div>'+
+ const headline=isBot?(total>computerTotal?'🏆 Você venceu!':total<computerTotal?'🤖 O computador venceu!':'🤝 Empate!'):isTeam?(total>=goal?'🏆 Missão cumprida!':'🤝 Juntos somos mais fortes!'):'Partida concluída!';
+ show(title(headline,isBot?esc(s.name)+' × Computador · '+({facil:'Fácil',normal:'Normal',dificil:'Difícil'}[s.difficulty]||'Normal'):isTeam?esc(s.teamName||'Equipe Stop')+' · meta '+goal+' pontos':'Modo '+(s.mode==='educacional'?'Educacional':'Recreativo')+' · '+esc(s.name))+
+ '<section class="panel">'+
+ (isBot?'<div class="computer-score-grid"><div><small>🙋 '+esc(s.name)+'</small><strong>'+total+'</strong><span>pontos</span></div><div><small>🤖 Computador</small><strong>'+computerTotal+'</strong><span>pontos</span></div></div>':'<div class="score" style="font-size:44px;text-align:center">'+total+' pontos</div>')+
  (isTeam?'<p class="coop-goal">'+(total>=goal?'🎉 Parabéns! A equipe atingiu a meta!':'💪 A equipe chegou a '+Math.round(total/Math.max(1,goal)*100)+'% da meta. Tentem novamente!')+'</p>':'')+
  '<div class="summary"><div><strong>'+s.history.length+'</strong><small>Rodadas</small></div><div><strong>'+Math.max(0,...s.history.map(x=>x.score))+'</strong><small>Melhor rodada</small></div><div><strong>'+Math.round(total/Math.max(s.history.length,1))+'</strong><small>Média</small></div></div>'+
  (isTeam?'<div class="coop-contributions"><strong>🙌 Participação da equipe</strong><p class="notice">Registro opcional de contribuições. Todos compartilham os pontos.</p><div class="chips">'+contributionCounts.map(m=>'<span class="chip">⭐ '+esc(m.name)+': '+m.count+'</span>').join('')+'</div></div>':'')+
- '<table class="scoretable"><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos</th></tr></thead><tbody>'+s.history.map((h,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(h.letter)+'</td><td>'+h.valid+'</td><td>'+h.score+'</td></tr>').join('')+'</tbody></table>'+
+ '<table class="scoretable"><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Seus pontos</th>'+(isBot?'<th>🤖 Computador</th>':'')+'</tr></thead><tbody>'+s.history.map((h,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(h.letter)+'</td><td>'+h.valid+'</td><td>'+h.score+'</td>'+(isBot?'<td>'+(h.botScore||0)+'</td>':'')+'</tr>').join('')+'</tbody></table>'+
  '<div class="actions" style="margin-top:15px">'+back()+button('Jogar novamente','again','primary')+'</div></section>');
 }
 function render(){document.body.classList.remove('keyboard-open');clearInterval(timer);clearInterval(rouletteTimer);if(s.screen==='home')renderHome();else if(s.screen==='setup')renderSetup();else if(s.screen==='letter')choose();else if(s.screen==='game')renderGame();else if(s.screen==='result')renderResult();else if(s.screen==='end')renderEnd();else{s.screen='home';renderHome()}}
@@ -377,6 +408,10 @@ function start(){
 app.addEventListener('click', e => {
   const el = e.target.closest('button');
   if (!el) return;
+  if (el.dataset.bot) {
+    s.playStyle='computer';s.mode='recreativo';s.preset='Clássico';
+    s.categories=[...presets.recreativo.Clássico];s.screen='setup';render();return;
+  }
   if (el.dataset.coop) {
     s.playStyle='coop';s.mode='recreativo';s.preset='Clássico';
     s.categories=[...presets.recreativo.Clássico];s.screen='setup';render();return;
@@ -454,7 +489,7 @@ app.addEventListener('click', e => {
     case 'confirm': {
       if(s.results.some(r=>r.status==='review'))return alert('Revise todas as respostas pendentes.');
       const sc = roundScore();
-      s.history.push({letter:s.letter,score:sc,valid:s.results.filter(x=>x.status==='valid').length,contributors:s.results.filter(x=>x.status==='valid'&&x.contributor!=='').map(x=>x.contributor)});
+      s.history.push({letter:s.letter,score:sc,botScore:s.playStyle==='computer'?computerRoundScore():0,valid:s.results.filter(x=>x.status==='valid').length,contributors:s.results.filter(x=>x.status==='valid'&&x.contributor!=='').map(x=>x.contributor)});
       s.score += sc;
       if (s.round >= s.rounds) { s.screen = 'end'; render(); }
       else { s.round++; nextRound(); }
@@ -465,7 +500,7 @@ app.addEventListener('click', e => {
 });
 app.addEventListener('change',e=>{
  if(e.target.id==='roundsPreset'&&e.target.value){document.getElementById('rounds').value=e.target.value}
- if(['player','duration','rounds','roundsPreset','rule','teamName','teamMembers'].includes(e.target.id))captureSetup();
+ if(['player','duration','rounds','roundsPreset','rule','teamName','teamMembers','difficulty'].includes(e.target.id))captureSetup();
  if(e.target.dataset.contributor!==undefined){s.contributors[Number(e.target.dataset.contributor)]=e.target.value;save()}
 });
 app.addEventListener('focusin',e=>{if(e.target.classList.contains('ans'))document.body.classList.add('keyboard-open')});
@@ -495,7 +530,10 @@ if(s.categories.length<6){
 }
 if(!Array.isArray(s.members)||s.members.length<2)s.members=['Jogador 1','Jogador 2'];
 if(!Array.isArray(s.contributors))s.contributors=[];
-if(s.playStyle!=='coop')s.playStyle='solo';
+if(!Array.isArray(s.computerAnswers))s.computerAnswers=[];
+if(!Array.isArray(s.computerResults))s.computerResults=[];
+if(!['facil','normal','dificil'].includes(s.difficulty))s.difficulty='normal';
+if(!['coop','solo','computer'].includes(s.playStyle))s.playStyle='solo';
 if(!Array.isArray(s.excluded))s.excluded=[];s.excluded=s.excluded.filter(l=>letters.includes(l));
 if(s.screen==='roulette')s.screen='letter';
 if(s.screen==='game'&&s.duration&&remaining()===0){s.results=s.categories.map((category,i)=>{const answer=String(s.answers[i]||'').trim();return{category,answer,...classify(category,answer,s.letter)}});s.endReason='Tempo esgotado';s.screen='result'}
