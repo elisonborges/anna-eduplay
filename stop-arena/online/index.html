@@ -52,7 +52,7 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 
 .letter-set{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px;margin:8px 0}
 .letter-set button{padding:5px 0;min-height:28px;border-radius:7px;border:1px solid #d2b8ee;color:#4a267e;background:#f1e6ff;font-size:12px;font-weight:800}
-.letter-set button:nth-child(4n){background:#def8f4}
+.letter-set button.active{background:#f1e6ff;color:#4a267e;border-color:#d2b8ee}
 .letter-set button.excluded{background:#eae8ef;color:#92929a;text-decoration:line-through;opacity:.7}
 @media(max-width:680px){.letter-set{grid-template-columns:repeat(9,minmax(0,1fr))}}
 .review-coop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:13px 0}.review-coop-card{padding:13px;box-shadow:none}.review-word{font-size:19px;font-weight:850;margin:6px 0;color:var(--ink)}.review-votes{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.review-votes .btn{flex:1;min-width:100px}.ai-opinion{padding:9px;border-radius:10px;background:#e8f5ff;color:#245a7d;font-size:12px;line-height:1.5}.review-coop-card select{width:100%;min-height:39px;margin-top:6px}@media(max-width:650px){.review-coop-grid{grid-template-columns:1fr}}
@@ -78,7 +78,7 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .organizer-hero h1{font-size:clamp(25px,4.5vw,36px);margin:8px 0;color:white}.organizer-hero p{color:#efe6ff;max-width:560px;font-size:14px}
 .organizer-kicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d8ffcc}
 .organizer-join{display:inline-flex;margin-top:12px;color:#45208e!important;background:#fff!important;text-decoration:none;border-radius:12px;padding:11px 14px;font-size:13px}
-.organizer-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start;max-width:100%}.organizer-layout>.panel{box-shadow:0 8px 25px #50358b13}
+.organizer-layout{display:flex;flex-direction:column;gap:14px;align-items:stretch;max-width:100%}.organizer-layout>.panel{width:100%}.organizer-layout>.panel{box-shadow:0 8px 25px #50358b13}
 .organizer-layout .kicker{font-size:11px;letter-spacing:1.1px;color:#7137af}
 .organizer-layout h2{font-size:20px}.organizer-config{min-width:0}.organizer-rules{min-width:0}
 .organizer-participants{display:flex;align-items:center;gap:12px;padding:11px 15px;border:1px solid #e0d8f0;border-radius:14px;background:#fbfaff;min-height:68px}
@@ -119,6 +119,13 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .suggestion-chip{background:#f0e8ff;border:1px solid #cbb9ed;border-radius:9px;color:#5d2997;padding:7px 9px;font-size:12px;font-weight:750;cursor:pointer}
 .suggestion-chip:disabled{opacity:.45;cursor:not-allowed}
 .picked-categories{margin:9px 0}
+.stop-error-dialog{width:min(92vw,390px);border:1px solid #e0c6f5;border-radius:20px;background:#fff;color:#34245d;padding:25px 24px;text-align:center;box-shadow:0 24px 65px #28104e35}
+.stop-error-dialog::backdrop{background:#190d3e85}
+.stop-error-dialog .stop-error-icon{font-size:33px;margin:0 0 7px}
+.stop-error-dialog h2{font-size:21px;margin:3px 0 11px}
+.stop-error-dialog p{line-height:1.5;font-size:15px;margin:0 0 20px}
+.stop-error-close{width:100%;border:0;border-radius:11px;background:#7030c4;color:#fff;cursor:pointer;padding:13px 20px;font:inherit;font-weight:800}
+.stop-error-close:focus-visible{outline:3px solid #f2ad44;outline-offset:3px}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -162,7 +169,28 @@ try{
  if(saved?.code&&saved?.token&&(!queryCode||upper(queryCode)===saved.code))session=saved;
  else if(saved&&queryCode)sessionStorage.removeItem(KEY);
 }catch{}
-const status=(msg,isError=false)=>{let el=document.getElementById('status');if(el){el.textContent=msg||'';el.className='status'+(isError?' error':'');el.hidden=!msg}};
+let errorDialog=null,errorDialogPreviousFocus=null;
+function showErrorPopup(message){
+ if(!message)return;
+ if(!errorDialog){
+  errorDialog=document.createElement('dialog');
+  errorDialog.className='stop-error-dialog';
+  errorDialog.setAttribute('aria-labelledby','stopErrorTitle');
+  errorDialog.innerHTML='<div class="stop-error-icon" aria-hidden="true">⚠️</div><h2 id="stopErrorTitle">Atenção</h2><p id="stopErrorMessage"></p><button class="stop-error-close" type="button">Entendi</button>';
+  document.body.appendChild(errorDialog);
+  errorDialog.querySelector('.stop-error-close').addEventListener('click',()=>errorDialog.close());
+  errorDialog.addEventListener('close',()=>{try{errorDialogPreviousFocus?.focus()}catch{};errorDialogPreviousFocus=null});
+ }
+ errorDialog.querySelector('#stopErrorMessage').textContent=message;
+ errorDialogPreviousFocus=document.activeElement;
+ if(!errorDialog.open)errorDialog.showModal();
+ errorDialog.querySelector('.stop-error-close').focus();
+}
+const status=(msg,isError=false)=>{
+ if(isError&&msg){showErrorPopup(msg);return}
+ const el=document.getElementById('status');
+ if(el){el.textContent=msg||'';el.className='status';el.hidden=!msg}
+};
 const saveSession=()=>{try{sessionStorage.setItem(KEY,JSON.stringify(session))}catch{}};
 const reset=()=>{session=null;room=null;screen='';seenVersion=-1;clearInterval(interval);clearInterval(timer);interval=null;timer=null;try{sessionStorage.removeItem(KEY)}catch{};renderEntry()};
 async function checkReadiness(){
@@ -218,12 +246,12 @@ function renderEntry(){
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
  '<div>'+numericField('rounds',entry.rounds,[1,3,5,10,20],1,20,'')+'</div></div>'+
  numericField('duration',entry.duration,[30,60,90,120,180,300],30,300,'segundos')+
- (isLocal?'':'</section><section class="panel organizer-rules"><span class="kicker">02 · REGRAS DO JOGO</span><h2>🔠 Letras e categorias</h2>')+
- '<div class="actions"><strong>🔠 Letras disponíveis</strong>'+btn('↺ Restaurar letras','resetLetters','small')+'</div>'+
+ (isLocal?'':'</section><section class="panel organizer-rules"><span class="kicker">02 · REGRAS DO JOGO</span><h2>Letras e categorias</h2>')+
+ '<div class="actions"><strong>Letras disponíveis</strong>'+btn('↺ Restaurar letras','resetLetters','small')+'</div>'+
  '<p class="notice">💡 Toque nas letras para ativar ou desativar o sorteio. Pelo menos uma precisa ficar ativa.</p>'+
  '<div class="letter-set">'+[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map(x=>'<button type="button" data-letter-toggle="'+x+'" class="'+(letters.includes(x)?'active':'excluded')+'" aria-pressed="'+letters.includes(x)+'">'+x+'</button>').join('')+'</div>'+
  ''+
- '<div class="actions"><strong>🎯 Categorias da partida</strong><span class="hint">'+categories.length+' de 12</span></div>'+
+ '<div class="actions"><strong>Categorias da partida</strong><span class="hint">'+categories.length+' de 12</span></div>'+
  '<p class="notice">💡 Escolha de 6 a 12 categorias. Use + para incluir uma sugestão; remova das escolhidas com ×.</p>'+
  '<div class="picked-categories"><strong>Selecionadas</strong><div class="chips">'+categories.map((x,i)=>'<span class="chip">'+esc(x)+' <button type="button" data-remove="'+i+'" title="Remover categoria '+esc(x)+'">×</button></span>').join('')+'</div></div>'+
  '<div class="category-library"><strong>Adicionar categorias sugeridas</strong><div class="chips suggestion-chips">'+allCategoryOptions.map(x=>'<button type="button" class="suggestion-chip" data-add-suggestion="'+esc(x)+'" '+(categories.some(y=>y.toLocaleLowerCase('pt-BR')===x.toLocaleLowerCase('pt-BR'))||categories.length>=12?'disabled':'')+'>+ '+esc(x)+'</button>').join('')+'</div></div>'+
@@ -511,7 +539,10 @@ app.addEventListener('click',async e=>{
   else letters.push(letter);
   letters.sort();renderEntry();return;
  }
- if(b.dataset.remove!==undefined){captureEntry();categories.splice(Number(b.dataset.remove),1);renderEntry();return}
+ if(b.dataset.remove!==undefined){
+  if(categories.length<=6)return status('Mantenha pelo menos 6 categorias.',true);
+  captureEntry();categories.splice(Number(b.dataset.remove),1);renderEntry();return;
+ }
  if(!b.dataset.act)return;
  const action=b.dataset.act;
  if(action==='resetLetters'){captureEntry();letters=[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];renderEntry();return}
