@@ -10,6 +10,18 @@
 - **Não é sala online:** não há convite, código de sala, sincronização entre dispositivos nem colaboração simultânea pela rede. Esses recursos exigem backend de sessão/realtime em etapa futura.
 - Validação visual e teste de partida completa no navegador ainda pendentes.
 
+## Eventos com até 50 equipes
+
+- Página do organizador: `stop-arena/online/eventos/`.
+- Cada evento cria um **código próprio de sete caracteres** e aceita o registro de até **50 equipes** (limite conferido pelo servidor).
+- Cada equipe possui sua própria sala online, com **2 a 6 participantes**; esse limite não foi alterado.
+- Ao criar a sala, informe o código do evento. O servidor registra a equipe, recusa nomes repetidos e bloqueia a 51ª equipe.
+- O painel do evento apresenta os nomes das equipes, quantidade de participantes, códigos das salas e pontuação, atualizados automaticamente a cada cinco segundos.
+- As equipes jogam suas partidas de forma independente; **não há sorteio/cronômetro sincronizado entre equipes** nem classificação pedagógica automática.
+- A infraestrutura usa um `StopArenaEvent` Durable Object SQLite separado do `StopArenaRoom`, com limpeza após 24 horas de inatividade. O registro não armazena tokens de acesso dos jogadores.
+- O limite de 50 equipes foi testado em simulação do objeto: **50 registros aceitos, 51º recusado (409)**.
+- A implantação do Worker e testes reais em diversos aparelhos ainda requerem confirmação; gravação no GitHub não implica implantação confirmada.
+
 ## Cooperativo Online — salas em dispositivos diferentes (v0.3)
 
 Acesse `stop-arena/online/` ou o cartão **Cooperativo Online** na página inicial.
