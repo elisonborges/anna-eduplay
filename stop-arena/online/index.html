@@ -211,7 +211,7 @@ function renderEntry(){
  '<label for="joinName">Seu nome</label><input id="joinName" maxlength="25" placeholder="Como quer aparecer?" value="'+esc(entry.joinName)+'">'+
  '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div></section>':
  '')+
- '<p id="status" class="status" hidden></p>'+(isLocal?'</section>':'')+'</div>';
+ '<p id="status" class="status" hidden></p></div>';
  if(isLocal)checkReadiness();
 }
 async function enter(op){
