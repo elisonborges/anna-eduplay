@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6027b6"><title>Entrar na sala | Stop Arena · AnnA EduPlay</title>
+<meta name="description" content="Entre na sala do Stop Arena Online com seu PIN e nome">
+<link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
+<style>
+:root{font:16px Inter,Segoe UI,Arial,sans-serif;background:#f6f3ff;color:#29254c}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at 85% 10%,#d2edff,transparent 33%),linear-gradient(135deg,#f7f2ff,#fff9f0)}
+header{background:linear-gradient(110deg,#4b259f,#843be0);color:white;padding:18px}
+.head{max-width:600px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.head a{color:white;text-decoration:none;font-weight:700;font-size:14px}
+main{max-width:590px;margin:30px auto;padding:0 16px}
+.panel{background:white;padding:28px;border-radius:22px;border:1px solid #ded4f9;box-shadow:0 12px 35px #48217b20}
+h1{font-size:clamp(26px,5vw,36px);margin:0 0 10px}
+p{color:#596080;line-height:1.5}label{display:block;margin:19px 0 7px;font-weight:750}
+input{font:inherit;padding:15px;border:2px solid #d8cdf5;border-radius:12px;width:100%;font-size:19px}
+input:focus{outline:3px solid #ac90ff;outline-offset:2px}#pin{text-transform:uppercase;letter-spacing:4px;font-weight:800}
+button{font:inherit;background:#7134ce;color:white;border:0;border-radius:13px;padding:16px;width:100%;font-weight:800;margin-top:24px;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}.status{padding:12px;border-radius:12px;background:#f5f0ff}.status.error{background:#fff0ee;color:#9d2424}
+.help{font-size:13px;margin-top:20px}.hint{background:#f5f1ff;padding:12px;border-radius:12px}
+</style></head>
+<body><header><div class="head"><strong>🎉 Stop Arena · Cooperativo Online</strong><a href="../">Organizar partida</a></div></header>
+<main><section class="panel"><h1>🔑 Entrar em uma sala</h1>
+<p>Digite o <strong>PIN</strong> recebido do organizador e seu nome. Você entrará na equipe e poderá acompanhar a roleta, responder e participar da conferência.</p>
+<form id="joinForm">
+<label for="pin">PIN da sala (7 caracteres)</label><input id="pin" name="pin" maxlength="7" minlength="7" pattern="[A-HJ-NP-Za-hj-np-z2-9]{7}" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="EX.: ABC2345" required>
+<label for="player">Seu nome</label><input id="player" name="player" maxlength="25" minlength="1" autocomplete="name" placeholder="Como você quer aparecer?" required>
+<button id="join" type="submit">🤝 Entrar na partida</button>
+</form><p class="hint">A sala comporta de 2 a 6 pessoas. Entre antes do organizador iniciar o sorteio.</p>
+<p class="status" id="status" role="status" hidden></p><p class="help">Somente participantes com o PIN conseguem entrar na sala. Não compartilhe o link fora da equipe.</p>
+</section></main>
+<script>
+(()=>{'use strict';
+const API='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/room';
+const KEY='anna.stoparena.online.session';
+const params=new URLSearchParams(location.search);
+const pin=document.getElementById('pin'),player=document.getElementById('player'),form=document.getElementById('joinForm'),button=document.getElementById('join'),status=document.getElementById('status');
+pin.value=(params.get('sala')||params.get('pin')||'').trim().toUpperCase().slice(0,7);
+pin.addEventListener('input',()=>{pin.value=pin.value.toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g,'').slice(0,7)});
+const info=(message,error=false)=>{status.hidden=false;status.textContent=message;status.className='status'+(error?' error':'')};
+form.addEventListener('submit',async e=>{
+ e.preventDefault();
+ const code=pin.value.trim().toUpperCase(),name=player.value.trim();
+ if(!/^[A-HJ-NP-Z2-9]{7}$/.test(code)||!name){info('Informe um PIN válido e seu nome.',true);return}
+ button.disabled=true;info('Entrando na sala...');
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),14000);
+ try{
+  const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',signal:controller.signal,body:JSON.stringify({op:'join',code,name})});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||!data.token||!data.room?.code)throw Error(data.error||'Não foi possível entrar na sala.');
+  sessionStorage.setItem(KEY,JSON.stringify({code:data.room.code,token:data.token}));
+  location.replace('../?sala='+encodeURIComponent(data.room.code));
+ }catch(error){info(error.name==='AbortError'?'Tempo de conexão esgotado. Tente novamente.':error.message,true);button.disabled=false}
+ finally{clearTimeout(timeout)}
+});
+})();
+</script></body></html>
