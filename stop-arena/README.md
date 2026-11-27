@@ -1,3 +1,18 @@
+## Campeonato eliminatório — primeira versão funcional (não publicada)
+
+O Stop Arena passa a ter o painel separado `stop-arena/online/campeonato/`, integrado à criação e ao cadastro de equipes em `stop-arena/online/eventos/`.
+
+Fluxo disponível nesta branch:
+1. O organizador cria o campeonato e configura categorias, letras, duração e rodadas, como antes. O servidor retorna um token exclusivo de organização, armazenado na sessão do navegador criador. **Preserve a aba/sessão do organizador; ainda não existe recuperação de acesso.**
+2. As equipes se inscrevem usando o link de criação de sala do campeonato; cada equipe tem sua própria sala e PIN para seus jogadores.
+3. Com pelo menos duas equipes, o organizador abre o Painel do Campeonato e encerra as inscrições para iniciar o **sorteio eliminatório**. O formato é eliminação simples, com distribuição de vagas livres (*byes*) para quantidades não potências de dois, até 50 equipes.
+4. O organizador registra as pontuações de cada confronto. Resultados iguais exigem desempate antes da confirmação. Quando todos os confrontos de uma fase terminam, o sistema gera a próxima automaticamente, até definir campeão e vice.
+5. O painel publica o chaveamento, as classificadas, os resultados e o campeão para quem tiver o código do campeonato. As ações de sorteio e placar exigem o token do organizador.
+
+**Limitação conhecida:** os resultados dos confrontos ainda são lançados pelo organizador, não lidos automaticamente das salas. A validação física de jogos paralelos, autenticação duradoura de organizadores, recuperação de acesso e registro de partidas por fase ficam para as versões seguintes. A estrutura existente de eventos e salas foi preservada.
+
+Validações simuladas: formatos com 2, 3, 5, 8, 16 e 50 equipes, até a definição de campeão; para 50 equipes foram observados 14 *byes*, 49 confrontos e 6 fases. Também foram testados bloqueio de inscrições após o sorteio, token de organizador inválido e empate. Código ainda em branches `feature/stop-arena-campeonato-chaveamento-v01` nos repositórios `anna-eduplay` e `anna-virtual`. Não integrado à `main` e não implantado.
+
 ## Separação das competições — Campeonatos
 
 - O formulário normal de criação de sala online não mostra mais o campo opcional Código do evento nem as explicações de campeonato.
