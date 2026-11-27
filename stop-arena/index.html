@@ -459,12 +459,12 @@ function classify(category,answer,letter){
  return {status:'review',reason:'Não encontrada no dicionário resumido. Pode estar correta.'};
 }
 async function consultAI(){
- const targets=s.results.map((r,index)=>({...r,index})).filter(r=>r.status==='review'&&r.answer);
+ const targets=s.results.map((r,index)=>({...r,index})).filter(r=>r.answer&&r.status!=='empty');
  const info=document.getElementById('aiFeedback');
  const btn=app.querySelector('[data-a="consultAI"]');
  if(!info||!btn)return;
- if(!targets.length){info.textContent='Não há respostas pendentes.';return}
- btn.disabled=true;info.textContent='🤖 Conferindo '+targets.length+' resposta(s) com IA...';
+ if(!targets.length){info.textContent='Não há respostas para conferir.';return}
+ btn.disabled=true;info.textContent='🤖 Conferindo a escrita e a categoria de '+targets.length+' resposta(s)...';
  const expectedLetter=s.letter,expectedRound=s.round;
  try{
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
@@ -481,8 +481,21 @@ async function consultAI(){
    const index=Number(suggestion.index),target=eligible.get(index);
    if(!target||!['valid','invalid','review'].includes(suggestion.status))continue;
    const current=s.results[index];
-   if(!current||current.status!=='review'||current.answer!==target.answer)continue;
-   const reason='🤖 IA: '+String(suggestion.reason||'Sem justificativa').slice(0,150);
+   if(!current||current.answer!==target.answer||current.status!==target.status)continue;
+   const correction=typeof suggestion.corrected==='string'?suggestion.corrected.trim().slice(0,80):'';
+   const different=correction&&correction.toLocaleUpperCase('pt-BR')!==current.answer.toLocaleUpperCase('pt-BR');
+   const reason='🤖 IA: '+String(suggestion.reason||'Sem justificativa').slice(0,140);
+   if(different){
+    current.correction=correction;
+    current.status='review';
+    current.reason='✍️ Grafia sugerida: '+correction+' · '+reason+' · confirme a avaliação.';
+    const field=app.querySelector('[data-status="'+index+'"]');if(field)field.value='review';
+    const point=document.getElementById('pt'+index);if(point)point.textContent='0 pts';
+    const help=document.getElementById('reason'+index);if(help)help.textContent=current.reason;
+    uncertain++;
+    continue;
+   }
+   if(current.status!=='review')continue;
    current.reason=reason;
    const help=document.getElementById('reason'+index);
    if(help)help.textContent=reason;
@@ -497,7 +510,7 @@ async function consultAI(){
   const pending=s.results.filter(x=>x.status==='review').length;
   updateReviewSummary();
   save();
-  info.textContent='✅ '+evaluated+' resposta(s) conferida(s) · '+uncertain+' dúvida(s) apontada(s) · '+pending+' pendente(s). Você pode corrigir qualquer avaliação.';
+  info.textContent='✅ '+evaluated+' avaliação(ões) concluída(s) · '+uncertain+' correção(ões) ou dúvida(s) para revisar · '+pending+' pendente(s). A palavra original foi preservada.';
  }catch(error){info.textContent='⚠️ IA indisponível: '+(error.name==='AbortError'?'tempo esgotado':error.message)+'. Continue manualmente.'}
  finally{if(btn.isConnected)updateReviewSummary()}
 }
@@ -514,7 +527,7 @@ function updateReviewSummary(){
   message.textContent=pending?'🟡 Faltam '+pending+' resposta(s) para conferir. Use a IA ou escolha a avaliação.':'🎉 Tudo conferido! Pode seguir para a próxima rodada.';
  }
  const next=app.querySelector('[data-a="confirm"]');if(next)next.disabled=pending>0;
- const ai=app.querySelector('[data-a="consultAI"]');if(ai)ai.disabled=pending===0;
+ const ai=app.querySelector('[data-a="consultAI"]');if(ai)ai.disabled=!s.results.some(r=>r.answer&&r.status!=='empty');
 }
 function renderResult(){
  const pending=s.results.filter(r=>r.status==='review').length;
@@ -529,7 +542,7 @@ function renderResult(){
  '</select><strong class="review-points" id="pt'+i+'">'+(points(r.status)?'+'+points(r.status)+' pts':'0 pts')+'</strong></div></article>').join('')+'</section>'+
  (s.playStyle==='computer'?'<section class="panel computer-review"><h3>🤖 Respostas do computador</h3><p class="notice">O adversário preparou suas palavras antes da rodada.</p><div class="review-grid">'+s.computerResults.map(item=>'<div class="review-answer"><span class="review-answer-icon">'+categoryEmoji(item.category)+'</span><div class="review-answer-main"><strong>'+esc(item.category)+'</strong><b>'+esc(item.answer||'—')+'</b></div><strong class="review-points">'+(item.status==='valid'?'+10 pts':'0 pts')+'</strong></div>').join('')+'</div><p><strong>🤖 Computador: '+computerRoundScore()+' pontos nesta rodada</strong></p></section>':'')+
  '<div id="reviewMessage" class="review-message '+(pending?'has-pending':'all-ready')+'">'+(pending?'🟡 Faltam '+pending+' resposta(s) para conferir. Use a IA ou escolha a avaliação.':'🎉 Tudo conferido! Pode seguir para a próxima rodada.')+'</div>'+
- '<div class="review-toolbar"><div class="review-ai">'+button('🤖 Conferir pendentes com IA','consultAI')+'<span id="aiFeedback" class="notice" role="status">'+(pending?'O Gemini ajuda na conferência; você pode corrigir a avaliação.':'Não há respostas pendentes.')+'</span></div><div class="review-buttons">'+button('↺ Refazer','retry')+'<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'🏆 Resultado final →':'➡ Próxima rodada')+'</button></div></div>'+
+ '<div class="review-toolbar"><div class="review-ai">'+button('🤖 Conferir escrita com IA','consultAI')+'<span id="aiFeedback" class="notice" role="status">'+(pending?'O Gemini ajuda na conferência; você pode corrigir a avaliação.':'Não há respostas pendentes.')+'</span></div><div class="review-buttons">'+button('↺ Refazer','retry')+'<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'🏆 Resultado final →':'➡ Próxima rodada')+'</button></div></div>'+
  '<p id="pendingCount" class="sr-only">'+pending+' resposta(s) aguardando revisão.</p>');
 }
 
