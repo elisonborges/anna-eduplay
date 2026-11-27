@@ -49,6 +49,12 @@ table select{font-size:12px;min-height:36px;max-width:170px}
 .goal{text-align:center;color:#16785e;font-weight:800}
 footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px;font-size:12px}
 @media(max-width:700px){.layout{grid-template-columns:1fr}.answers{grid-template-columns:1fr}.panel{padding:13px}.fieldrow{grid-template-columns:1fr}.header{padding:12px}.stats{gap:4px}.stat{padding:7px 2px}}
+
+.letter-set{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px;margin:8px 0}
+.letter-set button{padding:5px 0;min-height:28px;border-radius:7px;border:1px solid #d2b8ee;color:#4a267e;background:#f1e6ff;font-size:12px;font-weight:800}
+.letter-set button:nth-child(4n){background:#def8f4}
+.letter-set button.excluded{background:#eae8ef;color:#92929a;text-decoration:line-through;opacity:.7}
+@media(max-width:680px){.letter-set{grid-template-columns:repeat(9,minmax(0,1fr))}}
 </style></head>
 <body><header><div class="header"><div class="brand">🎉 Stop Arena <small>AnnA EduPlay · Cooperativo Online 🌐</small></div><a href="../">← Voltar ao jogo</a></div></header>
 <main id="app" aria-live="polite"><h1>🤝 Preparando a sala online</h1></main>
@@ -67,6 +73,7 @@ const btn=(title,act,cls='')=>'<button class="btn '+cls+'" data-act="'+act+'">'+
 const queryCode=new URLSearchParams(location.search).get('sala')||'';
 const entry={name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[...PRESETS.recreativo.Clássico];
+let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='';
 try{
  const saved=JSON.parse(sessionStorage.getItem(KEY)||'null');
@@ -118,6 +125,9 @@ function renderEntry(){
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
  '<div><label for="rounds">Rodadas</label><select id="rounds">'+[1,3,5,10,20].map(n=>'<option value="'+n+'" '+(entry.rounds===n?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div>'+
  '<label for="duration">Tempo por rodada</label><select id="duration">'+[30,60,90,120,180,300].map(n=>'<option value="'+n+'" '+(entry.duration===n?'selected':'')+'>'+n+' segundos</option>').join('')+'</select>'+
+ '<div class="actions"><strong>🔠 Letras disponíveis</strong><span class="hint">Toque para excluir</span></div>'+
+ '<div class="letter-set">'+[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map(x=>'<button type="button" data-letter-toggle="'+x+'" class="'+(letters.includes(x)?'active':'excluded')+'" aria-pressed="'+letters.includes(x)+'">'+x+'</button>').join('')+'</div>'+
+ '<div class="attention">💡 Letras riscadas não entram no sorteio. Pelo menos uma deve permanecer.</div>'+
  '<div class="actions"><strong>🎯 Categorias da partida</strong><span class="hint">'+categories.length+' de 12</span></div>'+
  '<div class="chips">'+categories.map((x,i)=>'<span class="chip">'+esc(x)+' <button type="button" data-remove="'+i+'" title="Remover">×</button></span>').join('')+'</div>'+
  '<div class="actions"><input style="flex:1;min-width:110px" id="extraCat" maxlength="42" placeholder="Nova categoria">'+btn('Adicionar','addCat','small')+'</div>'+
@@ -138,7 +148,7 @@ async function enter(op){
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
-  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),categories,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
   const data=await request(payload);
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
@@ -276,6 +286,12 @@ async function reviewAI(){
 }
 app.addEventListener('click',async e=>{
  const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.letterToggle!==undefined){
+  captureEntry();const letter=b.dataset.letterToggle;
+  if(letters.includes(letter)){if(letters.length===1)return status('Pelo menos uma letra deve permanecer.',true);letters=letters.filter(x=>x!==letter)}
+  else letters.push(letter);
+  letters.sort();renderEntry();return;
+ }
  if(b.dataset.remove!==undefined){captureEntry();if(categories.length<=6)return status('Mantenha pelo menos 6 categorias.',true);categories.splice(Number(b.dataset.remove),1);renderEntry();return}
  if(!b.dataset.act)return;
  const action=b.dataset.act;
