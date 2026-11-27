@@ -1,3 +1,11 @@
+## Tela de criação online — layout em colunas
+
+- O formulário do organizador foi dividido em **duas colunas no desktop**: dados/configuração à esquerda e letras/categorias à direita; no celular, as seções são empilhadas para manter a leitura.
+- Os links **Sou participante · entrar com PIN** e **Ver todas as salas** ficam lado a lado no cabeçalho, sem o cartão grande do quadro de salas.
+- Foram removidos da tela de criação online o painel **É participante?** e o aviso visível de status/credencial do servidor. A API continua retornando erros de conexão quando necessário.
+- O Multiplayer Local mantém sua entrada no mesmo endereço e o aviso específico da rede LAN.
+- Alterações preservadas na branch `feature/stop-arena-online-50-participantes`, sem publicação na `main` nesta etapa.
+
 ## Cooperativo Online — até 50 participantes (versão em desenvolvimento)
 
 - A capacidade por sala do modo **Online** passa de 6 para **50 participantes** (organizador incluído), sem exigir número máximo de inscrições para iniciar: continuam necessários apenas o organizador e pelo menos mais um participante.
