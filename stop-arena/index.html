@@ -137,6 +137,9 @@ body{background:radial-gradient(circle at 9% 12%,#fbe1fa 0,transparent 33%),radi
 .contributor{width:100%;font-size:12px!important;min-height:35px!important;padding:6px!important}
 :root[data-theme=dark] .coop-game-banner{background:#183d3f;color:#d4ffed}
 @media(max-width:620px){.coop-game-banner{align-items:flex-start;flex-direction:column}.contributor{font-size:12px}}
+
+.coop-goal{text-align:center;font-weight:800;color:#0b926c}
+.coop-contributions{padding:12px;margin:15px 0;border:1px solid var(--edge);border-radius:12px;background:var(--card)}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -329,6 +332,7 @@ function renderResult(){
  const pending=s.results.filter(r=>r.status==='review').length;
  show(title('🔎 Conferir respostas','Letra '+s.letter+' · '+s.endReason)+
  '<section class="panel"><p class="validation-guide">🧠 <strong>Validação local:</strong> ✅ reconhecidas, ❌ letra incorreta, 🟡 aguardando revisão. O dicionário é parcial e não encontrar uma palavra não significa que esteja errada.</p>'+
+ (s.playStyle==='coop'?'<p class="notice">🤝 Todos compartilham os pontos das respostas válidas.</p>':'')+
  '<div style="overflow:auto"><table class="scoretable validation-table"><thead><tr><th>Categoria e resposta</th><th>Avaliação</th><th>Pontos</th></tr></thead><tbody>'+
  s.results.map((r,i)=>'<tr><td><strong>'+esc(r.category)+'</strong><div>'+esc(String(r.answer||'—').toLocaleUpperCase('pt-BR'))+'</div><small class="notice" id="reason'+i+'">'+esc(r.reason||'Revisão manual')+'</small></td><td><select data-status="'+i+'" aria-label="Validar '+esc(r.category)+'">'+
  ['valid','review','invalid','empty'].map(status=>'<option value="'+status+'" '+(r.status===status?'selected':'')+'>'+labels[status]+'</option>').join('')+
@@ -340,7 +344,19 @@ function renderResult(){
  '<div class="actions">'+button('Refazer rodada','retry')+
  '<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'Resultado final →':'Próxima rodada →')+'</button></div></section>');
 }
-function renderEnd(){let total=s.history.reduce((a,x)=>a+x.score,0);show(title('Partida concluída!','Modo '+(s.mode==='educacional'?'Educacional':'Recreativo')+' · '+esc(s.name))+'<section class="panel"><div class="score" style="font-size:44px;text-align:center">'+total+' pontos</div><div class="summary"><div><strong>'+s.history.length+'</strong><small>Rodadas</small></div><div><strong>'+Math.max(0,...s.history.map(x=>x.score))+'</strong><small>Melhor rodada</small></div><div><strong>'+Math.round(total/Math.max(s.history.length,1))+'</strong><small>Média</small></div></div><table class="scoretable"><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos</th></tr></thead><tbody>'+s.history.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+'</tbody></table><div class="actions" style="margin-top:15px">'+back()+button('Jogar novamente','again','primary')+'</div></section>')}
+function renderEnd(){
+ const total=s.history.reduce((a,h)=>a+h.score,0),isTeam=s.playStyle==='coop';
+ const goal=Math.ceil(s.categories.length*10*s.rounds*.7);
+ const contributionCounts=(s.members||[]).map((name,i)=>({name,count:s.history.reduce((n,h)=>n+(h.contributors||[]).filter(x=>x===String(i)).length,0)}));
+ show(title(isTeam?(total>=goal?'🏆 Missão cumprida!':'🤝 Juntos somos mais fortes!'):'Partida concluída!',
+ isTeam?esc(s.teamName||'Equipe Stop')+' · meta '+goal+' pontos':'Modo '+(s.mode==='educacional'?'Educacional':'Recreativo')+' · '+esc(s.name))+
+ '<section class="panel"><div class="score" style="font-size:44px;text-align:center">'+total+' pontos</div>'+
+ (isTeam?'<p class="coop-goal">'+(total>=goal?'🎉 Parabéns! A equipe atingiu a meta!':'💪 A equipe chegou a '+Math.round(total/Math.max(1,goal)*100)+'% da meta. Tentem novamente!')+'</p>':'')+
+ '<div class="summary"><div><strong>'+s.history.length+'</strong><small>Rodadas</small></div><div><strong>'+Math.max(0,...s.history.map(x=>x.score))+'</strong><small>Melhor rodada</small></div><div><strong>'+Math.round(total/Math.max(s.history.length,1))+'</strong><small>Média</small></div></div>'+
+ (isTeam?'<div class="coop-contributions"><strong>🙌 Participação da equipe</strong><p class="notice">Registro opcional de contribuições. Todos compartilham os pontos.</p><div class="chips">'+contributionCounts.map(m=>'<span class="chip">⭐ '+esc(m.name)+': '+m.count+'</span>').join('')+'</div></div>':'')+
+ '<table class="scoretable"><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos</th></tr></thead><tbody>'+s.history.map((h,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(h.letter)+'</td><td>'+h.valid+'</td><td>'+h.score+'</td></tr>').join('')+'</tbody></table>'+
+ '<div class="actions" style="margin-top:15px">'+back()+button('Jogar novamente','again','primary')+'</div></section>');
+}
 function render(){document.body.classList.remove('keyboard-open');clearInterval(timer);clearInterval(rouletteTimer);if(s.screen==='home')renderHome();else if(s.screen==='setup')renderSetup();else if(s.screen==='letter')choose();else if(s.screen==='game')renderGame();else if(s.screen==='result')renderResult();else if(s.screen==='end')renderEnd();else{s.screen='home';renderHome()}}
 function start(){
  const raw=document.getElementById('rounds').value.trim();
