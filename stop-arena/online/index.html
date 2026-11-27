@@ -78,9 +78,9 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .organizer-hero h1{font-size:clamp(25px,4.5vw,36px);margin:8px 0;color:white}.organizer-hero p{color:#efe6ff;max-width:560px;font-size:14px}
 .organizer-kicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d8ffcc}
 .organizer-join{display:inline-flex;margin-top:12px;color:#45208e!important;background:#fff!important;text-decoration:none;border-radius:12px;padding:11px 14px;font-size:13px}
-.organizer-layout{display:flex;flex-direction:column;gap:12px;align-items:stretch;max-width:100%}.organizer-layout>.panel{box-shadow:0 8px 25px #50358b13}
+.organizer-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start;max-width:100%}.organizer-layout>.panel{box-shadow:0 8px 25px #50358b13}
 .organizer-layout .kicker{font-size:11px;letter-spacing:1.1px;color:#7137af}
-.organizer-layout h2{font-size:20px}.organizer-config{width:100%}
+.organizer-layout h2{font-size:20px}.organizer-config{min-width:0}.organizer-rules{min-width:0}
 .organizer-participants{display:flex;align-items:center;gap:12px;padding:11px 15px;border:1px solid #e0d8f0;border-radius:14px;background:#fbfaff;min-height:68px}
 .participant-symbol{display:grid;place-items:center;width:40px;height:40px;flex-shrink:0;background:#eee6ff;border-radius:12px;font-size:21px}
 .participant-copy{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}
@@ -89,7 +89,12 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .participant-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;white-space:nowrap;min-height:38px!important;padding:8px 12px!important;font-size:12px!important;color:#6230b8!important;background:#f0e8ff!important;box-shadow:none!important}
 @media(max-width:480px){.organizer-participants{flex-wrap:wrap;padding:11px}.participant-copy{min-width:150px}.participant-link{width:100%}}
 
-@media(max-width:720px){.organizer-join{width:100%;justify-content:center}}
+.organizer-shortcuts{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.organizer-shortcuts .organizer-join{margin:0;display:inline-flex;align-items:center;justify-content:center;min-height:43px}
+@media(max-width:760px){.organizer-layout{grid-template-columns:1fr}.organizer-shortcuts .organizer-join{flex:1 1 210px;text-align:center}}
+@media(max-width:480px){.organizer-shortcuts{flex-direction:column;align-items:stretch}.organizer-shortcuts .organizer-join{flex:none;width:100%}}
+.championship-notice{display:flex;flex-direction:column;gap:5px;margin:11px 0;padding:12px;background:#f3eeff;border:1px solid #d6c3fb;border-radius:12px;color:#4c2783;font-size:12px}
+.championship-notice strong{font-size:14px}.championship-notice a{color:#5d2aa9;font-weight:750}
 /* Participantes em fileira horizontal, com emoji escolhido e nome. */
 .lobby-layout{display:flex;flex-direction:column;align-items:stretch}
 .lobby-layout>.panel{width:100%}
@@ -99,6 +104,12 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .lobby-player-name{align-items:center;width:100%}.lobby-player-name strong{font-size:14px;overflow-wrap:anywhere}
 .lobby-remove{font-size:11px!important;padding:6px 9px!important;margin-top:auto}
 @media(max-width:720px){.lobby-layout{display:flex;flex-direction:column}.lobby-player-row{gap:9px}.lobby-player{flex-basis:128px;min-height:148px}}
+/* Nome ocupa o espaço principal; emoji usa apenas um seletor curto à direita. */
+.name-emoji-row{display:flex;align-items:end;gap:10px}
+.name-compact{flex:1;min-width:0}
+.emoji-compact{width:86px;flex:0 0 86px}
+.emoji-compact select{width:100%;min-height:43px;font-size:23px;text-align:center;padding:5px 9px}
+@media(max-width:480px){.emoji-compact{width:78px;flex-basis:78px}}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -131,8 +142,9 @@ if(isLocal){
  if(subtitle)subtitle.textContent='AnnA EduPlay · Multiplayer Local 🏫';
 }
 const queryCode=params.get('sala')||'';
-const queryEvent=new URLSearchParams(location.search).get('evento')||'';
-const entry={emoji:'😀',name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:upper(queryEvent).slice(0,7),rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
+const queryEvent=upper(new URLSearchParams(location.search).get('evento')||'').trim();
+const championshipMode=/^[A-HJ-NP-Z2-9]{7}$/.test(queryEvent);
+const entry={emoji:'😀',name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:championshipMode?queryEvent:'',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[...PRESETS.recreativo.Clássico];
 let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='',lobbyDraft='';
@@ -169,9 +181,9 @@ async function request(payload){
 }
 const userName=id=>room?.members.find(m=>m.id===id)?.name||'Equipe';
 const playerEmojis=['😀','😎','🤓','🥳','🤖','🦊','🐼','🐯','🦁','🐸','🦄','🚀'];
-const emojiSelector=(id,value)=>'<label for="'+id+'">Seu emoji na equipe</label><select id="'+id+'" aria-label="Escolha seu emoji">'+playerEmojis.map(e=>'<option value="'+e+'" '+(value===e?'selected':'')+'>'+e+'</option>').join('')+'</select>';
+const emojiSelector=(id,value)=>'<div class="emoji-compact"><label for="'+id+'">Emoji</label><select id="'+id+'" aria-label="Escolha seu emoji na equipe">'+playerEmojis.map(e=>'<option value="'+e+'" '+(value===e?'selected':'')+'>'+e+'</option>').join('')+'</select></div>';
 function captureEntry(){
- for(const [key,id] of [['name','ownerName'],['team','teamName'],['eventCode','eventCode'],['joinName','joinName'],['joinCode','joinCode'],['emoji','hostEmoji']]){
+ for(const [key,id] of [['name','ownerName'],['team','teamName'],['joinName','joinName'],['joinCode','joinCode'],['emoji','hostEmoji']]){
   const el=document.getElementById(id);if(el)entry[key]=el.value;
  }
  for(const [key,id] of [['mode','mode'],['preset','preset'],['rounds','rounds'],['duration','duration']]){
@@ -180,19 +192,18 @@ function captureEntry(){
 }
 function renderEntry(){
  screen='entry';clearInterval(interval);clearInterval(timer);interval=null;timer=null;
- app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<section class="organizer-hero"><span class="organizer-kicker">AnnA EduPlay · Stop Arena Online</span><h1>🎮 Organize sua partida</h1><p>Configure o jogo, crie uma sala e compartilhe o PIN. Os participantes entram por um link próprio.</p><a class="btn organizer-join" href="entrar/">🔑 Sou participante · entrar com PIN</a></section>')+
- '<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>'+
- (isLocal?'':'<section class="panel" style="margin:13px 0;background:linear-gradient(105deg,#e4fff4,#eaf3ff)"><div class="actions" style="justify-content:space-between;margin-top:0"><div><strong>🏠 Quadro de salas criadas</strong><p class="notice">Veja nomes das salas, participantes conectados e vagas disponíveis.</p></div><a class="btn primary" href="salas/">Ver todas as salas →</a></div></section>')+
+ app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<section class="organizer-hero"><span class="organizer-kicker">AnnA EduPlay · Stop Arena Online</span><h1>'+(championshipMode?'🏆 Criar equipe no campeonato':'🎮 Organize sua partida')+'</h1><p>'+(championshipMode?'Esta sala fará parte de um campeonato com regras compartilhadas.':'Configure o jogo, crie a sala e compartilhe o PIN.')+'</p><div class="organizer-shortcuts"><a class="btn organizer-join" href="entrar/">🔑 Sou participante · entrar com PIN</a><a class="btn organizer-join" href="salas/">🏠 Ver todas as salas</a><a class="btn organizer-join" href="eventos/">🏆 Campeonatos</a></div></section>')+
+ (isLocal?'<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>':'')+
+ ''+
  '<div class="layout organizer-layout"><section class="panel organizer-config"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
- '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
- (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+
+ '<div class="name-emoji-row"><div class="name-compact"><label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'"></div>'+
+ (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+'</div>'+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
- (isLocal?'':'<label for="eventCode">Código do evento (opcional; até 50 equipes)</label><input id="eventCode" maxlength="7" placeholder="Código de 7 caracteres" value="'+esc(entry.eventCode)+'">'+
- '<p class="notice">🏆 Se participar de um evento, as regras definidas pelo organizador prevalecem: categorias, letras, duração e número de rodadas iguais para todas as equipes.</p>'+
- '<p class="notice"><a href="eventos/">🏆 Criar evento ou ver placar de equipes</a></p>')+
+ (!isLocal&&championshipMode?'<div class="championship-notice"><strong>🏆 Campeonato '+esc(entry.eventCode)+'</strong><span>Esta sala seguirá as regras definidas pelo organizador do campeonato.</span><a href="eventos/">Consultar campeonato</a></div>':'')+
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
  '<div><label for="rounds">Rodadas</label><select id="rounds">'+[1,3,5,10,20].map(n=>'<option value="'+n+'" '+(entry.rounds===n?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div>'+
  '<label for="duration">Tempo por rodada</label><select id="duration">'+[30,60,90,120,180,300].map(n=>'<option value="'+n+'" '+(entry.duration===n?'selected':'')+'>'+n+' segundos</option>').join('')+'</select>'+
+ (isLocal?'':'</section><section class="panel organizer-rules"><span class="kicker">02 · REGRAS DO JOGO</span><h2>🔠 Letras e categorias</h2>')+
  '<div class="actions"><strong>🔠 Letras disponíveis</strong><span class="hint">Toque para excluir</span></div>'+
  '<div class="letter-set">'+[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map(x=>'<button type="button" data-letter-toggle="'+x+'" class="'+(letters.includes(x)?'active':'excluded')+'" aria-pressed="'+letters.includes(x)+'">'+x+'</button>').join('')+'</div>'+
  '<div class="attention">💡 Letras riscadas não entram no sorteio. Pelo menos uma deve permanecer.</div>'+
@@ -206,9 +217,9 @@ function renderEntry(){
  '<label for="joinCode">PIN da sala (7 caracteres)</label><input id="joinCode" maxlength="7" autocapitalize="characters" placeholder="EX.: ABC1234" value="'+esc(entry.joinCode)+'">'+
  '<label for="joinName">Seu nome</label><input id="joinName" maxlength="25" placeholder="Como quer aparecer?" value="'+esc(entry.joinName)+'">'+
  '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div></section>':
- '<section class="organizer-participants" aria-label="Acesso de participantes"><span class="participant-symbol" aria-hidden="true">👥</span><div class="participant-copy"><strong>É participante?</strong><small>Entre com seu nome e o PIN recebido.</small></div><a class="btn participant-link" href="entrar/">🔑 Entrar com PIN →</a></section>')+
- '<p id="status" class="status" hidden></p></section></div>';
- checkReadiness();
+ '')+
+ '<p id="status" class="status" hidden></p></div>';
+ if(isLocal)checkReadiness();
 }
 async function enter(op){
  if(working)return;captureEntry();
@@ -216,7 +227,7 @@ async function enter(op){
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
-  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':upper(entry.eventCode).trim(),emoji:isLocal?undefined:entry.emoji,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':(championshipMode?entry.eventCode:''),emoji:isLocal?undefined:entry.emoji,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
   const data=await request(payload);
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
@@ -277,7 +288,7 @@ async function act(action,extra={}){
 function renderRoom(){
  if(!room)return renderEntry();
  screen='room';clearInterval(timer);
- const header='<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">'+(isLocal?'PIN ':'Sala ')+esc(room.code)+' · '+room.members.length+'/6 participantes</div></div><div class="actions" style="margin:0">'+btn('📋 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>';
+ const header='<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">'+(isLocal?'PIN ':'Sala ')+esc(room.code)+' · '+room.members.length+'/'+(isLocal?6:50)+' participantes</div></div><div class="actions" style="margin:0">'+btn('📋 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>';
  let body='';
  if(room.stage==='lobby'){
  if(isLocal){  body='<section class="panel"><h1>🎊 Sala criada!</h1><p>Compartilhe o código com os participantes. O organizador inicia quando estiverem prontos.</p>'+
@@ -285,14 +296,14 @@ function renderRoom(){
   (isLocal?'<p class="notice">🔐 Compartilhe este PIN de 7 caracteres com seus colegas. Todos entram pelo próprio aparelho.</p>':'')+ (room.eventCode?'<p class="notice">🏆 Evento '+esc(room.eventCode)+' · até 50 equipes.</p>':'')+
   '<div class="actions">'+btn('📋 Copiar PIN','copyPin','small')+btn('🔗 Copiar convite','share',isLocal?'small':'primary')+(isLocal?'':'<a class="btn green" href="'+esc(link())+'">🔑 Link para participantes</a>')+'</div>'+
   '<h3>🙌 Nossa equipe</h3>'+room.members.map(m=>'<div class="member">🙋 '+esc(m.name)+(m.id===room.viewer?' <small>(você)</small>':'')+'</div>').join('')+
-  '<p class="notice">Mínimo de 2 jogadores; máximo de 6. '+room.categories.length+' categorias, '+room.rounds+' rodadas de '+room.duration+'s.</p>'+
+  '<p class="notice">Mínimo de 2 jogadores; máximo de '+(isLocal?6:50)+'. '+room.categories.length+' categorias, '+room.rounds+' rodadas de '+room.duration+'s.</p>'+
   (room.host?'<div class="actions">'+btn('🚀 Iniciar missão','start','green')+btn('🏁 Finalizar jogo','finishGame')+'</div>':'<div class="attention">⏳ Aguardando o organizador começar a partida...</div>')+'</section>';
 
  }else{
 const chat=(room.lobbyMessages||[]).slice(-40);
-body='<div class="lobby-hero"><div><span>● ANTESSALA · '+(room.host?'ORGANIZADOR':'PARTICIPANTE')+'</span><h1>🏠 '+esc(room.team)+'</h1><p>Compartilhe o PIN e receba os jogadores antes de iniciar.</p></div><div class="lobby-pin"><small>PIN DE ACESSO</small><strong>'+esc(room.code)+'</strong><small>'+room.members.length+' de 6 participantes</small></div></div>'+
+body='<div class="lobby-hero"><div><span>● ANTESSALA · '+(room.host?'ORGANIZADOR':'PARTICIPANTE')+'</span><h1>🏠 '+esc(room.team)+'</h1><p>Compartilhe o PIN e receba os jogadores antes de iniciar.</p></div><div class="lobby-pin"><small>PIN DE ACESSO</small><strong>'+esc(room.code)+'</strong><small>'+room.members.length+' de '+(isLocal?6:50)+' participantes</small></div></div>'+
 '<div class="lobby-links">'+btn('📋 Copiar PIN','copyPin','small')+btn('🔗 Copiar convite','share','primary')+'<a class="btn green" href="'+esc(link())+'">Link dos participantes</a></div>'+
-'<div class="lobby-layout"><section class="panel"><h2>👥 Jogadores ('+room.members.length+'/6)</h2><p class="notice">O organizador pode remover participantes antes de iniciar.</p>'+
+'<div class="lobby-layout"><section class="panel"><h2>👥 Jogadores ('+room.members.length+'/'+(isLocal?6:50)+')</h2><p class="notice">O organizador pode remover participantes antes de iniciar.</p>'+
 '<div class="lobby-player-row">'+room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.emoji||'😀')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você':m.id===room.members[0].id?'Organizador':'Jogador')+'</small></span>'+
 (room.host&&m.id!==room.viewer?'<button class="btn lobby-remove" data-kick="'+esc(m.id)+'" data-kick-name="'+esc(m.name)+'">Remover</button>':'')+'</div>').join('')+'</div>'+
 '<div class="lobby-details">🎯 '+room.categories.length+' categorias · 🔁 '+room.rounds+' rodadas · ⏱️ '+room.duration+'s</div>'+

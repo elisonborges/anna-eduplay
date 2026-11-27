@@ -1,3 +1,42 @@
+## Campeonato eliminatório — primeira versão funcional (não publicada)
+
+O Stop Arena passa a ter o painel separado `stop-arena/online/campeonato/`, integrado à criação e ao cadastro de equipes em `stop-arena/online/eventos/`.
+
+Fluxo disponível nesta branch:
+1. O organizador cria o campeonato e configura categorias, letras, duração e rodadas, como antes. O servidor retorna um token exclusivo de organização, armazenado na sessão do navegador criador. **Preserve a aba/sessão do organizador; ainda não existe recuperação de acesso.**
+2. As equipes se inscrevem usando o link de criação de sala do campeonato; cada equipe tem sua própria sala e PIN para seus jogadores.
+3. Com pelo menos duas equipes, o organizador abre o Painel do Campeonato e encerra as inscrições para iniciar o **sorteio eliminatório**. O formato é eliminação simples, com distribuição de vagas livres (*byes*) para quantidades não potências de dois, até 50 equipes.
+4. O organizador registra as pontuações de cada confronto. Resultados iguais exigem desempate antes da confirmação. Quando todos os confrontos de uma fase terminam, o sistema gera a próxima automaticamente, até definir campeão e vice.
+5. O painel publica o chaveamento, as classificadas, os resultados e o campeão para quem tiver o código do campeonato. As ações de sorteio e placar exigem o token do organizador.
+
+**Limitação conhecida:** os resultados dos confrontos ainda são lançados pelo organizador, não lidos automaticamente das salas. A validação física de jogos paralelos, autenticação duradoura de organizadores, recuperação de acesso e registro de partidas por fase ficam para as versões seguintes. A estrutura existente de eventos e salas foi preservada.
+
+Validações simuladas: formatos com 2, 3, 5, 8, 16 e 50 equipes, até a definição de campeão; para 50 equipes foram observados 14 *byes*, 49 confrontos e 6 fases. Também foram testados bloqueio de inscrições após o sorteio, token de organizador inválido e empate. Código ainda em branches `feature/stop-arena-campeonato-chaveamento-v01` nos repositórios `anna-eduplay` e `anna-virtual`. Não integrado à `main` e não implantado.
+
+## Separação das competições — Campeonatos
+
+- O formulário normal de criação de sala online não mostra mais o campo opcional Código do evento nem as explicações de campeonato.
+- O cabeçalho oferece um acesso **🏆 Campeonatos** ao lado de Entrar com PIN e Ver todas as salas, levando à página independente `stop-arena/online/eventos/`.
+- A página existente de eventos continua permitindo organizar campeonatos com várias equipes; seu link **Criar sala de equipe** usa `?evento=CODIGO` e abre a criação da sala em contexto de campeonato, com um aviso compacto e o código aplicado automaticamente ao pedido.
+- Um jogo cooperativo comum continua independente de qualquer campeonato, sem código de evento no pedido ao servidor.
+- Código ajustado somente na branch `feature/stop-arena-online-50-participantes`, sem publicação na `main`.
+
+## Tela de criação online — layout em colunas
+
+- O formulário do organizador foi dividido em **duas colunas no desktop**: dados/configuração à esquerda e letras/categorias à direita; no celular, as seções são empilhadas para manter a leitura.
+- Os links **Sou participante · entrar com PIN** e **Ver todas as salas** ficam lado a lado no cabeçalho, sem o cartão grande do quadro de salas.
+- Foram removidos da tela de criação online o painel **É participante?** e o aviso visível de status/credencial do servidor. A API continua retornando erros de conexão quando necessário.
+- O Multiplayer Local mantém sua entrada no mesmo endereço e o aviso específico da rede LAN.
+- Alterações preservadas na branch `feature/stop-arena-online-50-participantes`, sem publicação na `main` nesta etapa.
+
+## Cooperativo Online — até 50 participantes (versão em desenvolvimento)
+
+- A capacidade por sala do modo **Online** passa de 6 para **50 participantes** (organizador incluído), sem exigir número máximo de inscrições para iniciar: continuam necessários apenas o organizador e pelo menos mais um participante.
+- O backend agora recusa a 51ª inscrição, informa `capacity=50`, controla as vagas e permite iniciar normalmente uma partida com menos de 50 jogadores.
+- A antessala, a página independente de entrada por PIN e o quadro público de salas mostram o limite correto. O **Host LAN portátil** mantém sua capacidade anterior de 6, pois utiliza motor local próprio.
+- Teste simulado do motor de salas confirmou 50 inscritos, bloqueio do 51º e início de partida. Escalabilidade/performance em 50 dispositivos reais ainda não validada.
+- Código preparado nas branches `feature/stop-arena-online-50-participantes`; **ainda não publicado na main**.
+
 ## Ajuste da tela de criação — participantes compactos
 
 - A configuração de sala ocupa a largura disponível, com as categorias, letras e opções mantidas.

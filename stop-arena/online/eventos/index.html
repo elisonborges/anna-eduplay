@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Eventos · Stop Arena Cooperativo</title><meta name="theme-color" content="#6932b9">
+<title>Campeonatos · Stop Arena · AnnA EduPlay</title><meta name="theme-color" content="#6932b9">
 <link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
 <style>
 :root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#202c53;background:#f3eeff}
@@ -31,20 +31,20 @@ a{color:#642ab5}
 .event-rules{background:#e8f7ff;padding:10px;border-radius:10px;border:1px solid #bce5f5;color:#1b5978;font-size:12px;line-height:1.55;margin:10px 0}
 @media(max-width:480px){.rule-inputs{grid-template-columns:1fr 1fr}}
 </style></head>
-<body><header><div class="header"><div class="brand">🏆 Stop Arena · Eventos</div><a href="../">← Voltar às salas</a></div></header>
-<main><h1>🎉 Até 50 equipes!</h1><p class="info">Organize um evento cooperativo com salas independentes. Cada equipe pode reunir 2 a 6 participantes e soma seus próprios pontos.</p>
+<body><header><div class="header"><div class="brand">🏆 Stop Arena · Campeonatos</div><a href="../">← Voltar às salas</a></div></header>
+<main><h1>🏆 Campeonatos Stop Arena</h1><p class="info">Crie seu campeonato, defina as regras e inscreva de 2 a 50 equipes. O painel faz o chaveamento até a grande final.</p>
 <div class="grid">
-<section class="card"><strong>✨ Criar evento</strong><label for="eventName">Nome do evento</label><input id="eventName" maxlength="60" placeholder="Ex.: Campeonato de Stop da escola">
+<section class="card"><strong>✨ Criar campeonato</strong><label for="eventName">Nome do campeonato</label><input id="eventName" maxlength="60" placeholder="Ex.: Campeonato de Stop da escola">
 <label for="eventMode">Tipo de desafio</label><select id="eventMode"><option value="recreativo">🏆 Recreativo</option><option value="educacional">🎓 Educacional</option></select>
 <label for="eventPreset">Categorias para todas as equipes</label><select id="eventPreset"></select>
 <div class="rule-inputs"><div><label for="eventRounds">Rodadas</label><select id="eventRounds"><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option><option value="10">10</option><option value="20">20</option></select></div><div><label for="eventDuration">Segundos por rodada</label><select id="eventDuration"><option value="30">30</option><option value="60">60</option><option value="90" selected>90</option><option value="120">120</option><option value="180">180</option><option value="300">300</option></select></div></div>
 <p class="info">Todas as equipes recebem as mesmas categorias, duração e quantidade de rodadas, para manter a comparação justa.</p>
-<div class="actions"><button id="create">Criar evento</button></div></section>
-<section class="card"><strong>🔎 Consultar evento</strong><label for="eventCode">Código de 7 caracteres</label><input id="eventCode" maxlength="7" autocomplete="off" placeholder="ABC1234">
-<div class="actions"><button id="lookup">Ver equipes e placar</button></div></section></div>
+<div class="actions"><button id="create">Criar campeonato</button></div></section>
+<section class="card"><strong>🔎 Consultar campeonato</strong><label for="eventCode">Código de 7 caracteres</label><input id="eventCode" maxlength="7" autocomplete="off" placeholder="ABC1234">
+<div class="actions"><button id="lookup">Ver equipes inscritas</button></div></section></div>
 <p id="status" role="status" class="message" aria-live="polite"></p>
 <section class="card" id="eventBoard" hidden></section>
-<div class="alert">💡 O limite é de <strong>50 equipes por evento</strong>, não 50 pessoas na mesma sala. O jogo exige internet e depende da implantação do servidor de eventos no Cloudflare.</div>
+<div class="alert">🏆 O campeonato aceita de 2 a 50 equipes. O organizador sorteia os confrontos no Painel do Campeonato. Avanço eliminatório automático após o registro dos resultados, até a final.</div>
 </main>
 <script>
 (()=>{
@@ -52,6 +52,7 @@ a{color:#642ab5}
 const API='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/event';
 const PRESETS={"recreativo":{"Clássico":["Nome","Animal","CEP","Cor","Objeto","Fruta"],"Populares":["Nome","Animal","CEP","Comida","Profissão","Marca"],"Diversão":["Filme","PDA","Marca","Esporte","Cantor ou banda","JLR"],"Cotidiano":["Comida","Bebida","Roupa","Profissão","Lugar","Objeto"],"Natureza":["Animal","Fruta","Flor","Árvore","Cor","Planta"],"Viagem":["CEP","Lugar turístico","Comida típica","Meio de transporte","Hotel","Ponto turístico"]},"educacional":{"Português":["Substantivo","Adjetivo","Verbo","Nome próprio","JLR","Objeto"],"Ciências":["Animal","Planta","PHC","Alimento","Elemento da natureza","Material"],"Geografia":["CEP","Rio","Continente","Lugar geográfico","Relevo","Bioma"],"História":["Personagem histórico","Acontecimento histórico","Profissão antiga","Objeto histórico","CEP","Objeto"],"Matemática":["Forma geométrica","Termo matemático","Unidade de medida","Número por extenso","Instrumento de medição","Objeto geométrico"],"Tecnologia":["Componente eletrônico","Ferramenta","Termo de programação","Dispositivo tecnológico","Sensor","Aplicativo"]}};
 const app=document.getElementById('eventBoard'),msg=document.getElementById('status'),field=document.getElementById('eventCode');
+const tokenKey=code=>'anna.stoparena.tournament.host.'+code;
 const search=new URLSearchParams(location.search).get('evento');if(search)field.value=search.toLocaleUpperCase('pt-BR');
 let current=null,loading=false,pollTimer=null;
 function fillPresets(){
@@ -81,10 +82,12 @@ function render(){
  app.innerHTML='<div class="board-head"><div><strong>🏆 '+esc(current.name)+'</strong><div class="code">'+esc(current.code)+'</div></div><span class="counter">'+teams.length+' / 50 equipes</span></div>'+
  (current.config?'<div class="event-rules">📚 <strong>Regras iguais para todos:</strong> '+current.config.categories.map(esc).join(' · ')+' | '+current.config.rounds+' rodadas de '+current.config.duration+' segundos</div>':'<p class="info">Evento anterior: regras podem variar por equipe.</p>')+
  '<div class="event-metrics"><span>👥 <strong>'+teams.length+'</strong> equipes</span><span>🎮 <strong>'+playing+'</strong> jogando</span><span>🏁 <strong>'+finished+'</strong> concluídas</span></div>'+
- '<div class="actions"><a class="action" href="../?evento='+encodeURIComponent(current.code)+'">➕ Criar sala de equipe</a><a class="action" href="../salas/?evento='+encodeURIComponent(current.code)+'">🏠 Quadro de salas</a><button id="copy" type="button">📋 Copiar convite</button><button id="exportCsv" type="button">📊 Exportar CSV</button></div>'+
- '<p class="info">Cada equipe cria sua própria sala usando este código de evento. As pontuações aparecem nesta página.</p>'+
+ '<div class="actions"><a class="action" href="../campeonato/?evento='+encodeURIComponent(current.code)+'">🏆 Painel do Campeonato</a>'+
+ (current.bracket?'':'<a class="action" href="../?evento='+encodeURIComponent(current.code)+'">➕ Inscrever equipe</a>')+
+ '<a class="action" href="../salas/?evento='+encodeURIComponent(current.code)+'">🏠 Quadro de salas</a><button id="copy" type="button">📋 Copiar convite</button><button id="exportCsv" type="button">📊 Exportar CSV</button></div>'+
+ '<p class="info">As equipes usam o código para criar suas salas. O organizador registra resultados e acompanha o chaveamento no Painel do Campeonato.</p>'+
  (teams.length?'<div class="scroll"><table><thead><tr><th>Posição</th><th>Equipe</th><th>Pontos</th><th>Situação</th><th>Jogadores</th><th>Sala</th></tr></thead><tbody>'+
- teams.map((team,index)=>'<tr><td class="rank">'+(index===0?'🥇':index===1?'🥈':index===2?'🥉':index+1)+'</td><td>'+esc(team.name)+'</td><td><strong>'+team.score+'</strong></td><td>'+({lobby:'Aguardando',game:'Jogando',review:'Conferindo',end:'Concluída'})[team.stage||'lobby']+'</td><td>'+team.players+'/6</td><td><a href="../?sala='+encodeURIComponent(team.roomCode)+'">'+esc(team.roomCode)+'</a></td></tr>').join('')+'</tbody></table></div>':'<p class="alert">Nenhuma equipe cadastrada. Use “Criar sala de equipe” e compartilhe o código do evento.</p>');
+ teams.map((team,index)=>'<tr><td class="rank">'+(index===0?'🥇':index===1?'🥈':index===2?'🥉':index+1)+'</td><td>'+esc(team.name)+'</td><td><strong>'+team.score+'</strong></td><td>'+({lobby:'Aguardando',game:'Jogando',review:'Conferindo',end:'Concluída'})[team.stage||'lobby']+'</td><td>'+team.players+'/50</td><td><a href="../?sala='+encodeURIComponent(team.roomCode)+'">'+esc(team.roomCode)+'</a></td></tr>').join('')+'</tbody></table></div>':'<p class="alert">Nenhuma equipe cadastrada. Use “Criar sala de equipe” e compartilhe o código do evento.</p>');
  const copy=document.getElementById('copy');copy.addEventListener('click',async()=>{const url=location.origin+location.pathname+'?evento='+current.code;try{await navigator.clipboard.writeText(url);notice('Convite do evento copiado!')}catch{prompt('Copie o link do evento:',url)}});
  document.getElementById('exportCsv').addEventListener('click',exportCsv);
 }
@@ -122,8 +125,9 @@ async function view(create=false){
   }:undefined;
   const data=await request(create?{op:'create',name,config}:{op:'state',code});
   current=data.event;field.value=current.code;
+  if(create&&data.hostToken){try{sessionStorage.setItem(tokenKey(current.code),data.hostToken)}catch{}}
   history.replaceState(null,'',location.pathname+'?evento='+encodeURIComponent(current.code));
-  render();notice('Evento disponível. Atualização automática a cada 5 segundos.');
+  render();notice(create?'Campeonato criado! Abra o Painel do Campeonato para sortear confrontos.':'Campeonato carregado. Atualização automática a cada 5 segundos.');
   clearInterval(pollTimer);pollTimer=setInterval(async()=>{if(!current||loading)return;try{const result=await request({op:'state',code:current.code});if(result.event.version!==current.version){current=result.event;render()}}catch{}},5000);
  }catch(error){notice(error.message,true)}
  finally{loading=false}

@@ -20,21 +20,25 @@ select{font:inherit;padding:13px;border:2px solid #d8cdf5;border-radius:12px;wid
 button{font:inherit;background:#7134ce;color:white;border:0;border-radius:13px;padding:16px;width:100%;font-weight:800;margin-top:24px;cursor:pointer}
 button:disabled{opacity:.6;cursor:wait}.status{padding:12px;border-radius:12px;background:#f5f0ff}.status.error{background:#fff0ee;color:#9d2424}
 .help{font-size:13px;margin-top:20px}.hint{background:#f5f1ff;padding:12px;border-radius:12px}
+ .name-emoji-row{display:flex;gap:10px;align-items:end}
+.name-field{flex:1;min-width:0}.emoji-field{width:86px;flex:0 0 86px}
+.emoji-field select{width:100%;font-size:23px;min-height:51px;padding:8px 5px;text-align:center}
+@media(max-width:480px){.emoji-field{width:78px;flex-basis:78px}}
 </style></head>
 <body><header><div class="head"><strong>🎉 Stop Arena · Cooperativo Online</strong><a href="../">Organizar partida</a></div></header>
 <main><section class="panel"><h1>🔑 Entrar em uma sala</h1>
 <p>Digite o <strong>PIN</strong> recebido do organizador e seu nome. Você entrará na equipe e poderá acompanhar a roleta, responder e participar da conferência.</p>
 <form id="joinForm">
 <label for="pin">PIN da sala (7 caracteres)</label><input id="pin" name="pin" maxlength="7" minlength="7" pattern="[A-HJ-NP-Za-hj-np-z2-9]{7}" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="EX.: ABC2345" required>
-<label for="player">Seu nome</label><input id="player" name="player" maxlength="25" minlength="1" autocomplete="name" placeholder="Como você quer aparecer?" required>
-<label for="emoji">Seu emoji na equipe</label>
-<select id="emoji" name="emoji" aria-label="Escolha seu emoji">
+<div class="name-emoji-row"><div class="name-field"><label for="player">Seu nome</label><input id="player" name="player" maxlength="25" minlength="1" autocomplete="name" placeholder="Como você quer aparecer?" required></div>
+<div class="emoji-field"><label for="emoji">Emoji</label>
+<select id="emoji" name="emoji" aria-label="Escolha seu emoji na equipe">
 <option value="😀">😀</option><option value="😎">😎</option><option value="🤓">🤓</option><option value="🥳">🥳</option>
 <option value="🤖">🤖</option><option value="🦊">🦊</option><option value="🐼">🐼</option><option value="🐯">🐯</option>
 <option value="🦁">🦁</option><option value="🐸">🐸</option><option value="🦄">🦄</option><option value="🚀">🚀</option>
-</select>
+</select></div></div>
 <button id="join" type="submit">🤝 Entrar na partida</button>
-</form><p class="hint">A sala comporta de 2 a 6 pessoas. Entre antes do organizador iniciar o sorteio.</p>
+</form><p class="hint">A sala aceita de 2 até 50 participantes. Entre antes do organizador iniciar o sorteio.</p>
 <p class="status" id="status" role="status" hidden></p><p class="help">Somente participantes com o PIN conseguem entrar na sala. Não compartilhe o link fora da equipe.</p>
 </section></main>
 <script>
