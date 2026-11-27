@@ -8,8 +8,8 @@
 header{background:linear-gradient(110deg,#4d239d,#9c43e5);color:white;padding:16px;box-shadow:0 4px 14px #7c36bb33}
 .header,main{max-width:960px;margin:auto}.header{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-size:19px;font-weight:900}header a{color:white;font-size:13px;font-weight:700}
 main{padding:18px 14px 45px}h1{margin:4px 0 5px;font-size:clamp(22px,4vw,31px)}p{line-height:1.45}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.card{background:#fffefa;border:1px solid #e4d7f7;border-radius:16px;padding:17px;margin-top:16px;box-shadow:0 7px 18px #7c36bb17}
-input,button{font:inherit}input{width:100%;min-height:44px;background:#faf8ff;border:1px solid #d9c8f5;border-radius:10px;padding:9px 11px;font-size:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.rule-inputs{display:grid;grid-template-columns:1fr 1fr;gap:9px}.card{background:#fffefa;border:1px solid #e4d7f7;border-radius:16px;padding:17px;margin-top:16px;box-shadow:0 7px 18px #7c36bb17}
+input,button,select{font:inherit}input,select{width:100%;min-height:44px;background:#faf8ff;border:1px solid #d9c8f5;border-radius:10px;padding:9px 11px;font-size:16px}
 label{font-size:13px;font-weight:800;display:block;margin:10px 0 5px}
 button,.action{background:linear-gradient(115deg,#9241e1,#6228c7);border:0;color:white;font-size:13px;font-weight:800;padding:12px 15px;border-radius:10px;cursor:pointer;text-decoration:none;display:inline-block}
 button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ecab45;outline-offset:2px}
@@ -27,11 +27,18 @@ a{color:#642ab5}
 .event-metrics span{background:#eafbf4;border:1px solid #bcebd7;padding:9px 12px;border-radius:11px;color:#226b56;font-size:12px}
 .rank{font-weight:850;font-size:15px}
 @media(max-width:680px){.event-metrics span{flex:1;text-align:center;min-width:95px}}
+
+.event-rules{background:#e8f7ff;padding:10px;border-radius:10px;border:1px solid #bce5f5;color:#1b5978;font-size:12px;line-height:1.55;margin:10px 0}
+@media(max-width:480px){.rule-inputs{grid-template-columns:1fr 1fr}}
 </style></head>
 <body><header><div class="header"><div class="brand">🏆 Stop Arena · Eventos</div><a href="../">← Voltar às salas</a></div></header>
 <main><h1>🎉 Até 50 equipes!</h1><p class="info">Organize um evento cooperativo com salas independentes. Cada equipe pode reunir 2 a 6 participantes e soma seus próprios pontos.</p>
 <div class="grid">
 <section class="card"><strong>✨ Criar evento</strong><label for="eventName">Nome do evento</label><input id="eventName" maxlength="60" placeholder="Ex.: Campeonato de Stop da escola">
+<label for="eventMode">Tipo de desafio</label><select id="eventMode"><option value="recreativo">🏆 Recreativo</option><option value="educacional">🎓 Educacional</option></select>
+<label for="eventPreset">Categorias para todas as equipes</label><select id="eventPreset"></select>
+<div class="rule-inputs"><div><label for="eventRounds">Rodadas</label><select id="eventRounds"><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option><option value="10">10</option><option value="20">20</option></select></div><div><label for="eventDuration">Segundos por rodada</label><select id="eventDuration"><option value="30">30</option><option value="60">60</option><option value="90" selected>90</option><option value="120">120</option><option value="180">180</option><option value="300">300</option></select></div></div>
+<p class="info">Todas as equipes recebem as mesmas categorias, duração e quantidade de rodadas, para manter a comparação justa.</p>
 <div class="actions"><button id="create">Criar evento</button></div></section>
 <section class="card"><strong>🔎 Consultar evento</strong><label for="eventCode">Código de 7 caracteres</label><input id="eventCode" maxlength="7" autocomplete="off" placeholder="ABC1234">
 <div class="actions"><button id="lookup">Ver equipes e placar</button></div></section></div>
@@ -43,9 +50,17 @@ a{color:#642ab5}
 (()=>{
 'use strict';
 const API='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/event';
+const PRESETS={"recreativo":{"Clássico":["Nome","Animal","CEP","Cor","Objeto","Fruta"],"Populares":["Nome","Animal","CEP","Comida","Profissão","Marca"],"Diversão":["Filme","PDA","Marca","Esporte","Cantor ou banda","JLR"],"Cotidiano":["Comida","Bebida","Roupa","Profissão","Lugar","Objeto"],"Natureza":["Animal","Fruta","Flor","Árvore","Cor","Planta"],"Viagem":["CEP","Lugar turístico","Comida típica","Meio de transporte","Hotel","Ponto turístico"]},"educacional":{"Português":["Substantivo","Adjetivo","Verbo","Nome próprio","JLR","Objeto"],"Ciências":["Animal","Planta","PHC","Alimento","Elemento da natureza","Material"],"Geografia":["CEP","Rio","Continente","Lugar geográfico","Relevo","Bioma"],"História":["Personagem histórico","Acontecimento histórico","Profissão antiga","Objeto histórico","CEP","Objeto"],"Matemática":["Forma geométrica","Termo matemático","Unidade de medida","Número por extenso","Instrumento de medição","Objeto geométrico"],"Tecnologia":["Componente eletrônico","Ferramenta","Termo de programação","Dispositivo tecnológico","Sensor","Aplicativo"]}};
 const app=document.getElementById('eventBoard'),msg=document.getElementById('status'),field=document.getElementById('eventCode');
 const search=new URLSearchParams(location.search).get('evento');if(search)field.value=search.toLocaleUpperCase('pt-BR');
 let current=null,loading=false,pollTimer=null;
+function fillPresets(){
+ const mode=document.getElementById('eventMode').value;
+ const selector=document.getElementById('eventPreset');
+ selector.innerHTML=Object.keys(PRESETS[mode]).map((name,i)=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join('');
+}
+document.getElementById('eventMode').addEventListener('change',fillPresets);
+fillPresets();
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function notice(text,err=false){msg.textContent=text;msg.className='message'+(err?' error':'')}
 async function request(payload){
@@ -64,6 +79,7 @@ function render(){
  const finished=teams.filter(x=>x.stage==='end').length;
  const playing=teams.filter(x=>x.stage==='game'||x.stage==='review').length;
  app.innerHTML='<div class="board-head"><div><strong>🏆 '+esc(current.name)+'</strong><div class="code">'+esc(current.code)+'</div></div><span class="counter">'+teams.length+' / 50 equipes</span></div>'+
+ (current.config?'<div class="event-rules">📚 <strong>Regras iguais para todos:</strong> '+current.config.categories.map(esc).join(' · ')+' | '+current.config.rounds+' rodadas de '+current.config.duration+' segundos</div>':'<p class="info">Evento anterior: regras podem variar por equipe.</p>')+
  '<div class="event-metrics"><span>👥 <strong>'+teams.length+'</strong> equipes</span><span>🎮 <strong>'+playing+'</strong> jogando</span><span>🏁 <strong>'+finished+'</strong> concluídas</span></div>'+
  '<div class="actions"><a class="action" href="../?evento='+encodeURIComponent(current.code)+'">➕ Criar sala de equipe</a><button id="copy" type="button">📋 Copiar convite</button><button id="exportCsv" type="button">📊 Exportar CSV</button></div>'+
  '<p class="info">Cada equipe cria sua própria sala usando este código de evento. As pontuações aparecem nesta página.</p>'+
@@ -98,7 +114,13 @@ async function view(create=false){
  if(!create&&!/^[A-HJ-NP-Z2-9]{7}$/.test(code))return notice('Informe um código válido de 7 caracteres.',true);
  loading=true;notice('Conectando ao servidor...');
  try{
-  const data=await request(create?{op:'create',name}:{op:'state',code});
+  const config=create?{
+   categories:[...PRESETS[document.getElementById('eventMode').value][document.getElementById('eventPreset').value]],
+   rounds:Number(document.getElementById('eventRounds').value),
+   duration:Number(document.getElementById('eventDuration').value),
+   letters:[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+  }:undefined;
+  const data=await request(create?{op:'create',name,config}:{op:'state',code});
   current=data.event;field.value=current.code;
   history.replaceState(null,'',location.pathname+'?evento='+encodeURIComponent(current.code));
   render();notice('Evento disponível. Atualização automática a cada 5 segundos.');
