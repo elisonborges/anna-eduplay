@@ -16,6 +16,7 @@ h1{font-size:clamp(26px,5vw,36px);margin:0 0 10px}
 p{color:#596080;line-height:1.5}label{display:block;margin:19px 0 7px;font-weight:750}
 input{font:inherit;padding:15px;border:2px solid #d8cdf5;border-radius:12px;width:100%;font-size:19px}
 input:focus{outline:3px solid #ac90ff;outline-offset:2px}#pin{text-transform:uppercase;letter-spacing:4px;font-weight:800}
+select{font:inherit;padding:13px;border:2px solid #d8cdf5;border-radius:12px;width:100%;font-size:21px;background:white}
 button{font:inherit;background:#7134ce;color:white;border:0;border-radius:13px;padding:16px;width:100%;font-weight:800;margin-top:24px;cursor:pointer}
 button:disabled{opacity:.6;cursor:wait}.status{padding:12px;border-radius:12px;background:#f5f0ff}.status.error{background:#fff0ee;color:#9d2424}
 .help{font-size:13px;margin-top:20px}.hint{background:#f5f1ff;padding:12px;border-radius:12px}
@@ -26,6 +27,12 @@ button:disabled{opacity:.6;cursor:wait}.status{padding:12px;border-radius:12px;b
 <form id="joinForm">
 <label for="pin">PIN da sala (7 caracteres)</label><input id="pin" name="pin" maxlength="7" minlength="7" pattern="[A-HJ-NP-Za-hj-np-z2-9]{7}" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="EX.: ABC2345" required>
 <label for="player">Seu nome</label><input id="player" name="player" maxlength="25" minlength="1" autocomplete="name" placeholder="Como você quer aparecer?" required>
+<label for="emoji">Seu emoji na equipe</label>
+<select id="emoji" name="emoji" aria-label="Escolha seu emoji">
+<option value="😀">😀</option><option value="😎">😎</option><option value="🤓">🤓</option><option value="🥳">🥳</option>
+<option value="🤖">🤖</option><option value="🦊">🦊</option><option value="🐼">🐼</option><option value="🐯">🐯</option>
+<option value="🦁">🦁</option><option value="🐸">🐸</option><option value="🦄">🦄</option><option value="🚀">🚀</option>
+</select>
 <button id="join" type="submit">🤝 Entrar na partida</button>
 </form><p class="hint">A sala comporta de 2 a 6 pessoas. Entre antes do organizador iniciar o sorteio.</p>
 <p class="status" id="status" role="status" hidden></p><p class="help">Somente participantes com o PIN conseguem entrar na sala. Não compartilhe o link fora da equipe.</p>
@@ -41,12 +48,12 @@ pin.addEventListener('input',()=>{pin.value=pin.value.toUpperCase().replace(/[^A
 const info=(message,error=false)=>{status.hidden=false;status.textContent=message;status.className='status'+(error?' error':'')};
 form.addEventListener('submit',async e=>{
  e.preventDefault();
- const code=pin.value.trim().toUpperCase(),name=player.value.trim();
+ const code=pin.value.trim().toUpperCase(),name=player.value.trim(),emoji=document.getElementById('emoji').value;
  if(!/^[A-HJ-NP-Z2-9]{7}$/.test(code)||!name){info('Informe um PIN válido e seu nome.',true);return}
  button.disabled=true;info('Entrando na sala...');
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),14000);
  try{
-  const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',signal:controller.signal,body:JSON.stringify({op:'join',code,name})});
+  const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',signal:controller.signal,body:JSON.stringify({op:'join',code,name,emoji})});
   const data=await res.json().catch(()=>({}));
   if(!res.ok||!data.token||!data.room?.code)throw Error(data.error||'Não foi possível entrar na sala.');
   sessionStorage.setItem(KEY,JSON.stringify({code:data.room.code,token:data.token}));
