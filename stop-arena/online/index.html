@@ -199,6 +199,14 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .final-details h3{font-size:14px;margin:15px 0 8px}
 .final-details table{min-width:430px}
 @media(max-width:600px){.final-actions>.btn{flex:1 1 100%}}
+.my-result-card{display:flex;align-items:center;justify-content:center;gap:22px;max-width:520px;margin:22px auto;padding:18px;border:2px solid #d0b8f4;border-radius:17px;background:linear-gradient(110deg,#f2eaff,#fff9ec);box-shadow:0 12px 24px #5b2ca923;transition:opacity .7s,transform .7s;text-align:left}
+.my-result-avatar{font-size:58px;line-height:1.3}
+.my-result-content span{font-size:11px;font-weight:900;letter-spacing:1px;color:#7543b8}
+.my-result-content h2{font-size:19px;margin:5px 0;color:#302058}
+.my-result-content strong{display:block;font-size:25px;color:#602ab9}
+.my-result-content p{font-size:19px;font-weight:800;color:#077f68}
+.my-result-content small{color:#654487}
+@media(max-width:440px){.my-result-card{gap:12px;padding:14px}.my-result-avatar{font-size:44px}}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -494,16 +502,19 @@ function renderRoom(){
   const goal=Math.ceil(room.categories.length*room.rounds*10*.7),reached=room.score>=goal;
   const tracked=!isLocal&&room.scoreTrackingComplete&&room.playerScores&&room.history.length>0;
   const members=room.members.filter(m=>m.plays!==false);
-  const ranked=tracked?members.map(m=>({name:m.name,emoji:m.emoji||'😀',score:Number(room.playerScores[m.id]||0)}))
+  const ranked=tracked?members.map(m=>({id:m.id,name:m.name,emoji:m.emoji||'😀',score:Number(room.playerScores[m.id]||0)}))
     .sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'pt-BR')):[];
   const levels=[...new Set(ranked.map(p=>p.score))].slice(0,3);
   const positions=levels.map(score=>({place:ranked.findIndex(p=>p.score===score)+1,score,players:ranked.filter(p=>p.score===score)}));
   const champions=positions.find(p=>p.place===1)?.players||[];
+  const mine=ranked.find(p=>p.id===room.viewer);
+  const myRank=mine?ranked.findIndex(p=>p.score===mine.score)+1:0;
+  const myTies=mine?ranked.filter(p=>p.score===mine.score).length:0;
   const podiumOrder=[3,2,1];
   body='<section class="panel final-ceremony">'+
   '<div class="final-header"><span class="final-kicker">STOP ARENA · GRANDE FINAL</span><h1>🏁 Partida finalizada!</h1>'+
   '<p>'+(room.finishedEarly?'A partida foi encerrada pelo organizador. Só as rodadas concluídas contam.':'Parabéns! A partida chegou ao fim.')+'</p></div>'+
-  '<div class="final-team-score">⭐ '+room.score+' pontos coletivos · '+room.history.length+' rodada(s) concluída(s)</div>'+
+  (room.host?'<div class="final-team-score">⭐ '+room.score+' pontos coletivos · '+room.history.length+' rodada(s) concluída(s)</div>':'')+
   (tracked?'<div class="final-reveal-intro" id="finalRevealIntro" role="status" aria-live="polite">🥁 Prepare-se para conhecer os vencedores...</div>'+
    '<div class="podium-list" aria-label="Pódio do Stop Arena">'+podiumOrder.map(n=>{
     const rank=positions.find(p=>p.place===n);
@@ -522,7 +533,14 @@ function renderRoom(){
    '<div class="firework-field" aria-hidden="true">'+Array.from({length:18},(_,i)=>'<i style="--i:'+i+'"></i>').join('')+'</div>'+
    '</div>':
    '<div class="final-info"><h2>👏 Obrigado por participar!</h2><p>'+(room.history.length===0?'Nenhuma rodada foi concluída; não há classificação individual.':'Esta sala começou antes da atualização da pontuação individual. O placar coletivo foi preservado, sem inventar uma classificação.')+'</p></div>')+
-  '<details class="final-details"><summary>📄 Relatório da partida · consultar resultados e pontuações</summary>'+
+  (!room.host&&tracked&&mine?
+   '<section class="my-result-card podium-hidden" id="myResultCard" aria-label="Meu resultado">'+
+   '<div class="my-result-avatar">'+esc(mine.emoji)+'</div>'+
+   '<div class="my-result-content"><span>⭐ MEU RESULTADO</span><h2>'+esc(mine.name)+'</h2>'+
+   '<strong>'+myRank+'º lugar</strong><p>'+mine.score+' pontos</p>'+
+   (myTies>1?'<small>🤝 Empatado com '+(myTies-1)+' jogador(es)</small>':'')+
+   '</div></section>':'')+
+  (room.host?'<details class="final-details"><summary>📄 Relatório da partida · consultar resultados e pontuações</summary>'+
    '<p class="notice">Documento de conferência para eventuais questionamentos. Os dados se referem apenas às rodadas concluídas.</p>'+
    '<p class="notice"><strong>Sala:</strong> '+esc(room.team)+' · <strong>PIN:</strong> '+esc(room.code)+' · <strong>Total coletivo:</strong> '+room.score+' pontos</p>'+
    (tracked?'<h3>Pontuação individual</h3><div style="overflow:auto"><table><thead><tr><th>Jogador</th><th>Pontos</th></tr></thead><tbody>'+
@@ -530,11 +548,11 @@ function renderRoom(){
    '<h3>Rodadas concluídas</h3>'+
    '<div style="overflow:auto"><table><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos coletivos</th></tr></thead><tbody>'+
    room.history.map(x=>'<tr><td>'+x.round+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+
-   '</tbody></table></div><div class="actions">'+btn('⬇️ Baixar relatório CSV','downloadReport','small')+'</div></details>'+
+   '</tbody></table></div><div class="actions">'+btn('⬇️ Baixar relatório CSV','downloadReport','small')+'</div></details>':'')+
   '<div class="actions final-actions" style="justify-content:center">'+
-   (room.host?btn('🔄 Jogar novamente','replay','primary'):'<span class="notice">O professor pode iniciar outra partida nesta sala.</span>')+
+   (room.host?btn('🔄 Jogar novamente','replay','primary'):'')+
    btn('🚪 Encerrar partida','exitMatch','small')+
-   btn('🎉 Criar outra sala','leave','small')+
+   (room.host?btn('🎉 Criar outra sala','leave','small'):'')+
   '</div></section>';
 
  }
@@ -578,6 +596,8 @@ function startPodiumTimer(){
   if(headline)headline.textContent=elapsed>=7900?'🎊 Parabéns a todos os participantes!':current;
   const champion=document.getElementById('championAnnounce');
   if(champion&&elapsed>=7900)champion.classList.remove('podium-hidden');
+  const myCard=document.getElementById('myResultCard');
+  if(myCard&&elapsed>=7900)myCard.classList.remove('podium-hidden');
   if(elapsed>=9000)clearInterval(timer);
  };
  update();timer=setInterval(update,180);
