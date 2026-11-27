@@ -1,3 +1,13 @@
+## Nova experiência visual — preenchimento e conferência
+
+- Tela **Preencher palavras**: cabeçalho com letra da rodada, cronômetro, progresso e status; campos agrupados em cards por categoria, com ícones, contraste reforçado e borda destacada quando preenchidos.
+- Campos em duas colunas no desktop e uma coluna no celular, com teclado mobile e `Enter` para passar à próxima palavra. A contagem de respostas é atualizada durante a digitação.
+- Tela **Conferir respostas**: sai a tabela extensa e entra uma grade de cards com categoria, resposta, avaliação editável, justificativa e pontos; estatísticas de aceitas, pendentes e pontuação no topo.
+- Mensagem de celebração quando todas as respostas estiverem conferidas; enquanto houver pendências, a próxima rodada permanece bloqueada.
+- O botão de IA fica inativo quando não há respostas pendentes. Sua integração real com Gemini continua dependendo de backend configurado; esta revisão **não publica a branch de IA em desenvolvimento**.
+- Os modos Individual, Contra o Computador, Educacional e Cooperativo Local usam a mesma nova interface, preservando as regras, histórico e pontuação existentes.
+- Alterações somente em HTML/CSS/JS de `stop-arena/index.html`. A versão online e o backend não foram alterados nesta publicação.
+
 ## Experimento de layout — cards verticais (branch visual)
 
 - Branch: `experiment/stop-arena-cards-verticais`. **Não está publicada no site principal**.
