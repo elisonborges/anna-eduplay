@@ -1,3 +1,12 @@
+## Configuração de sala pelo professor — melhorias (novembro de 2026)
+
+- A criação online agora diferencia **nome do professor** e **nome da sala** (nos campeonatos, o nome é da equipe); não exige mais que o criador jogue. A opção **O professor também vai jogar** controla se ele responde/vota ou atua somente como organizador. O backend valida a função; uma partida pode ter somente um jogador, ou vários, até o limite da sala. Sem jogadores inscritos, a partida não pode iniciar. No modo Local, o funcionamento anterior do anfitrião é preservado.
+- Rodadas têm opções predefinidas e campo **Personalizar** (número inteiro de 1 a 20). Duração da rodada também permite **Personalizar** (30 a 300 segundos). Ambas são validadas pelo servidor, sem mudar regras já utilizadas nos campeonatos.
+- O seletor compacto de emoji continua ao lado do nome e recebeu 47 opções, tanto para professor quanto para participantes por PIN.
+- Letras disponíveis mostram a orientação antes do conjunto e incluem **Restaurar letras**. Categorias também exibem a orientação antes da seleção, com lista de sugestões adicionais por botão **+**, área de categorias selecionadas e inclusão manual. É possível substituir qualquer categoria, respeitando o mínimo de 6 e máximo de 12 ao criar a sala.
+- Votos na conferência aceitam um voto quando há somente um jogador; para duas ou mais pessoas jogando, continuam necessários dois votos ou decisão do organizador. Professor não participante pode revisar e finalizar, mas não responder nem votar como jogador.
+- Alterações nos branches `feature/stop-arena-professor-config-v02` de `anna-eduplay` e `anna-virtual`. A publicação exige integração nas respectivas branches `main`.
+
 ## Campeonato eliminatório — primeira versão funcional (não publicada)
 
 O Stop Arena passa a ter o painel separado `stop-arena/online/campeonato/`, integrado à criação e ao cadastro de equipes em `stop-arena/online/eventos/`.
