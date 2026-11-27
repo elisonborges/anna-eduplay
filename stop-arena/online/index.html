@@ -79,7 +79,7 @@ async function checkReadiness(){
   const response=await fetch(API.replace('/room','/status'),{signal:controller.signal,credentials:'omit'});
   const data=await response.json();
   if(!response.ok||!data.online)throw Error('Serviço de salas não disponível');
-  el.textContent='✅ Servidor de salas disponível'+(data.ai?' · 🧠 IA configurada':' · revisão manual disponível');
+  el.textContent='✅ Servidor de salas disponível'+(data.ai?' · 🧠 Credencial IA presente (consulta ainda depende da API)':' · revisão manual disponível');
   el.className='status';
  }catch{
   el.textContent='⚠️ Salas online aguardando implantação no Cloudflare. O jogo local continua disponível.';
