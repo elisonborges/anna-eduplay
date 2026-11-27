@@ -62,16 +62,16 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 <script>
 (()=>{
 'use strict';
-const API='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/room';
-const AI='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/validate';
-const KEY='anna.stoparena.online.session';
+const API=window.STOP_ARENA_LAN?location.origin+'/stop-arena/room':'https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/room';
+const AI=window.STOP_ARENA_LAN?location.origin+'/stop-arena/validate':'https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/validate';
+const KEY=window.STOP_ARENA_LAN?'anna.stoparena.lan.session':'anna.stoparena.online.session';
 const PRESETS={"recreativo":{"Clássico":["Nome","Animal","CEP","Cor","Objeto","Fruta"],"Populares":["Nome","Animal","CEP","Comida","Profissão","Marca"],"Diversão":["Filme","PDA","Marca","Esporte","Cantor ou banda","JLR"],"Cotidiano":["Comida","Bebida","Roupa","Profissão","Lugar","Objeto"],"Natureza":["Animal","Fruta","Flor","Árvore","Cor","Planta"],"Viagem":["CEP","Lugar turístico","Comida típica","Meio de transporte","Hotel","Ponto turístico"]},"educacional":{"Português":["Substantivo","Adjetivo","Verbo","Nome próprio","JLR","Objeto"],"Ciências":["Animal","Planta","PHC","Alimento","Elemento da natureza","Material"],"Geografia":["CEP","Rio","Continente","Lugar geográfico","Relevo","Bioma"],"História":["Personagem histórico","Acontecimento histórico","Profissão antiga","Objeto histórico","CEP","Objeto"],"Matemática":["Forma geométrica","Termo matemático","Unidade de medida","Número por extenso","Instrumento de medição","Objeto geométrico"],"Tecnologia":["Componente eletrônico","Ferramenta","Termo de programação","Dispositivo tecnológico","Sensor","Aplicativo"]}};
 const app=document.getElementById('app');
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const upper=x=>String(x??'').toLocaleUpperCase('pt-BR');
 const btn=(title,act,cls='')=>'<button class="btn '+cls+'" data-act="'+act+'">'+title+'</button>';
 const params=new URLSearchParams(location.search);
-const isLocal=params.get('modo')==='local';
+const isLocal=Boolean(window.STOP_ARENA_LAN)||params.get('modo')==='local';
 if(isLocal)document.title='Multiplayer Local | Stop Arena · AnnA EduPlay';
 const queryCode=params.get('sala')||'';
 const queryEvent=new URLSearchParams(location.search).get('evento')||'';
@@ -94,10 +94,10 @@ async function checkReadiness(){
   const response=await fetch(API.replace('/room','/status'),{signal:controller.signal,credentials:'omit'});
   const data=await response.json();
   if(!response.ok||!data.online)throw Error('Serviço de salas não disponível');
-  el.textContent='✅ Servidor de salas disponível'+(data.ai?' · 🧠 Credencial IA presente (consulta ainda depende da API)':' · revisão manual disponível');
+  el.textContent=(window.STOP_ARENA_LAN?'✅ Anfitrião LAN conectado — jogo offline na rede':'✅ Servidor de salas disponível')+(data.ai?' · 🧠 Credencial IA presente (consulta ainda depende da API)':' · revisão manual disponível');
   el.className='status';
  }catch{
-  el.textContent='⚠️ Salas online aguardando implantação no Cloudflare. O jogo local continua disponível.';
+  el.textContent=window.STOP_ARENA_LAN?'⚠️ Servidor LAN indisponível. Confirme se o aplicativo anfitrião continua aberto.':'⚠️ Salas online aguardando implantação no Cloudflare. O jogo local continua disponível.';
   el.className='status error';
  }finally{clearTimeout(timeout)}
 }
@@ -121,7 +121,7 @@ function captureEntry(){
 }
 function renderEntry(){
  screen='entry';clearInterval(interval);clearInterval(timer);interval=null;timer=null;
- app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 Para sincronizar os aparelhos nesta versão, todos precisam de internet. Não funciona offline somente pelo Wi-Fi local.</div>':'<h1>🌐 Cooperativo Online</h1><p class="sub">Crie uma sala e convide a equipe. Cada participante usa seu próprio aparelho, com respostas compartilhadas!</p>')+
+ app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<h1>🌐 Cooperativo Online</h1><p class="sub">Crie uma sala e convide a equipe. Cada participante usa seu próprio aparelho, com respostas compartilhadas!</p>')+
  '<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>'+
  (isLocal?'':'<section class="panel" style="margin:13px 0;background:linear-gradient(105deg,#e4fff4,#eaf3ff)"><div class="actions" style="justify-content:space-between;margin-top:0"><div><strong>🏠 Quadro de salas criadas</strong><p class="notice">Veja nomes das salas, participantes conectados e vagas disponíveis.</p></div><a class="btn primary" href="salas/">Ver todas as salas →</a></div></section>')+
  '<div class="layout"><section class="panel"><span class="kicker">🏠 CRIAR SALA</span>'+
@@ -243,7 +243,7 @@ function renderRoom(){
     )+'</article>';
   }).join('')+'</div>'+
   '<div class="attention">🟡 '+pending+' pendente(s) · '+waiting+' resposta(s) aguardando o segundo voto ou decisão final. '+(room.host?'Você pode resolver as divergências.':'A decisão final das divergências é do organizador.')+'</div>'+
-  (room.host?'<div class="actions">'+btn('🏁 Finalizar jogo','finishGame')+btn('🤖 Consultar IA como desempate','ai')+'<button class="btn primary" data-act="next" '+(pending||waiting?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Seu voto ajuda a equipe a conferir as respostas.</p>')+
+  (room.host?'<div class="actions">'+btn('🏁 Finalizar jogo','finishGame')+(window.STOP_ARENA_LAN?'':btn('🤖 Consultar IA como desempate','ai'))+'<button class="btn primary" data-act="next" '+(pending||waiting?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Seu voto ajuda a equipe a conferir as respostas.</p>')+
   '</section>';
 
  }else{
@@ -347,7 +347,7 @@ app.addEventListener('click',async e=>{
  if(action==='share')return share();
  if(action==='copyPin')return copyPin();
  if(action==='leave')return reset();
- if(action==='ai')return reviewAI();
+ if(action==='ai'){if(window.STOP_ARENA_LAN)return status('🤖 Gemini exige internet. No modo LAN offline, use a votação e a conferência manual.',true);return reviewAI()}
  if(action==='finishGame'){
   if(!room?.host||!['lobby','game','review'].includes(room.stage))return;
   const answer='Finalizar a partida para todos os participantes?\n\n'+
