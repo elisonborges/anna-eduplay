@@ -59,9 +59,9 @@ function fillPresets(){
  const selector=document.getElementById('eventPreset');
  selector.innerHTML=Object.keys(PRESETS[mode]).map((name,i)=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join('');
 }
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 document.getElementById('eventMode').addEventListener('change',fillPresets);
 fillPresets();
-const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function notice(text,err=false){msg.textContent=text;msg.className='message'+(err?' error':'')}
 async function request(payload){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
