@@ -10,6 +10,17 @@
 - **Não é sala online:** não há convite, código de sala, sincronização entre dispositivos nem colaboração simultânea pela rede. Esses recursos exigem backend de sessão/realtime em etapa futura.
 - Validação visual e teste de partida completa no navegador ainda pendentes.
 
+## Gestão dos eventos (próxima evolução)
+
+- O professor define **tipo de desafio (Recreativo ou Educacional), conjunto de seis categorias, tempo e número de rodadas** quando cria um evento.
+- O backend impõe essas regras a todas as salas que utilizam o mesmo código de evento. Alterações feitas na configuração local de uma equipe não substituem as regras do evento.
+- O evento prepara uma **sequência de letras comum a todas as equipes**, mantida oculta no placar público até cada rodada começar. Equipes podem iniciar em momentos diferentes, mas recebem o mesmo desafio na rodada correspondente.
+- O placar de equipes mostra posição, pontuação, estado da partida e número de jogadores. O organizador pode **exportar CSV** com BOM UTF-8 e separador ponto e vírgula, para análise escolar.
+- O CSV protege células contra fórmulas iniciadas por caracteres especiais.
+- Eventos criados antes desta evolução podem não possuir regras compartilhadas; a página identifica esses eventos sem prometer comparabilidade.
+- O sistema permite concluir rodadas de forma independente, sem necessidade de todos começarem ao mesmo tempo.
+- Foram realizados testes simulados com **duas salas recebendo a mesma letra** e validações da configuração de evento. Falta validação real em dispositivos e implantação Cloudflare.
+
 ## Eventos com até 50 equipes
 
 - Página do organizador: `stop-arena/online/eventos/`.
