@@ -78,9 +78,17 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .organizer-hero h1{font-size:clamp(25px,4.5vw,36px);margin:8px 0;color:white}.organizer-hero p{color:#efe6ff;max-width:560px;font-size:14px}
 .organizer-kicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d8ffcc}
 .organizer-join{display:inline-flex;margin-top:12px;color:#45208e!important;background:#fff!important;text-decoration:none;border-radius:12px;padding:11px 14px;font-size:13px}
-.organizer-layout{align-items:start}.organizer-layout>.panel{box-shadow:0 8px 25px #50358b13}
+.organizer-layout{display:flex;flex-direction:column;gap:12px;align-items:stretch;max-width:100%}.organizer-layout>.panel{box-shadow:0 8px 25px #50358b13}
 .organizer-layout .kicker{font-size:11px;letter-spacing:1.1px;color:#7137af}
-.organizer-layout h2{font-size:20px}.organizer-participants{background:#fbf8ff}
+.organizer-layout h2{font-size:20px}.organizer-config{width:100%}
+.organizer-participants{display:flex;align-items:center;gap:12px;padding:11px 15px;border:1px solid #e0d8f0;border-radius:14px;background:#fbfaff;min-height:68px}
+.participant-symbol{display:grid;place-items:center;width:40px;height:40px;flex-shrink:0;background:#eee6ff;border-radius:12px;font-size:21px}
+.participant-copy{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}
+.participant-copy strong{font-size:14px;color:#3c2b65}
+.participant-copy small{font-size:12px;color:#6a6183}
+.participant-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;white-space:nowrap;min-height:38px!important;padding:8px 12px!important;font-size:12px!important;color:#6230b8!important;background:#f0e8ff!important;box-shadow:none!important}
+@media(max-width:480px){.organizer-participants{flex-wrap:wrap;padding:11px}.participant-copy{min-width:150px}.participant-link{width:100%}}
+
 @media(max-width:720px){.organizer-join{width:100%;justify-content:center}}
 /* Participantes em fileira horizontal, com emoji escolhido e nome. */
 .lobby-layout{display:flex;flex-direction:column;align-items:stretch}
@@ -175,7 +183,7 @@ function renderEntry(){
  app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<section class="organizer-hero"><span class="organizer-kicker">AnnA EduPlay · Stop Arena Online</span><h1>🎮 Organize sua partida</h1><p>Configure o jogo, crie uma sala e compartilhe o PIN. Os participantes entram por um link próprio.</p><a class="btn organizer-join" href="entrar/">🔑 Sou participante · entrar com PIN</a></section>')+
  '<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>'+
  (isLocal?'':'<section class="panel" style="margin:13px 0;background:linear-gradient(105deg,#e4fff4,#eaf3ff)"><div class="actions" style="justify-content:space-between;margin-top:0"><div><strong>🏠 Quadro de salas criadas</strong><p class="notice">Veja nomes das salas, participantes conectados e vagas disponíveis.</p></div><a class="btn primary" href="salas/">Ver todas as salas →</a></div></section>')+
- '<div class="layout organizer-layout"><section class="panel"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
+ '<div class="layout organizer-layout"><section class="panel organizer-config"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
  '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
  (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
@@ -198,10 +206,7 @@ function renderEntry(){
  '<label for="joinCode">PIN da sala (7 caracteres)</label><input id="joinCode" maxlength="7" autocapitalize="characters" placeholder="EX.: ABC1234" value="'+esc(entry.joinCode)+'">'+
  '<label for="joinName">Seu nome</label><input id="joinName" maxlength="25" placeholder="Como quer aparecer?" value="'+esc(entry.joinName)+'">'+
  '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div></section>':
- '<section class="panel organizer-participants"><span class="kicker">02 · CONVIDAR JOGADORES</span>'+
- '<h2>Entrar em uma sala tem página própria</h2>'+
- '<p class="notice">Envie aos participantes o PIN ou o link de convite. Eles entram pelo celular, informam nome e PIN, sem ver as configurações do organizador.</p>'+
- '<p><a class="btn green fill" href="entrar/">🔑 Abrir página para entrar em sala</a></p></section>')+
+ '<section class="organizer-participants" aria-label="Acesso de participantes"><span class="participant-symbol" aria-hidden="true">👥</span><div class="participant-copy"><strong>É participante?</strong><small>Entre com seu nome e o PIN recebido.</small></div><a class="btn participant-link" href="entrar/">🔑 Entrar com PIN →</a></section>')+
  '<p id="status" class="status" hidden></p></section></div>';
  checkReadiness();
 }
