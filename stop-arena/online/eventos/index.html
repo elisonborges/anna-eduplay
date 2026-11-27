@@ -22,6 +22,11 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{border-bottom:1px
 .scroll{overflow:auto;max-height:550px}.counter{font-weight:850;color:#148565}
 a{color:#642ab5}
 @media(max-width:680px){.grid{grid-template-columns:1fr}.card{padding:13px}}
+
+.event-metrics{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.event-metrics span{background:#eafbf4;border:1px solid #bcebd7;padding:9px 12px;border-radius:11px;color:#226b56;font-size:12px}
+.rank{font-weight:850;font-size:15px}
+@media(max-width:680px){.event-metrics span{flex:1;text-align:center;min-width:95px}}
 </style></head>
 <body><header><div class="header"><div class="brand">🏆 Stop Arena · Eventos</div><a href="../">← Voltar às salas</a></div></header>
 <main><h1>🎉 Até 50 equipes!</h1><p class="info">Organize um evento cooperativo com salas independentes. Cada equipe pode reunir 2 a 6 participantes e soma seus próprios pontos.</p>
@@ -56,12 +61,34 @@ function render(){
  if(!current)return;
  app.hidden=false;
  const teams=[...current.teams].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'pt-BR'));
+ const finished=teams.filter(x=>x.stage==='end').length;
+ const playing=teams.filter(x=>x.stage==='game'||x.stage==='review').length;
  app.innerHTML='<div class="board-head"><div><strong>🏆 '+esc(current.name)+'</strong><div class="code">'+esc(current.code)+'</div></div><span class="counter">'+teams.length+' / 50 equipes</span></div>'+
- '<div class="actions"><a class="action" href="../?evento='+encodeURIComponent(current.code)+'">➕ Criar sala de equipe</a><button id="copy" type="button">📋 Copiar convite</button></div>'+
+ '<div class="event-metrics"><span>👥 <strong>'+teams.length+'</strong> equipes</span><span>🎮 <strong>'+playing+'</strong> jogando</span><span>🏁 <strong>'+finished+'</strong> concluídas</span></div>'+
+ '<div class="actions"><a class="action" href="../?evento='+encodeURIComponent(current.code)+'">➕ Criar sala de equipe</a><button id="copy" type="button">📋 Copiar convite</button><button id="exportCsv" type="button">📊 Exportar CSV</button></div>'+
  '<p class="info">Cada equipe cria sua própria sala usando este código de evento. As pontuações aparecem nesta página.</p>'+
- (teams.length?'<div class="scroll"><table><thead><tr><th>Equipe</th><th>Pontos</th><th>Jogadores</th><th>Sala</th></tr></thead><tbody>'+
- teams.map(team=>'<tr><td>'+esc(team.name)+'</td><td><strong>'+team.score+'</strong></td><td>'+team.players+'/6</td><td><a href="../?sala='+encodeURIComponent(team.roomCode)+'">'+esc(team.roomCode)+'</a></td></tr>').join('')+'</tbody></table></div>':'<p class="alert">Nenhuma equipe cadastrada. Use “Criar sala de equipe” e compartilhe o código do evento.</p>');
+ (teams.length?'<div class="scroll"><table><thead><tr><th>Posição</th><th>Equipe</th><th>Pontos</th><th>Situação</th><th>Jogadores</th><th>Sala</th></tr></thead><tbody>'+
+ teams.map((team,index)=>'<tr><td class="rank">'+(index===0?'🥇':index===1?'🥈':index===2?'🥉':index+1)+'</td><td>'+esc(team.name)+'</td><td><strong>'+team.score+'</strong></td><td>'+({lobby:'Aguardando',game:'Jogando',review:'Conferindo',end:'Concluída'})[team.stage||'lobby']+'</td><td>'+team.players+'/6</td><td><a href="../?sala='+encodeURIComponent(team.roomCode)+'">'+esc(team.roomCode)+'</a></td></tr>').join('')+'</tbody></table></div>':'<p class="alert">Nenhuma equipe cadastrada. Use “Criar sala de equipe” e compartilhe o código do evento.</p>');
  const copy=document.getElementById('copy');copy.addEventListener('click',async()=>{const url=location.origin+location.pathname+'?evento='+current.code;try{await navigator.clipboard.writeText(url);notice('Convite do evento copiado!')}catch{prompt('Copie o link do evento:',url)}});
+ document.getElementById('exportCsv').addEventListener('click',exportCsv);
+}
+function safeCsvCell(value){
+ const raw=String(value??'').replace(/\r?\n/g,' ').trim();
+ const safe=/^[=+@\-\t\r]/.test(raw)?"'"+raw:raw;
+ return '"'+safe.replace(/"/g,'""')+'"';
+}
+function exportCsv(){
+ if(!current)return;
+ const ranking=[...current.teams].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'pt-BR'));
+ const head=['Posição','Evento','Equipe','Pontos','Situação','Participantes','Rodada','Código da sala'];
+ const state={lobby:'Aguardando',game:'Jogando',review:'Conferindo',end:'Concluída'};
+ const rows=ranking.map((team,i)=>[i+1,current.name,team.name,team.score,state[team.stage]||'Aguardando',team.players,team.round,team.roomCode]);
+ const csv='\ufeff'+[head,...rows].map(cells=>cells.map(safeCsvCell).join(';')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='stop-arena-evento-'+current.code+'.csv';document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ notice('Relatório CSV gerado. Abra no Excel ou LibreOffice para acompanhar as equipes.');
 }
 async function view(create=false){
  if(loading)return;
