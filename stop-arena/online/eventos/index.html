@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eventos · Stop Arena Cooperativo</title><meta name="theme-color" content="#6932b9">
+<link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#202c53;background:#f3eeff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 10%,#fce1f4,transparent 30%),linear-gradient(140deg,#f6f0ff,#ecfcff);min-height:100dvh}
+header{background:linear-gradient(110deg,#4d239d,#9c43e5);color:white;padding:16px;box-shadow:0 4px 14px #7c36bb33}
+.header,main{max-width:960px;margin:auto}.header{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-size:19px;font-weight:900}header a{color:white;font-size:13px;font-weight:700}
+main{padding:18px 14px 45px}h1{margin:4px 0 5px;font-size:clamp(22px,4vw,31px)}p{line-height:1.45}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.card{background:#fffefa;border:1px solid #e4d7f7;border-radius:16px;padding:17px;margin-top:16px;box-shadow:0 7px 18px #7c36bb17}
+input,button{font:inherit}input{width:100%;min-height:44px;background:#faf8ff;border:1px solid #d9c8f5;border-radius:10px;padding:9px 11px;font-size:16px}
+label{font-size:13px;font-weight:800;display:block;margin:10px 0 5px}
+button,.action{background:linear-gradient(115deg,#9241e1,#6228c7);border:0;color:white;font-size:13px;font-weight:800;padding:12px 15px;border-radius:10px;cursor:pointer;text-decoration:none;display:inline-block}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ecab45;outline-offset:2px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.info{font-size:12px;color:#5f6685}.alert{padding:10px;border-radius:10px;background:#ffedcf;border:1px solid #f3d28f;font-size:12px;color:#754b12;margin-top:12px}
+.message{font-size:12px;color:#425b78;margin-top:12px}.message.error{color:#b5224e}
+.board-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.code{font-size:clamp(25px,4vw,45px);font-weight:950;letter-spacing:.15em;color:#6228c7;margin:8px 0}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{border-bottom:1px solid #ede0f9;text-align:left;padding:10px 6px}th{font-size:11px;color:#7c579a}td a{color:#6327b2;font-weight:800}
+.scroll{overflow:auto;max-height:550px}.counter{font-weight:850;color:#148565}
+a{color:#642ab5}
+@media(max-width:680px){.grid{grid-template-columns:1fr}.card{padding:13px}}
+</style></head>
+<body><header><div class="header"><div class="brand">🏆 Stop Arena · Eventos</div><a href="../">← Voltar às salas</a></div></header>
+<main><h1>🎉 Até 50 equipes!</h1><p class="info">Organize um evento cooperativo com salas independentes. Cada equipe pode reunir 2 a 6 participantes e soma seus próprios pontos.</p>
+<div class="grid">
+<section class="card"><strong>✨ Criar evento</strong><label for="eventName">Nome do evento</label><input id="eventName" maxlength="60" placeholder="Ex.: Campeonato de Stop da escola">
+<div class="actions"><button id="create">Criar evento</button></div></section>
+<section class="card"><strong>🔎 Consultar evento</strong><label for="eventCode">Código de 7 caracteres</label><input id="eventCode" maxlength="7" autocomplete="off" placeholder="ABC1234">
+<div class="actions"><button id="lookup">Ver equipes e placar</button></div></section></div>
+<p id="status" role="status" class="message" aria-live="polite"></p>
+<section class="card" id="eventBoard" hidden></section>
+<div class="alert">💡 O limite é de <strong>50 equipes por evento</strong>, não 50 pessoas na mesma sala. O jogo exige internet e depende da implantação do servidor de eventos no Cloudflare.</div>
+</main>
+<script>
+(()=>{
+'use strict';
+const API='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/event';
+const app=document.getElementById('eventBoard'),msg=document.getElementById('status'),field=document.getElementById('eventCode');
+const search=new URLSearchParams(location.search).get('evento');if(search)field.value=search.toLocaleUpperCase('pt-BR');
+let current=null,loading=false,pollTimer=null;
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function notice(text,err=false){msg.textContent=text;msg.className='message'+(err?' error':'')}
+async function request(payload){
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
+ try{
+  const response=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal,credentials:'omit'});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw Error(data.error||'Servidor de eventos indisponível ('+response.status+')');
+  return data;
+ }finally{clearTimeout(timeout)}
+}
+function render(){
+ if(!current)return;
+ app.hidden=false;
+ const teams=[...current.teams].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'pt-BR'));
+ app.innerHTML='<div class="board-head"><div><strong>🏆 '+esc(current.name)+'</strong><div class="code">'+esc(current.code)+'</div></div><span class="counter">'+teams.length+' / 50 equipes</span></div>'+
+ '<div class="actions"><a class="action" href="../?evento='+encodeURIComponent(current.code)+'">➕ Criar sala de equipe</a><button id="copy" type="button">📋 Copiar convite</button></div>'+
+ '<p class="info">Cada equipe cria sua própria sala usando este código de evento. As pontuações aparecem nesta página.</p>'+
+ (teams.length?'<div class="scroll"><table><thead><tr><th>Equipe</th><th>Pontos</th><th>Jogadores</th><th>Sala</th></tr></thead><tbody>'+
+ teams.map(team=>'<tr><td>'+esc(team.name)+'</td><td><strong>'+team.score+'</strong></td><td>'+team.players+'/6</td><td><a href="../?sala='+encodeURIComponent(team.roomCode)+'">'+esc(team.roomCode)+'</a></td></tr>').join('')+'</tbody></table></div>':'<p class="alert">Nenhuma equipe cadastrada. Use “Criar sala de equipe” e compartilhe o código do evento.</p>');
+ const copy=document.getElementById('copy');copy.addEventListener('click',async()=>{const url=location.origin+location.pathname+'?evento='+current.code;try{await navigator.clipboard.writeText(url);notice('Convite do evento copiado!')}catch{prompt('Copie o link do evento:',url)}});
+}
+async function view(create=false){
+ if(loading)return;
+ const name=document.getElementById('eventName').value.trim();
+ const code=field.value.trim().toUpperCase();
+ if(create&&!name)return notice('Informe o nome do evento.',true);
+ if(!create&&!/^[A-HJ-NP-Z2-9]{7}$/.test(code))return notice('Informe um código válido de 7 caracteres.',true);
+ loading=true;notice('Conectando ao servidor...');
+ try{
+  const data=await request(create?{op:'create',name}:{op:'state',code});
+  current=data.event;field.value=current.code;
+  history.replaceState(null,'',location.pathname+'?evento='+encodeURIComponent(current.code));
+  render();notice('Evento disponível. Atualização automática a cada 5 segundos.');
+  clearInterval(pollTimer);pollTimer=setInterval(async()=>{if(!current||loading)return;try{const result=await request({op:'state',code:current.code});if(result.event.version!==current.version){current=result.event;render()}}catch{}},5000);
+ }catch(error){notice(error.message,true)}
+ finally{loading=false}
+}
+document.getElementById('create').addEventListener('click',()=>view(true));
+document.getElementById('lookup').addEventListener('click',()=>view(false));
+field.addEventListener('input',()=>field.value=field.value.toUpperCase());
+if(search)view(false);
+})();
+</script></body></html>
