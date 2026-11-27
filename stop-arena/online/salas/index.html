@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#7035c6">
+<title>Quadro de Salas | Stop Arena · AnnA EduPlay</title>
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#253052;background:#f5f1ff}*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:radial-gradient(circle at 8% 10%,#ffe6ef,transparent 35%),radial-gradient(circle at 90% 20%,#dcf9ff,transparent 30%),#f4f1ff}
+header{background:linear-gradient(115deg,#4b229a,#9b43df);color:#fff;padding:15px}
+.top,main{max-width:1040px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.top strong{font-size:19px}.top a{color:white;font-weight:800;font-size:13px}
+main{padding:17px 14px 35px}h1{font-size:clamp(23px,4vw,32px);margin:4px 0 6px}
+p{line-height:1.45}.hint{font-size:12px;color:#5d6785}
+.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:end;margin:17px 0}
+label{display:block;font-size:12px;font-weight:800;margin-bottom:5px}
+input,button{font:inherit}input{padding:10px;border:1px solid #d4c5ec;background:white;border-radius:10px;font-size:16px;min-height:43px;max-width:220px}
+button,.button{cursor:pointer;background:#eee6ff;color:#55239c;border:1px solid #d5bff5;border-radius:10px;min-height:43px;padding:9px 12px;font-weight:800;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+button.primary,.button.primary{background:linear-gradient(110deg,#8c40e6,#6127c6);border:0;color:white}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #eca936;outline-offset:2px}
+#status{padding:10px;background:#e9f7ff;border-left:4px solid #36a4c8;border-radius:9px;font-size:12px}
+#status.error{background:#ffedee;border-left-color:#e45372;color:#7a2732}
+.board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:16px}
+.room{background:#fff;border:1px solid #e2d2f2;border-radius:16px;padding:16px;box-shadow:0 6px 18px #633ca41a}
+.room-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.room-head strong{font-size:17px;overflow-wrap:anywhere}
+.room-code{font-size:11px;font-weight:850;color:#6535af;background:#f2eaff;border-radius:9px;padding:6px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:13px 0}
+.stat{border-radius:11px;background:#e9f9f2;text-align:center;padding:9px 4px;color:#1c6753}.stat:nth-child(2){background:#e9f5ff;color:#245879}.stat:nth-child(3){background:#fff2df;color:#815a2a}
+.stat b{display:block;font-size:23px}.stat small{display:block;font-size:10px}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.stage{font-size:12px;font-weight:750;color:#635877}
+.empty{background:#fffefa;border:1px solid #e2d1f7;border-radius:13px;padding:19px;margin-top:13px;font-size:14px}
+@media(max-width:650px){.board{grid-template-columns:1fr}.room{padding:13px}.toolbar input{max-width:100%}}
+</style></head><body>
+<header><div class="top"><strong>🏠 Stop Arena · Quadro de Salas</strong><a href="../">← Cooperativo Online</a></div></header>
+<main><h1>🤝 Salas disponíveis</h1>
+<p class="hint">Consulte as salas criadas, o nome da equipe, os jogadores conectados e as vagas restantes. A lista é atualizada a cada 12 segundos.</p>
+<div class="toolbar"><div><label for="filter">Código do evento (opcional)</label><input id="filter" maxlength="7" placeholder="Todas as salas" autocomplete="off"></div><button id="apply">Filtrar evento</button><button id="all">Todas as salas</button><button id="refresh" class="primary">↻ Atualizar</button></div>
+<div id="status" role="status" aria-live="polite">Conectando ao servidor de salas...</div>
+<div id="summary" class="hint"></div><section id="board" class="board" aria-label="Salas criadas"></section>
+<p class="hint">“Conectados” significa atividade nos últimos 20 segundos. “Vagas” são os lugares disponíveis para entrar enquanto a sala aguarda início; após o começo, a entrada é encerrada. Não exibimos nomes dos participantes neste quadro público.</p>
+</main>
+<script>
+(()=>{
+'use strict';
+const ENDPOINT='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/rooms';
+const filter=document.getElementById('filter'),board=document.getElementById('board'),status=document.getElementById('status'),summary=document.getElementById('summary');
+const fromURL=new URLSearchParams(location.search).get('evento')||'';
+filter.value=fromURL.toUpperCase();
+let selected='',working=false;
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function message(text,error=false){status.textContent=text;status.className=error?'error':''}
+async function refresh(){
+ if(working)return;
+ working=true;
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
+ try{
+  const result=await fetch(ENDPOINT+(selected?'?evento='+encodeURIComponent(selected):''),{credentials:'omit',signal:controller.signal});
+  const data=await result.json().catch(()=>({}));
+  if(!result.ok)throw Error(data.error||'Servidor indisponível ('+result.status+')');
+  const rooms=Array.isArray(data.rooms)?data.rooms:[];
+  summary.textContent=rooms.length+' salas exibidas'+(data.total>rooms.length?' · mostrando as '+rooms.length+' mais recentes':'')+' · atualizadas automaticamente';
+  const labels={lobby:'🟢 Aguardando jogadores',game:'🎮 Partida em andamento',review:'🔎 Conferência',end:'🏁 Partida concluída'};
+  board.innerHTML=rooms.map(r=>{
+   const registered=Math.max(0,Math.min(6,Number(r.registered)||0));
+   const connected=Math.max(0,Math.min(registered,Number(r.online)||0));
+   const available=r.joinable?6-registered:0;
+   return '<article class="room"><div class="room-head"><strong>🏠 '+esc(r.name||'Sala sem nome')+'</strong><span class="room-code">'+esc(r.code)+'</span></div>'+
+    '<div class="stats"><div class="stat"><b>'+connected+'</b><small>🟢 Conectados</small></div>'+
+    '<div class="stat"><b>'+registered+'/6</b><small>👥 Inscritos</small></div><div class="stat"><b>'+available+'</b><small>🪑 Vagas livres</small></div></div>'+
+    '<div class="foot"><span class="stage">'+esc(labels[r.stage]||'Sala ativa')+(r.eventCode?' · Evento '+esc(r.eventCode):'')+'</span>'+
+    (r.joinable?'<a class="button primary" href="../?sala='+encodeURIComponent(r.code)+'">Entrar na sala</a>':'<span class="hint">Entrada encerrada</span>')+'</div></article>';
+  }).join('');
+  if(!rooms.length)board.innerHTML='<p class="empty">Nenhuma sala encontrada. Crie uma sala no Cooperativo Online para aparecer no quadro.</p>';
+  message('✅ Quadro atualizado.');
+ }catch(e){message('⚠️ Não foi possível consultar o quadro: '+e.message+'. Verifique se o Cloudflare implantou a atualização.',true)}
+ finally{clearTimeout(timeout);working=false}
+}
+function apply(){const value=filter.value.trim().toUpperCase();if(value&&!/^[A-HJ-NP-Z2-9]{7}$/.test(value))return message('Informe um código completo de evento com 7 caracteres.',true);selected=value;history.replaceState(null,'',location.pathname+(selected?'?evento='+encodeURIComponent(selected):''));refresh()}
+document.getElementById('apply').addEventListener('click',apply);
+document.getElementById('all').addEventListener('click',()=>{filter.value='';apply()});
+document.getElementById('refresh').addEventListener('click',refresh);
+filter.addEventListener('input',()=>filter.value=filter.value.toUpperCase());
+selected=/^[A-HJ-NP-Z2-9]{7}$/.test(filter.value)?filter.value:'';
+refresh();
+setInterval(()=>{if(!document.hidden)refresh()},12000);
+})();
+</script></body></html>
