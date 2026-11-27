@@ -212,7 +212,7 @@ function renderRoom(){
   '<div class="stat"><small>🏆 PONTOS</small><strong>'+room.score+'</strong></div></div>'+
   '<section class="panel"><p class="notice">✍️ Cada participante preenche suas próprias palavras. Todas aparecerão juntas na conferência depois do STOP.</p>'+
   '<div class="answers">'+room.categories.map((cat,i)=>'<div class="answer"><label for="answer'+i+'">'+esc(cat)+'</label><input class="answer-input" data-answer="'+i+'" id="answer'+i+'" maxlength="80" autocomplete="off" inputmode="text" value="'+esc(room.submissions?.[room.viewer]?.[i]??room.answers[i]?.value??'')+'"><small id="author'+i+'">Sua resposta · todos avaliarão após o STOP</small></div>').join('')+'</div>'+
-  '<div class="actions">'+btn('✋ STOP! Encerrar rodada','stop','stop')+'</div></section>';
+  '<div class="actions">'+btn('✋ STOP! Encerrar rodada','stop','stop')+(room.host?btn('🏁 Finalizar jogo','finishGame'):'')+'</div></section>';
  }else if(room.stage==='review'){
   const pending=room.results.filter(r=>r.status==='review').length;
   const waiting=room.results.filter(r=>r.answer&&!r.finalized&&Object.keys(r.votes||{}).length<2).length;
@@ -234,13 +234,13 @@ function renderRoom(){
     )+'</article>';
   }).join('')+'</div>'+
   '<div class="attention">🟡 '+pending+' pendente(s) · '+waiting+' resposta(s) aguardando o segundo voto ou decisão final. '+(room.host?'Você pode resolver as divergências.':'A decisão final das divergências é do organizador.')+'</div>'+
-  (room.host?'<div class="actions">'+btn('🤖 Consultar IA como desempate','ai')+'<button class="btn primary" data-act="next" '+(pending||waiting?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Seu voto ajuda a equipe a conferir as respostas.</p>')+
+  (room.host?'<div class="actions">'+btn('🏁 Finalizar jogo','finishGame')+btn('🤖 Consultar IA como desempate','ai')+'<button class="btn primary" data-act="next" '+(pending||waiting?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Seu voto ajuda a equipe a conferir as respostas.</p>')+
   '</section>';
 
  }else{
   const goal=Math.ceil(room.categories.length*room.rounds*10*.7),reached=room.score>=goal;
-  body='<section class="panel"><h1>'+(reached?'🏆 Missão cumprida!':'🤝 Missão concluída!')+'</h1>'+
-  '<div class="score">'+room.score+' pontos</div><p class="goal">'+(reached?'🎉 A equipe alcançou a meta de '+goal+' pontos!':'💪 Meta de '+goal+' pontos. Que tal tentar novamente?')+'</p>'+
+  body='<section class="panel"><h1>'+(room.finishedEarly?'🏁 Partida finalizada':reached?'🏆 Missão cumprida!':'🤝 Missão concluída!')+'</h1>'+
+  '<div class="score">'+room.score+' pontos</div><p class="goal">'+(room.finishedEarly?'A partida foi finalizada pelo organizador. Apenas as rodadas concluídas foram contabilizadas.':reached?'🎉 A equipe alcançou a meta de '+goal+' pontos!':'💪 Meta de '+goal+' pontos. Que tal tentar novamente?')+'</p>'+
   '<p class="notice">⭐ '+room.members.length+' participantes · '+room.history.length+' rodadas concluídas</p>'+
   '<div style="overflow:auto"><table><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos</th></tr></thead><tbody>'+
   room.history.map(x=>'<tr><td>'+x.round+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+'</tbody></table></div>'+
@@ -338,6 +338,14 @@ app.addEventListener('click',async e=>{
  if(action==='share')return share();
  if(action==='leave')return reset();
  if(action==='ai')return reviewAI();
+ if(action==='finishGame'){
+  if(!room?.host||!['lobby','game','review'].includes(room.stage))return;
+  const answer='Finalizar a partida para todos os participantes?\\n\\n'+
+   'Rodadas concluídas: '+room.history.length+'\\nPontuação atual: '+room.score+
+   ' pontos.\\n\\nA rodada atual ainda não concluída não será contabilizada.\\nDeseja finalizar?';
+  if(!confirm(answer))return;
+  return act('close');
+ }
  if(action==='stop'){try{await flushDrafts();await act('stop')}catch(err){status(err.message,true)}return}
  if(['start','next'].includes(action))return act(action);
 });
