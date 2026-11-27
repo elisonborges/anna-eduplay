@@ -210,14 +210,15 @@ function renderRoom(){
   '<div class="stat"><small>⏱️ TEMPO</small><strong id="countdown">--:--</strong></div>'+
   '<div class="stat"><small>🎯 RODADA</small><strong>'+room.round+'/'+room.rounds+'</strong></div>'+
   '<div class="stat"><small>🏆 PONTOS</small><strong>'+room.score+'</strong></div></div>'+
-  '<section class="panel"><p class="notice">✍️ Escrevam juntos! Cada campo é compartilhado; a última edição confirmada é exibida para toda a equipe.</p>'+
-  '<div class="answers">'+room.categories.map((cat,i)=>'<div class="answer"><label for="answer'+i+'">'+esc(cat)+'</label><input class="answer-input" data-answer="'+i+'" id="answer'+i+'" maxlength="80" autocomplete="off" inputmode="text" value="'+esc(room.answers[i]?.value||'')+'"><small id="author'+i+'">'+(room.answers[i]?.by?'Sugerido por '+esc(userName(room.answers[i].by)):'Resposta da equipe')+'</small></div>').join('')+'</div>'+
+  '<section class="panel"><p class="notice">✍️ Cada participante preenche suas próprias palavras. Todas aparecerão juntas na conferência depois do STOP.</p>'+
+  '<div class="answers">'+room.categories.map((cat,i)=>'<div class="answer"><label for="answer'+i+'">'+esc(cat)+'</label><input class="answer-input" data-answer="'+i+'" id="answer'+i+'" maxlength="80" autocomplete="off" inputmode="text" value="'+esc(room.submissions?.[room.viewer]?.[i]??room.answers[i]?.value??'')+'"><small id="author'+i+'">Sua resposta · todos avaliarão após o STOP</small></div>').join('')+'</div>'+
   '<div class="actions">'+btn('✋ STOP! Encerrar rodada','stop','stop')+'</div></section>';
  }else if(room.stage==='review'){
   const pending=room.results.filter(r=>r.status==='review').length;
   const waiting=room.results.filter(r=>r.answer&&!r.finalized&&Object.keys(r.votes||{}).length<2).length;
+  const credited=new Set();
   body='<section class="panel"><h1>🔎 Conferência em equipe</h1><p class="notice">Todos veem as respostas preenchidas. Cada participante pode votar ✅ ou ❌. Com opiniões diferentes, o Gemini ajuda e o organizador decide. Respostas vazias não são avaliadas.</p>'+
-  '<div class="answers review-coop-grid">'+room.results.map((r,i)=>{
+  '<p class="notice">Cada categoria vale no máximo 10 pontos para a equipe, mesmo que vários jogadores acertem.</p><div class="answers review-coop-grid">'+room.results.map((r,i)=>{
    const filled=!!String(r.answer||'').trim();
    const votes=r.votes||{},mine=votes[room.viewer];
    const agree=Object.values(votes).filter(v=>v==='valid').length,disagree=Object.values(votes).filter(v=>v==='invalid').length;
@@ -226,7 +227,7 @@ function renderRoom(){
     (r.by?'<small class="notice">✍️ Por '+esc(userName(r.by))+'</small>':'')+
     (!filled?'<p class="notice">— Campo vazio · 0 pontos · sem avaliação</p>':
      '<div class="review-votes"><button class="btn '+(mine==='valid'?'green':'secondary')+'" data-vote="'+i+'" data-vote-status="valid" '+(r.finalized?'disabled':'')+'>✅ Aceitar ('+agree+')</button><button class="btn '+(mine==='invalid'?'stop':'secondary')+'" data-vote="'+i+'" data-vote-status="invalid" '+(r.finalized?'disabled':'')+'>❌ Recusar ('+disagree+')</button></div>'+
-     '<p class="notice">Situação: <strong>'+({valid:'✅ Aceita',review:'🟡 Revisar',invalid:'❌ Recusada'})[r.status]+'</strong> · '+(r.status==='valid'?10:0)+' pontos</p>'+
+     '<p class="notice">Situação: <strong>'+({valid:'✅ Aceita',review:'🟡 Revisar',invalid:'❌ Recusada'})[r.status]+'</strong> · '+(r.status==='valid'&&!credited.has(r.categoryIndex)?(credited.add(r.categoryIndex),10):0)+' pontos para a equipe</p>'+
      (ai?'<p class="ai-opinion">🤖 Parecer da IA: '+esc(({valid:'Aceitar',invalid:'Recusar',review:'Em dúvida'})[ai.status])+' · '+esc(ai.reason||'')+(ai.corrected?' · ✍️ Grafia sugerida: '+esc(ai.corrected):'')+'</p>':'')+
      (hints[i]?'<p class="notice">'+esc(hints[i])+'</p>':'')+
      (room.host?'<label class="notice" for="finalGrade'+i+'">Decisão final do organizador</label><select id="finalGrade'+i+'" data-grade="'+i+'">'+['review','valid','invalid'].map(v=>'<option value="'+v+'" '+(r.finalized&&r.status===v?'selected':v==='review'&&!r.finalized?'selected':'')+'>'+({review:'— Aguardar votos',valid:'✅ Confirmar válida',invalid:'❌ Confirmar inválida'})[v]+'</option>').join('')+'</select>':'')
@@ -252,9 +253,9 @@ function syncAnswers(){
  if(!room||room.stage!=='game')return;
  for(let i=0;i<room.categories.length;i++){
   const input=document.getElementById('answer'+i);
-  if(input&&document.activeElement!==input&&!drafts.has(i))input.value=room.answers[i]?.value||'';
+  if(input&&document.activeElement!==input&&!drafts.has(i))input.value=room.submissions?.[room.viewer]?.[i]??room.answers[i]?.value??'';
   const author=document.getElementById('author'+i);
-  if(author)author.textContent=room.answers[i]?.by?'Sugerido por '+userName(room.answers[i].by):'Resposta da equipe';
+  if(author)author.textContent='Sua resposta · todos avaliarão após o STOP';
  }
  const pts=document.getElementById('score');if(pts)pts.textContent=room.score;
 }
