@@ -294,10 +294,10 @@ function renderEntry(){
  (isLocal?'<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>':'')+
  ''+
  '<div class="layout organizer-layout"><section class="panel organizer-config"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
- '<div class="name-emoji-row"><div class="name-compact"><label for="ownerName">'+(isLocal?'Seu nome':'Nome do professor')+'</label><input id="ownerName" autocapitalize="characters" maxlength="25" placeholder="Nome do professor" value="'+esc(entry.name)+'"></div>'+
+ '<div class="name-emoji-row"><div class="name-compact"><label for="ownerName">'+(isLocal?'Seu nome':'Nome do anfitrião')+'</label><input id="ownerName" autocapitalize="characters" maxlength="25" placeholder="Nome do anfitrião" value="'+esc(entry.name)+'"></div>'+
  (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+'</div>'+
  '<label for="teamName">'+(championshipMode?'Nome da equipe':'Nome da sala')+'</label><input id="teamName" autocapitalize="characters" maxlength="35" placeholder="'+(championshipMode?'Ex.: Equipe 7º A':'Ex.: Sala de Stop do 7º ano')+'" value="'+esc(entry.team)+'">'+
- (isLocal?'':'<label class="teacher-toggle"><input type="checkbox" id="teacherPlays" '+(entry.teacherPlays?'checked':'')+'><span>O professor também vai jogar</span></label><p class="notice">Desmarcado: o professor apenas organiza e confere. A sala pode ter 1 a 49 jogadores convidados, além do organizador.</p>'+
+ (isLocal?'':'<label class="teacher-toggle"><input type="checkbox" id="teacherPlays" '+(entry.teacherPlays?'checked':'')+'><span>O anfitrião também vai jogar</span></label><p class="notice">Desmarcado: o anfitrião apenas organiza e confere. A sala pode ter 1 a 49 jogadores convidados, além do organizador.</p>'+
  '<label class="teacher-toggle"><input type="checkbox" id="chatAllowed" '+(entry.chatAllowed?'checked':'')+'><span>Permitir chat e emojis na antessala</span></label><p class="notice">Disponível somente antes da partida. Ao iniciar, as conversas são encerradas.</p>')+
  (!isLocal&&championshipMode?'<div class="championship-notice"><strong>🏆 Campeonato '+esc(entry.eventCode)+'</strong><span>Esta sala seguirá as regras definidas pelo organizador do campeonato.</span><a href="eventos/">Consultar campeonato</a></div>':'')+
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div>'+
@@ -324,7 +324,7 @@ function renderEntry(){
 }
 async function enter(op){
  if(working)return;captureEntry();
- if(op==='create'&&(!entry.name.trim()||!entry.team.trim()||categories.length<6||categories.length>12||!Number.isInteger(entry.rounds)||entry.rounds<1||entry.rounds>20||!Number.isInteger(entry.duration)||entry.duration<30||entry.duration>300)){status('Preencha o professor, o nome da sala, de 6 a 12 categorias, de 1 a 20 rodadas e duração de 30 a 300 segundos.',true);return}
+ if(op==='create'&&(!entry.name.trim()||!entry.team.trim()||categories.length<6||categories.length>12||!Number.isInteger(entry.rounds)||entry.rounds<1||entry.rounds>20||!Number.isInteger(entry.duration)||entry.duration<30||entry.duration>300)){status('Preencha o nome do anfitrião, o nome da sala, de 6 a 12 categorias, de 1 a 20 rodadas e duração de 30 a 300 segundos.',true);return}
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
@@ -348,7 +348,7 @@ function downloadMatchReport(){
  if(!room||room.stage!=='end')return;
  const rows=[['RELATÓRIO STOP ARENA'],['Sala',room.team],['PIN',room.code],
   ['Rodadas concluídas',room.history.length],['Pontos coletivos',room.score],
-  ['Situação',room.finishedEarly?'Encerrada pelo professor':'Concluída'],[],
+  ['Situação',room.finishedEarly?'Encerrada pelo anfitrião':'Concluída'],[],
   ['JOGADORES','PONTUAÇÃO']];
  if(room.scoreTrackingComplete&&room.playerScores){
   room.members.filter(m=>m.plays!==false).sort((a,b)=>(room.playerScores[b.id]||0)-(room.playerScores[a.id]||0))
@@ -430,7 +430,7 @@ function renderRoom(){
  if(!room.host){
   const self=room.members.find(m=>m.id===room.viewer)||{name:'Jogador',emoji:'😀'};
   body='<section class="student-waiting"><span class="waiting-kicker">STOP ARENA · ANTESSALA</span><div class="waiting-emoji">'+esc(self.emoji||'😀')+'</div>'+
-   '<h1>'+esc(self.name)+'</h1><p>Aguarde o professor iniciar a partida.</p><div class="waiting-pulse">⏳ Você já está na sala '+esc(room.team)+'</div>'+
+   '<h1>'+esc(self.name)+'</h1><p>Aguarde o anfitrião iniciar a partida.</p><div class="waiting-pulse">⏳ Você já está na sala '+esc(room.team)+'</div>'+
    (room.chatAllowed!==false?'<details class="waiting-chat"><summary>💬 Conversar enquanto aguarda</summary>'+chatBox()+'</details>':'')+
    '<div class="waiting-exit">'+btn('Sair da sala','leave','small')+'</div></section>';
  }else{
@@ -442,7 +442,7 @@ function renderRoom(){
     '<div class="lobby-details">🎯 '+room.categories.length+' categorias · 🔁 '+room.rounds+' rodadas · ⏱️ '+room.duration+'s</div></div>'+
     '<div class="lobby-layout"><section class="panel"><div class="lobby-heading"><h2>👥 Participantes ('+room.members.length+'/50)</h2>'+
     btn('Sair do aparelho','leave','small')+'</div>'+
-    '<div class="lobby-player-row">'+room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.emoji||'😀')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você · Professor':m.plays===false?'Professor · organizador':'Jogador')+'</small></span>'+
+    '<div class="lobby-player-row">'+room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.emoji||'😀')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você · Anfitrião':m.plays===false?'Anfitrião · organizador':'Jogador')+'</small></span>'+
     (m.id!==room.viewer?'<button class="btn lobby-remove" data-kick="'+esc(m.id)+'" data-kick-name="'+esc(m.name)+'">Remover</button>':'')+'</div>').join('')+'</div>'+
     '<div class="lobby-start">'+btn('🎡 Sortear letra e começar','start','green fill')+btn('🏁 Finalizar jogo','finishGame','small')+'</div>'+
     '</section>'+(room.chatAllowed!==false?chatBox():'')+'</div>';
