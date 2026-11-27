@@ -131,6 +131,12 @@ body{background:radial-gradient(circle at 9% 12%,#fbe1fa 0,transparent 33%),radi
 .coop-setup .field{margin-top:9px}.coop-setup textarea{width:100%;resize:vertical;min-height:70px;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--edge);border-radius:9px;padding:10px}
 :root[data-theme=dark] .coop-setup{background:#183d3f;color:#d4ffed}
 @media(max-width:620px){.coop-setup{padding:9px}}
+
+.coop-game-banner{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(110deg,#dafbe8,#e6f7ff);border:1px solid #ace9d4;border-radius:12px;margin-bottom:10px;color:#155b46;font-size:12px}
+.coop-game-banner strong{font-size:14px}.contributor-label{font-size:11px!important;color:var(--muted)!important;margin-top:6px}
+.contributor{width:100%;font-size:12px!important;min-height:35px!important;padding:6px!important}
+:root[data-theme=dark] .coop-game-banner{background:#183d3f;color:#d4ffed}
+@media(max-width:620px){.coop-game-banner{align-items:flex-start;flex-direction:column}.contributor{font-size:12px}}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -266,6 +272,7 @@ function renderGame(){
  const n=remaining();
  if(n===0){finish('Tempo esgotado');return}
  show('<div class="game-head"><div><span class="eyebrow">'+(s.mode==='educacional'?'Modo Educacional':'Modo Recreativo')+'</span><h1>Respostas com a letra '+esc(s.letter)+'</h1></div>'+button('Sair','quit')+'</div>'+
+ (s.playStyle==='coop'?'<div class="coop-game-banner"><strong>🤝 '+esc(s.teamName||'Equipe Stop')+'</strong><span>Meta: '+Math.ceil(s.categories.length*10*s.rounds*.7)+' pontos · '+s.members.length+' participantes</span></div>':'')+
  '<div class="game-toolbar"><div class="stats">'+
  '<div class="stat letter"><small>🔤 Letra</small><strong>'+esc(s.letter)+'</strong></div>'+
  '<div class="stat"><small>⏱️ Tempo</small><strong id="countdown" role="timer">'+timeText(n)+'</strong></div>'+
@@ -273,12 +280,12 @@ function renderGame(){
  '<div class="stat"><small>✍️ Respostas</small><strong id="filled">0/'+s.categories.length+'</strong></div>'+
  '</div><div class="progress" aria-hidden="true"><div id="bar" style="width:100%"></div></div></div>'+
  '<section class="panel gamepanel"><div class="answers">'+
- s.categories.map((c,i)=>'<div class="answer"><label for="ans'+i+'"'+meaningTitle(c)+'>'+esc(c)+sigla(c)+'</label><input id="ans'+i+'" class="ans" data-i="'+i+'" maxlength="80" autocomplete="off" enterkeyhint="next" placeholder="'+esc(s.letter)+'…" value="'+esc(String(s.answers[i]||'').toLocaleUpperCase('pt-BR'))+'"></div>').join('')+
- '</div><div class="actions game-actions">'+button('Limpar','clear')+'<span class="notice">Conferência manual · 10 pontos por válida</span><button class="btn stop right" data-a="stop">✋ STOP!</button></div></section>');
+ s.categories.map((c,i)=>'<div class="answer"><label for="ans'+i+'"'+meaningTitle(c)+'>'+esc(c)+sigla(c)+'</label><input id="ans'+i+'" class="ans" data-i="'+i+'" maxlength="80" autocomplete="off" enterkeyhint="next" placeholder="'+esc(s.letter)+'…" value="'+esc(String(s.answers[i]||'').toLocaleUpperCase('pt-BR'))+'">'+(s.playStyle==='coop'?'<label class="contributor-label" for="contrib'+i+'">🙋 Quem contribuiu?</label><select id="contrib'+i+'" class="contributor" data-contributor="'+i+'" aria-label="Participante responsável por '+esc(c)+'"><option value="">Equipe inteira</option>'+s.members.map((person,j)=>'<option value="'+j+'" '+(String((s.contributors||[])[i])===String(j)?'selected':'')+'>'+esc(person)+'</option>').join('')+'</select>':'')+'</div>').join('')+
+ '</div><div class="actions game-actions">'+button('Limpar','clear')+'<span class="notice">'+(s.playStyle==='coop'?'🤝 Pontuação coletiva · 10 pontos por válida':'Conferência manual · 10 pontos por válida')+'</span><button class="btn stop right" data-a="stop">✋ STOP!</button></div></section>');
  updateFilled();clearInterval(timer);timer=setInterval(tick,250)
 }
 function updateFilled(){let el=document.getElementById('filled');if(el)el.textContent=s.answers.filter(x=>String(x||'').trim()).length+'/'+s.categories.length}
-function finish(reason){if(s.screen!=='game')return;clearInterval(timer);s.endReason=reason;s.results=s.categories.map((category,i)=>{const answer=String(s.answers[i]||'').trim().toLocaleUpperCase('pt-BR');return{category,answer,...classify(category,answer,s.letter)}});s.screen='result';renderResult()}
+function finish(reason){if(s.screen!=='game')return;clearInterval(timer);s.endReason=reason;s.results=s.categories.map((category,i)=>{const answer=String(s.answers[i]||'').trim().toLocaleUpperCase('pt-BR');return{category,answer,contributor:String((s.contributors||[])[i]??''),...classify(category,answer,s.letter)}});s.screen='result';renderResult()}
 const localWords={"Animal":["macaco","morcego","mico","mula","leão","lobo","lagarto","jacaré","cachorro","cavalo","cobra","coelho","coruja","gato","galinha","girafa","elefante","urso","pato","porco","peixe","rato","raposa","sapo","tigre","tartaruga","zebra","abelha","aranha","arara","borboleta","baleia","formiga","vaca"],"Cor":["amarelo","azul","bege","branco","cinza","dourado","laranja","lilás","magenta","marrom","preto","prata","rosa","roxo","turquesa","verde","vermelho","violeta"],"Fruta":["abacaxi","abacate","acerola","ameixa","amora","banana","caju","caqui","cereja","coco","figo","goiaba","jaca","kiwi","laranja","limão","maçã","mamão","manga","maracujá","melancia","melão","morango","pera","pêssego","pitanga","romã","tangerina","uva"],"Objeto":["anel","agulha","armário","balde","bola","boneca","borracha","cadeira","caderno","caneta","chave","colher","copo","escova","espelho","faca","fone","garrafa","garfo","geladeira","janela","lápis","livro","mesa","mochila","óculos","panela","papel","pente","porta","prato","relógio","tesoura","telefone","televisão","vaso"],"Profissão":["advogado","arquiteto","ator","bombeiro","cientista","cozinheiro","dentista","designer","eletricista","enfermeiro","engenheiro","farmacêutico","fotógrafo","jornalista","médico","motorista","músico","padeiro","pedreiro","piloto","policial","professor","psicólogo","veterinário"],"Comida":["arroz","bolo","brigadeiro","batata","churrasco","coxinha","feijão","farofa","frango","hambúrguer","lasanha","macarrão","moqueca","omelete","pão","pastel","pizza","quibe","risoto","salada","sopa","tapioca","torta"],"PHC":["braço","boca","cabeça","coração","costela","dedo","dente","estômago","fígado","joelho","mão","nariz","olho","orelha","pé","perna","pulmão","rim"],"CEP":["manaus","maceió","maranhão","méxico","minas gerais","natal","paraná","pernambuco","piauí","portugal","recife","rio de janeiro","rio grande do sul","salvador","são paulo","sergipe","teresina","tocantins","uruguai","vitória","brasil","belém","bahia","curitiba","ceará","fortaleza","frança","goiânia","goiás","japão","joão pessoa","londres","lisboa","argentina","alagoas","amazonas","acre","alemanha","angola","austrália"],"Flor":["azaleia","begônia","cravo","dália","girassol","hortênsia","jasmim","lavanda","margarida","orquídea","rosa","tulipa","violeta"],"Forma geométrica":["círculo","cubo","cilindro","esfera","hexágono","losango","oval","pentágono","quadrado","retângulo","triângulo"],"Bebida":["água","café","chá","guaraná","iogurte","leite","limonada","refrigerante","suco","vitamina"],"Parte do corpo":["braço","boca","cabeça","coração","costela","dedo","dente","estômago","fígado","joelho","mão","nariz","olho","orelha","pé","perna","pulmão","rim"]};
 const wordIndex=Object.fromEntries(Object.entries(localWords).map(([key,values])=>[norm(key),new Set(values.map(norm))]));
 const AI_ENDPOINT='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/validate';
@@ -411,6 +418,7 @@ app.addEventListener('click', e => {
     case 'clear':
       if (confirm('Limpar respostas?')) {
         s.answers = s.categories.map(() => '');
+        s.contributors = s.categories.map(()=>'');
         document.querySelectorAll('.ans').forEach(x => {x.value = '';});
         updateFilled(); save();
       }
@@ -424,7 +432,7 @@ app.addEventListener('click', e => {
     case 'confirm': {
       if(s.results.some(r=>r.status==='review'))return alert('Revise todas as respostas pendentes.');
       const sc = roundScore();
-      s.history.push({letter:s.letter,score:sc,valid:s.results.filter(x=>x.status==='valid').length});
+      s.history.push({letter:s.letter,score:sc,valid:s.results.filter(x=>x.status==='valid').length,contributors:s.results.filter(x=>x.status==='valid'&&x.contributor!=='').map(x=>x.contributor)});
       s.score += sc;
       if (s.round >= s.rounds) { s.screen = 'end'; render(); }
       else { s.round++; nextRound(); }
