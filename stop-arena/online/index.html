@@ -119,6 +119,13 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .suggestion-chip{background:#f0e8ff;border:1px solid #cbb9ed;border-radius:9px;color:#5d2997;padding:7px 9px;font-size:12px;font-weight:750;cursor:pointer}
 .suggestion-chip:disabled{opacity:.45;cursor:not-allowed}
 .picked-categories{margin:9px 0}
+.stop-error-dialog{width:min(92vw,390px);border:1px solid #e0c6f5;border-radius:20px;background:#fff;color:#34245d;padding:25px 24px;text-align:center;box-shadow:0 24px 65px #28104e35}
+.stop-error-dialog::backdrop{background:#190d3e85}
+.stop-error-dialog .stop-error-icon{font-size:33px;margin:0 0 7px}
+.stop-error-dialog h2{font-size:21px;margin:3px 0 11px}
+.stop-error-dialog p{line-height:1.5;font-size:15px;margin:0 0 20px}
+.stop-error-close{width:100%;border:0;border-radius:11px;background:#7030c4;color:#fff;cursor:pointer;padding:13px 20px;font:inherit;font-weight:800}
+.stop-error-close:focus-visible{outline:3px solid #f2ad44;outline-offset:3px}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -162,7 +169,28 @@ try{
  if(saved?.code&&saved?.token&&(!queryCode||upper(queryCode)===saved.code))session=saved;
  else if(saved&&queryCode)sessionStorage.removeItem(KEY);
 }catch{}
-const status=(msg,isError=false)=>{let el=document.getElementById('status');if(el){el.textContent=msg||'';el.className='status'+(isError?' error':'');el.hidden=!msg}};
+let errorDialog=null,errorDialogPreviousFocus=null;
+function showErrorPopup(message){
+ if(!message)return;
+ if(!errorDialog){
+  errorDialog=document.createElement('dialog');
+  errorDialog.className='stop-error-dialog';
+  errorDialog.setAttribute('aria-labelledby','stopErrorTitle');
+  errorDialog.innerHTML='<div class="stop-error-icon" aria-hidden="true">⚠️</div><h2 id="stopErrorTitle">Atenção</h2><p id="stopErrorMessage"></p><button class="stop-error-close" type="button">Entendi</button>';
+  document.body.appendChild(errorDialog);
+  errorDialog.querySelector('.stop-error-close').addEventListener('click',()=>errorDialog.close());
+  errorDialog.addEventListener('close',()=>{try{errorDialogPreviousFocus?.focus()}catch{};errorDialogPreviousFocus=null});
+ }
+ errorDialog.querySelector('#stopErrorMessage').textContent=message;
+ errorDialogPreviousFocus=document.activeElement;
+ if(!errorDialog.open)errorDialog.showModal();
+ errorDialog.querySelector('.stop-error-close').focus();
+}
+const status=(msg,isError=false)=>{
+ if(isError&&msg){showErrorPopup(msg);return}
+ const el=document.getElementById('status');
+ if(el){el.textContent=msg||'';el.className='status';el.hidden=!msg}
+};
 const saveSession=()=>{try{sessionStorage.setItem(KEY,JSON.stringify(session))}catch{}};
 const reset=()=>{session=null;room=null;screen='';seenVersion=-1;clearInterval(interval);clearInterval(timer);interval=null;timer=null;try{sessionStorage.removeItem(KEY)}catch{};renderEntry()};
 async function checkReadiness(){
@@ -511,7 +539,10 @@ app.addEventListener('click',async e=>{
   else letters.push(letter);
   letters.sort();renderEntry();return;
  }
- if(b.dataset.remove!==undefined){captureEntry();categories.splice(Number(b.dataset.remove),1);renderEntry();return}
+ if(b.dataset.remove!==undefined){
+  if(categories.length<=6)return status('Mantenha pelo menos 6 categorias.',true);
+  captureEntry();categories.splice(Number(b.dataset.remove),1);renderEntry();return;
+ }
  if(!b.dataset.act)return;
  const action=b.dataset.act;
  if(action==='resetLetters'){captureEntry();letters=[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];renderEntry();return}
