@@ -474,7 +474,7 @@ function renderRoom(){
   const ranked=tracked?members.map(m=>({name:m.name,emoji:m.emoji||'😀',score:Number(room.playerScores[m.id]||0)}))
     .sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'pt-BR')):[];
   const levels=[...new Set(ranked.map(p=>p.score))].slice(0,3);
-  const positions=levels.map((score,i)=>({place:i+1,score,players:ranked.filter(p=>p.score===score)}));
+  const positions=levels.map(score=>({place:ranked.findIndex(p=>p.score===score)+1,score,players:ranked.filter(p=>p.score===score)}));
   const champions=positions.find(p=>p.place===1)?.players||[];
   const podiumOrder=[3,2,1];
   body='<section class="panel final-ceremony">'+
