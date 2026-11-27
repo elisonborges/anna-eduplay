@@ -1,3 +1,13 @@
+## AnnA Stop Arena Host LAN — implementação atual (v0.1)
+
+- O **Multiplayer Local** deixa de utilizar salas do Cloudflare: o card inicial aponta para `stop-arena/lan/`, com instruções para iniciar o aplicativo anfitrião.
+- O motor de salas existente foi adaptado para `stop-arena/host/room-engine.mjs`; `server.mjs` oferece HTTP LAN, recebe comandos de criação/entrada/votação/STOP e serve a interface `stop-arena/online/index.html` em modo offline.
+- O organizador inicia o Host pelo lançador `Iniciar-Stop-Arena-LAN.cmd`, que abre a interface no navegador Windows. Cada aluno utiliza o endereço IPv4 e a porta exibidos pelo anfitrião e entra com o PIN alfanumérico de 7 caracteres.
+- A preparação do `runtime/node.exe` Windows x64 está em `Preparar-Runtime.cmd`: uma etapa online inicial, com download do Node LTS e verificação SHA-256. O runtime **ainda não está incluído** no repositório/distribuição.
+- Depois de preparado, o sistema é independente da internet para o jogo. As salas são mantidas em memória do anfitrião, e a conferência Gemini permanece desativada nesse modo offline.
+- Esta primeira versão foi testada sintaticamente e seu motor de salas passou em simulação de dois jogadores. **O teste de execução completa em Windows e a conexão física LAN ainda estão pendentes**.
+- As alterações estão na branch `feature/stop-arena-host-lan`, **não publicadas na main**.
+
 ## Multiplayer Local — sala com PIN (nova modalidade)
 
 - O card antes denominado **Cooperativo Local** agora abre `stop-arena/online/?modo=local` com título **🏫 Multiplayer Local**.
