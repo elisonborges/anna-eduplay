@@ -73,6 +73,15 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .lobby-emojis{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.lobby-emojis button{font-size:22px;background:#f1eaff;border:1px solid #dbcef4;border-radius:11px;padding:7px 11px;cursor:pointer}
 .lobby-compose{display:flex;gap:9px}.lobby-compose input{flex:1;min-width:0}.lobby-compose button{width:auto}
 @media(max-width:720px){.lobby-layout{grid-template-columns:1fr}.lobby-pin{width:100%}.lobby-links .btn{flex:1}}
+
+.organizer-hero{background:linear-gradient(117deg,#47229a,#6b32bc 58%,#9b55d7);border-radius:22px;color:white;padding:clamp(23px,4vw,38px);margin:0 0 17px;box-shadow:0 12px 30px #47229a24}
+.organizer-hero h1{font-size:clamp(25px,4.5vw,36px);margin:8px 0;color:white}.organizer-hero p{color:#efe6ff;max-width:560px;font-size:14px}
+.organizer-kicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d8ffcc}
+.organizer-join{display:inline-flex;margin-top:12px;color:#45208e!important;background:#fff!important;text-decoration:none;border-radius:12px;padding:11px 14px;font-size:13px}
+.organizer-layout{align-items:start}.organizer-layout>.panel{box-shadow:0 8px 25px #50358b13}
+.organizer-layout .kicker{font-size:11px;letter-spacing:1.1px;color:#7137af}
+.organizer-layout h2{font-size:20px}.organizer-participants{background:#fbf8ff}
+@media(max-width:720px){.organizer-join{width:100%;justify-content:center}}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -152,10 +161,10 @@ function captureEntry(){
 }
 function renderEntry(){
  screen='entry';clearInterval(interval);clearInterval(timer);interval=null;timer=null;
- app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<h1>🌐 Cooperativo Online</h1><p class="sub">Crie uma sala e convide a equipe. Cada participante usa seu próprio aparelho, com respostas compartilhadas!</p>')+
+ app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<section class="organizer-hero"><span class="organizer-kicker">AnnA EduPlay · Stop Arena Online</span><h1>🎮 Organize sua partida</h1><p>Configure o jogo, crie uma sala e compartilhe o PIN. Os participantes entram por um link próprio.</p><a class="btn organizer-join" href="entrar/">🔑 Sou participante · entrar com PIN</a></section>')+
  '<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>'+
  (isLocal?'':'<section class="panel" style="margin:13px 0;background:linear-gradient(105deg,#e4fff4,#eaf3ff)"><div class="actions" style="justify-content:space-between;margin-top:0"><div><strong>🏠 Quadro de salas criadas</strong><p class="notice">Veja nomes das salas, participantes conectados e vagas disponíveis.</p></div><a class="btn primary" href="salas/">Ver todas as salas →</a></div></section>')+
- '<div class="layout"><section class="panel"><span class="kicker">🏠 CRIAR SALA</span>'+
+ '<div class="layout organizer-layout"><section class="panel"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
  '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
  (isLocal?'':'<label for="eventCode">Código do evento (opcional; até 50 equipes)</label><input id="eventCode" maxlength="7" placeholder="Código de 7 caracteres" value="'+esc(entry.eventCode)+'">'+
@@ -177,7 +186,7 @@ function renderEntry(){
  '<label for="joinCode">PIN da sala (7 caracteres)</label><input id="joinCode" maxlength="7" autocapitalize="characters" placeholder="EX.: ABC1234" value="'+esc(entry.joinCode)+'">'+
  '<label for="joinName">Seu nome</label><input id="joinName" maxlength="25" placeholder="Como quer aparecer?" value="'+esc(entry.joinName)+'">'+
  '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div></section>':
- '<section class="panel"><span class="kicker">📲 PARTICIPANTES</span>'+
+ '<section class="panel organizer-participants"><span class="kicker">02 · CONVIDAR JOGADORES</span>'+
  '<h2>Entrar em uma sala tem página própria</h2>'+
  '<p class="notice">Envie aos participantes o PIN ou o link de convite. Eles entram pelo celular, informam nome e PIN, sem ver as configurações do organizador.</p>'+
  '<p><a class="btn green fill" href="entrar/">🔑 Abrir página para entrar em sala</a></p></section>')+
