@@ -10,6 +10,18 @@
 - **Não é sala online:** não há convite, código de sala, sincronização entre dispositivos nem colaboração simultânea pela rede. Esses recursos exigem backend de sessão/realtime em etapa futura.
 - Validação visual e teste de partida completa no navegador ainda pendentes.
 
+## Quadro de salas disponíveis
+
+- Acesse `stop-arena/online/salas/`; há links de acesso direto no Cooperativo Online e no painel de eventos.
+- Lista pública das salas **criadas após a implantação deste recurso**, com **nome da equipe/sala**, código, situação, **participantes inscritos**, **pessoas conectadas** e **vagas disponíveis**.
+- Cada sala comporta 6 participantes. “Conectados” considera atividade registrada nos últimos **20 segundos**; uma pessoa pode continuar inscrita mesmo desconectada.
+- Vagas aparecem somente enquanto a sala está no lobby. Depois do início, o ingresso é bloqueado mesmo que haja menos de seis inscritos.
+- Atualização automática do quadro a cada 12 segundos, com botão de atualização manual e filtro opcional por código de evento.
+- O quadro não expõe nomes de participantes nem tokens de sessão; divulga apenas o nome da equipe/sala e quantidades.
+- Backend: `StopArenaDirectory` (Durable Object SQLite) armazena códigos das salas por até 24 horas; `StopArenaRoom` fornece resumo público de ocupação e presença. O serviço lista até as 100 salas mais recentes por consulta, com contagem total.
+- O índice não recupera automaticamente salas anteriores à implantação do recurso. A implantação Cloudflare e o funcionamento em produção ainda exigem confirmação.
+- Testes simulados cobriram sala com 1/6 e 6/6 participantes, rejeição do sétimo, entrada bloqueada após início e queda da contagem de conectados por inatividade.
+
 ## Gestão dos eventos (próxima evolução)
 
 - O professor define **tipo de desafio (Recreativo ou Educacional), conjunto de seis categorias, tempo e número de rodadas** quando cria um evento.
