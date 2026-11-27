@@ -69,7 +69,7 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .lobby-details{font-size:12px;background:#f3edff;padding:10px;border-radius:10px;margin:12px 0}
 .lobby-start{background:#f5f0ff;padding:13px;border-radius:12px}.lobby-start p{font-size:13px}
 .lobby-feed{height:235px;overflow-y:auto;background:#f9f7ff;border:1px solid #e7def6;padding:12px;border-radius:13px}
-.lobby-message{padding:6px;margin:4px 0;overflow-wrap:anywhere}.lobby-message strong{color:#6234a7}
+.lobby-message{padding:6px;margin:4px 0;overflow-wrap:anywhere}.lobby-message strong{color:#6234a7}.lobby-delete{float:right;border:0;background:transparent;color:#a22c3b;font-weight:900;cursor:pointer;margin-left:8px}
 .lobby-emojis{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.lobby-emojis button{font-size:22px;background:#f1eaff;border:1px solid #dbcef4;border-radius:11px;padding:7px 11px;cursor:pointer}
 .lobby-compose{display:flex;gap:9px}.lobby-compose input{flex:1;min-width:0}.lobby-compose button{width:auto}
 @media(max-width:720px){.lobby-layout{grid-template-columns:1fr}.lobby-pin{width:100%}.lobby-links .btn{flex:1}}
@@ -228,7 +228,15 @@ async function poll(){
  checking=true;
  const current=session;
  try{const result=await request({op:'state',...current});if(!session||session.token!==current.token)return;lastError='';setRoom(result.room);status('')}
- catch(e){lastError=e.message;status('Sem atualização: '+e.message,true)}
+ catch(e){
+  if(!isLocal&&/não autorizado|removido pelo organizador/i.test(e.message)){
+   session=null;room=null;clearInterval(interval);clearInterval(timer);interval=null;timer=null;
+   try{sessionStorage.removeItem(KEY)}catch{}
+   app.innerHTML='<section class="panel" style="max-width:550px;margin:35px auto;text-align:center"><h1>🚫 Acesso encerrado</h1><p>O organizador removeu sua participação desta sala. Entre em contato com ele se precisar de autorização.</p><a class="btn" href="entrar/">Voltar</a></section>';
+   return;
+  }
+  lastError=e.message;status('Sem atualização: '+e.message,true)
+ }
  finally{checking=false}
 }
 async function act(action,extra={}){
@@ -264,7 +272,8 @@ room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(
 '<div class="lobby-details">🎯 '+room.categories.length+' categorias · 🔁 '+room.rounds+' rodadas · ⏱️ '+room.duration+'s</div>'+
 (room.host?'<div class="lobby-start"><p>Ao começar, chat e emojis são desativados para todos.</p>'+btn('🎡 Sortear letra e começar','start','green fill')+btn('🏁 Finalizar jogo','finishGame','small')+'</div>':'<div class="attention">⏳ Aguardando o organizador iniciar a partida...</div>')+
 '</section><section class="panel"><h2>💬 Conversa da equipe</h2><p class="notice">Mensagens e emojis disponíveis apenas nesta antessala.</p>'+
-'<div class="lobby-feed" id="lobbyFeed" role="log">'+(chat.length?chat.map(m=>'<p class="lobby-message"><strong>'+esc(m.name||'Antessala')+':</strong> '+esc(m.text)+'</p>').join(''):'<p class="notice">👋 Dê boas-vindas à equipe!</p>')+'</div>'+
+'<div class="lobby-feed" id="lobbyFeed" role="log">'+(chat.length?chat.map(m=>'<p class="lobby-message"><strong>'+esc(m.name||'Antessala')+':</strong> '+esc(m.text)+
+ (room.host&&m.by!=='system'?'<button class="lobby-delete" data-lobby-delete="'+esc(m.id)+'" aria-label="Excluir mensagem de '+esc(m.name)+'">✕</button>':'')+'</p>').join(''):'<p class="notice">👋 Dê boas-vindas à equipe!</p>')+'</div>'+
 '<div class="lobby-emojis">'+['👋','👏','🎉','👍','😊','🚀'].map(e=>'<button data-lobby-emoji="'+e+'" aria-label="Enviar '+e+'">'+e+'</button>').join('')+'</div>'+
 '<form id="lobbyForm" class="lobby-compose"><input id="lobbyText" maxlength="140" value="'+esc(lobbyDraft)+'" placeholder="Escreva uma mensagem..." aria-label="Mensagem para a equipe"><button class="btn primary" type="submit">Enviar</button></form></section></div>';
 
@@ -417,6 +426,10 @@ async function reviewAI(){
 
 app.addEventListener('click',async e=>{
  const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.lobbyDelete!==undefined){
+  if(isLocal||!room?.host||room.stage!=='lobby')return;
+  return act('deleteLobbyMessage',{messageId:b.dataset.lobbyDelete});
+ }
  if(b.dataset.kick!==undefined){
   if(isLocal||!room?.host||room.stage!=='lobby')return;
   if(!confirm('Remover '+b.dataset.kickName+' da sala? A pessoa não poderá voltar usando o mesmo nome.'))return;
