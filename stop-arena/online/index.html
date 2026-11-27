@@ -214,13 +214,13 @@ function renderRoom(){
   '<div class="actions">'+btn('✋ STOP! Encerrar rodada','stop','stop')+'</div></section>';
  }else if(room.stage==='review'){
   const pending=room.results.filter(r=>r.status==='review').length;
-  body='<section class="panel"><h1>🔍 Conferência da equipe</h1><p class="notice">✅ Reconhecidas, ❌ letra incorreta e 🟡 pendentes. O organizador decide, com ajuda opcional da IA.</p>'+
+  body='<section class="panel"><h1>🔍 Conferência da equipe</h1><p class="notice">✅ Reconhecidas, ❌ letra incorreta e 🟡 pendentes. A IA pode conferir as pendências; o organizador pode corrigir todas as avaliações.</p>'+
   '<div style="overflow:auto"><table><thead><tr><th>Categoria / Resposta</th><th>Avaliação</th><th>Pontos</th></tr></thead><tbody>'+
   room.results.map((r,i)=>'<tr><td><strong>'+esc(r.category)+'</strong><div>'+esc(r.answer||'—')+'</div><small class="notice" id="aiReason'+i+'">'+(hints[i]?esc(hints[i]):r.by?'Por '+esc(userName(r.by)):'')+'</small></td><td>'+
   (room.host&&r.answer?'<select data-grade="'+i+'">'+['valid','review','invalid'].map(v=>'<option value="'+v+'" '+(r.status===v?'selected':'')+'>'+({valid:'✅ Aceita',review:'🟡 Revisar',invalid:'❌ Inválida'})[v]+'</option>').join('')+'</select>':'<span class="notice">'+({valid:'✅ Aceita',review:'🟡 Revisar',invalid:'❌ Inválida',empty:'— Vazia'})[r.status]+'</span>')+
   '</td><td>'+(r.status==='valid'?10:0)+'</td></tr>').join('')+'</tbody></table></div>'+
   '<div class="attention">🟡 '+pending+' resposta(s) em revisão. '+(room.host?'Resolva as pendências para avançar.':'O organizador está revisando.')+'</div>'+
-  (room.host?'<div class="actions">'+btn('✨ Consultar IA','ai')+'<button class="btn primary" data-act="next" '+(pending?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Aguardando o organizador confirmar as respostas.</p>')+
+  (room.host?'<div class="actions">'+btn('🤖 Conferir pendentes com IA','ai')+'<button class="btn primary" data-act="next" '+(pending?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Aguardando o organizador confirmar as respostas.</p>')+
   '</section>';
  }else{
   const goal=Math.ceil(room.categories.length*room.rounds*10*.7),reached=room.score>=goal;
@@ -272,23 +272,42 @@ async function flushDrafts(){
  for(const [index,item] of items){clearTimeout(item.timer);await request({op:'action',...session,action:'answer',index,value:item.value})}
 }
 async function reviewAI(){
- if(!room?.host)return;
+ if(!room?.host||!session||room.stage!=='review'||working)return;
  const items=room.results.map((r,index)=>({...r,index})).filter(r=>r.status==='review'&&r.answer);
- if(!items.length){status('Nenhuma resposta pendente de IA.');return}
- status('✨ Consultando IA...');
+ if(!items.length){status('Não há respostas pendentes.');return}
+ const code=room.code,letter=room.letter,round=room.round;
+ const btn=app.querySelector('[data-act="ai"]');if(btn)btn.disabled=true;
+ working=true;status('🤖 IA conferindo '+items.length+' resposta(s)...');
  try{
-  const response=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({letter:room.letter,items:items.map(({index,category,answer})=>({index,category,answer}))}),credentials:'omit'});
-  const data=await response.json();
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+  let response;
+  try{response=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({letter,items:items.map(({index,category,answer})=>({index,category,answer}))}),credentials:'omit',signal:controller.signal})}
+  finally{clearTimeout(timeout)}
+  const data=await response.json().catch(()=>({}));
   if(!response.ok)throw Error(data.error||'IA indisponível');
-  if(!Array.isArray(data.suggestions))throw Error('Formato de IA inesperado');
-  for(const x of data.suggestions){
-   if(!items.some(m=>m.index===x.index)||!['valid','invalid','review'].includes(x.status))continue;
-   const hint='🤖 IA sugere '+({valid:'ACEITAR',invalid:'RECUSAR',review:'REVISAR'})[x.status]+': '+String(x.reason||'').slice(0,140);
-   hints[x.index]=hint;const el=document.getElementById('aiReason'+x.index);if(el)el.textContent=hint;
+  if(!Array.isArray(data.suggestions))throw Error('Formato da IA inesperado');
+  if(!session||!room||room.code!==code||room.round!==round||room.letter!==letter||room.stage!=='review')return;
+  const allowed=new Map(items.map(x=>[x.index,x]));
+  let evaluated=0,uncertain=0;
+  for(const suggestion of data.suggestions){
+   const index=Number(suggestion.index),initial=allowed.get(index);
+   if(!initial||!['valid','invalid','review'].includes(suggestion.status))continue;
+   if(room.results[index]?.status!=='review'||room.results[index]?.answer!==initial.answer)continue;
+   hints[index]='🤖 IA: '+String(suggestion.reason||'Sem justificativa').slice(0,140);
+   if(suggestion.status==='review'){uncertain++;continue}
+   const result=await request({op:'action',...session,action:'grade',index,status:suggestion.status});
+   if(!result.room||result.room.code!==code||result.room.round!==round||result.room.stage!=='review')break;
+   room=result.room;evaluated++;
   }
-  status('Sugestões recebidas. O organizador mantém a decisão final.');
- }catch(e){status('IA indisponível: '+e.message+'. Continue manualmente.',true)}
+  renderRoom();
+  const pending=room.results.filter(x=>x.status==='review').length;
+  status('✅ '+evaluated+' resposta(s) conferida(s) · '+uncertain+' dúvida(s) · '+pending+' pendente(s). O organizador pode corrigir as avaliações.');
+ }catch(error){
+  renderRoom();
+  status('⚠️ IA indisponível: '+(error.name==='AbortError'?'tempo esgotado':error.message)+'. Continue a conferência manual.',true);
+ }finally{working=false;if(btn&&btn.isConnected)btn.disabled=false}
 }
+
 app.addEventListener('click',async e=>{
  const b=e.target.closest('button');if(!b)return;
  if(b.dataset.letterToggle!==undefined){
