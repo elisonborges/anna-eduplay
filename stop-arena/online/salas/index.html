@@ -31,7 +31,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #eca9
 </style></head><body>
 <header><div class="top"><strong>🏠 Stop Arena · Quadro de Salas</strong><a href="../">← Cooperativo Online</a></div></header>
 <main><h1>🤝 Salas disponíveis</h1>
-<p class="hint">Consulte as salas criadas, o nome da equipe, os jogadores conectados e as vagas restantes. A lista é atualizada a cada 12 segundos.</p>
+<p class="hint">Consulte somente salas ativas, com o nome da equipe, jogadores conectados e vagas restantes. A lista é atualizada a cada 12 segundos.</p>
 <div class="toolbar"><div><label for="filter">Código do evento (opcional)</label><input id="filter" maxlength="7" placeholder="Todas as salas" autocomplete="off"></div><button id="apply">Filtrar evento</button><button id="all">Todas as salas</button><button id="refresh" class="primary">↻ Atualizar</button></div>
 <div id="status" role="status" aria-live="polite">Conectando ao servidor de salas...</div>
 <div id="summary" class="hint"></div><section id="board" class="board" aria-label="Salas criadas"></section>
@@ -55,9 +55,9 @@ async function refresh(){
   const result=await fetch(ENDPOINT+(selected?'?evento='+encodeURIComponent(selected):''),{credentials:'omit',signal:controller.signal});
   const data=await result.json().catch(()=>({}));
   if(!result.ok)throw Error(data.error||'Servidor indisponível ('+result.status+')');
-  const rooms=Array.isArray(data.rooms)?data.rooms:[];
-  summary.textContent=rooms.length+' salas exibidas'+(data.total>rooms.length?' · mostrando as '+rooms.length+' mais recentes':'')+' · atualizadas automaticamente';
-  const labels={lobby:'🟢 Aguardando jogadores',game:'🎮 Partida em andamento',review:'🔎 Conferência',end:'🏁 Partida concluída'};
+  const rooms=(Array.isArray(data.rooms)?data.rooms:[]).filter(r=>r&&['lobby','roulette','game','review'].includes(r.stage));
+  summary.textContent=rooms.length+' sala(s) ativa(s) exibida(s) · atualizadas automaticamente';
+  const labels={lobby:'🟢 Aguardando jogadores',game:'🎮 Partida em andamento',review:'🔎 Conferência',roulette:'🎡 Sorteio da letra'};
   board.innerHTML=rooms.map(r=>{
    const capacity=Number(r.capacity)||50;
    const registered=Math.max(0,Math.min(capacity,Number(r.registered)||0));
@@ -69,7 +69,7 @@ async function refresh(){
     '<div class="foot"><span class="stage">'+esc(labels[r.stage]||'Sala ativa')+(r.eventCode?' · Evento '+esc(r.eventCode):'')+'</span>'+
     (r.joinable?'<a class="button primary" href="../entrar/?sala='+encodeURIComponent(r.code)+'">Entrar na sala</a>':'<span class="hint">Entrada encerrada</span>')+'</div></article>';
   }).join('');
-  if(!rooms.length)board.innerHTML='<p class="empty">Nenhuma sala encontrada. Crie uma sala no Cooperativo Online para aparecer no quadro.</p>';
+  if(!rooms.length)board.innerHTML='<p class="empty">Nenhuma sala ativa disponível no momento. Crie uma sala no Cooperativo Online para aparecer no quadro.</p>';
   message('✅ Quadro atualizado.');
  }catch(e){message('⚠️ Não foi possível consultar o quadro: '+e.message+'. Verifique se o Cloudflare implantou a atualização.',true)}
  finally{clearTimeout(timeout);working=false}
