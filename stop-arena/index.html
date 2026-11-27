@@ -578,9 +578,9 @@ function renderResult(){
 function finalizeGameEarly(){
  if(!['roulette','letter','game','result'].includes(s.screen))return;
  const done=s.history.length,points=s.history.reduce((total,round)=>total+round.score,0);
- const question='Finalizar o jogo agora?\\n\\n'+
-  'Rodadas concluídas: '+done+'\\nPontuação acumulada: '+points+' pontos.\\n\\n'+
-  'A rodada atual não concluída não será contabilizada.\\nDeseja realmente finalizar?';
+ const question='Finalizar o jogo agora?\n\n'+
+  'Rodadas concluídas: '+done+'\nPontuação acumulada: '+points+' pontos.\n\n'+
+  'A rodada atual não concluída não será contabilizada.\nDeseja realmente finalizar?';
  if(!confirm(question))return;
  clearInterval(timer);
  clearInterval(rouletteTimer);rouletteTimer=null;
