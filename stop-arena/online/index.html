@@ -82,6 +82,15 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .organizer-layout .kicker{font-size:11px;letter-spacing:1.1px;color:#7137af}
 .organizer-layout h2{font-size:20px}.organizer-participants{background:#fbf8ff}
 @media(max-width:720px){.organizer-join{width:100%;justify-content:center}}
+/* Participantes em fileira horizontal, com emoji escolhido e nome. */
+.lobby-layout{display:flex;flex-direction:column;align-items:stretch}
+.lobby-layout>.panel{width:100%}
+.lobby-player-row{display:flex;gap:12px;overflow-x:auto;padding:6px 2px 14px;scroll-snap-type:x proximity}
+.lobby-player{flex:0 0 145px;min-height:150px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:flex-start;gap:7px;padding:13px 8px;margin:0;scroll-snap-align:start}
+.lobby-avatar{font-size:39px;line-height:1.2;width:64px;height:64px;border-radius:18px;background:#f0e9ff}
+.lobby-player-name{align-items:center;width:100%}.lobby-player-name strong{font-size:14px;overflow-wrap:anywhere}
+.lobby-remove{font-size:11px!important;padding:6px 9px!important;margin-top:auto}
+@media(max-width:720px){.lobby-layout{display:flex;flex-direction:column}.lobby-player-row{gap:9px}.lobby-player{flex-basis:128px;min-height:148px}}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -115,7 +124,7 @@ if(isLocal){
 }
 const queryCode=params.get('sala')||'';
 const queryEvent=new URLSearchParams(location.search).get('evento')||'';
-const entry={name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:upper(queryEvent).slice(0,7),rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
+const entry={emoji:'😀',name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:upper(queryEvent).slice(0,7),rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[...PRESETS.recreativo.Clássico];
 let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='',lobbyDraft='';
@@ -151,8 +160,10 @@ async function request(payload){
  }finally{clearTimeout(timeout)}
 }
 const userName=id=>room?.members.find(m=>m.id===id)?.name||'Equipe';
+const playerEmojis=['😀','😎','🤓','🥳','🤖','🦊','🐼','🐯','🦁','🐸','🦄','🚀'];
+const emojiSelector=(id,value)=>'<label for="'+id+'">Seu emoji na equipe</label><select id="'+id+'" aria-label="Escolha seu emoji">'+playerEmojis.map(e=>'<option value="'+e+'" '+(value===e?'selected':'')+'>'+e+'</option>').join('')+'</select>';
 function captureEntry(){
- for(const [key,id] of [['name','ownerName'],['team','teamName'],['eventCode','eventCode'],['joinName','joinName'],['joinCode','joinCode']]){
+ for(const [key,id] of [['name','ownerName'],['team','teamName'],['eventCode','eventCode'],['joinName','joinName'],['joinCode','joinCode'],['emoji','hostEmoji']]){
   const el=document.getElementById(id);if(el)entry[key]=el.value;
  }
  for(const [key,id] of [['mode','mode'],['preset','preset'],['rounds','rounds'],['duration','duration']]){
@@ -166,6 +177,7 @@ function renderEntry(){
  (isLocal?'':'<section class="panel" style="margin:13px 0;background:linear-gradient(105deg,#e4fff4,#eaf3ff)"><div class="actions" style="justify-content:space-between;margin-top:0"><div><strong>🏠 Quadro de salas criadas</strong><p class="notice">Veja nomes das salas, participantes conectados e vagas disponíveis.</p></div><a class="btn primary" href="salas/">Ver todas as salas →</a></div></section>')+
  '<div class="layout organizer-layout"><section class="panel"><span class="kicker">01 · CONFIGURAR PARTIDA</span><h2>🏠 Nova sala</h2>'+
  '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
+ (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
  (isLocal?'':'<label for="eventCode">Código do evento (opcional; até 50 equipes)</label><input id="eventCode" maxlength="7" placeholder="Código de 7 caracteres" value="'+esc(entry.eventCode)+'">'+
  '<p class="notice">🏆 Se participar de um evento, as regras definidas pelo organizador prevalecem: categorias, letras, duração e número de rodadas iguais para todas as equipes.</p>'+
@@ -199,7 +211,7 @@ async function enter(op){
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
-  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':upper(entry.eventCode).trim(),categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':upper(entry.eventCode).trim(),emoji:isLocal?undefined:entry.emoji,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
   const data=await request(payload);
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
@@ -276,8 +288,8 @@ const chat=(room.lobbyMessages||[]).slice(-40);
 body='<div class="lobby-hero"><div><span>● ANTESSALA · '+(room.host?'ORGANIZADOR':'PARTICIPANTE')+'</span><h1>🏠 '+esc(room.team)+'</h1><p>Compartilhe o PIN e receba os jogadores antes de iniciar.</p></div><div class="lobby-pin"><small>PIN DE ACESSO</small><strong>'+esc(room.code)+'</strong><small>'+room.members.length+' de 6 participantes</small></div></div>'+
 '<div class="lobby-links">'+btn('📋 Copiar PIN','copyPin','small')+btn('🔗 Copiar convite','share','primary')+'<a class="btn green" href="'+esc(link())+'">Link dos participantes</a></div>'+
 '<div class="lobby-layout"><section class="panel"><h2>👥 Jogadores ('+room.members.length+'/6)</h2><p class="notice">O organizador pode remover participantes antes de iniciar.</p>'+
-room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.name[0]?.toUpperCase()||'?')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você':m.id===room.members[0].id?'Organizador':'Jogador')+'</small></span>'+
-(room.host&&m.id!==room.viewer?'<button class="btn lobby-remove" data-kick="'+esc(m.id)+'" data-kick-name="'+esc(m.name)+'">Remover</button>':'')+'</div>').join('')+
+'<div class="lobby-player-row">'+room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.emoji||'😀')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você':m.id===room.members[0].id?'Organizador':'Jogador')+'</small></span>'+
+(room.host&&m.id!==room.viewer?'<button class="btn lobby-remove" data-kick="'+esc(m.id)+'" data-kick-name="'+esc(m.name)+'">Remover</button>':'')+'</div>').join('')+'</div>'+
 '<div class="lobby-details">🎯 '+room.categories.length+' categorias · 🔁 '+room.rounds+' rodadas · ⏱️ '+room.duration+'s</div>'+
 (room.host?'<div class="lobby-start"><p>Ao começar, chat e emojis são desativados para todos.</p>'+btn('🎡 Sortear letra e começar','start','green fill')+btn('🏁 Finalizar jogo','finishGame','small')+'</div>':'<div class="attention">⏳ Aguardando o organizador iniciar a partida...</div>')+
 '</section><section class="panel"><h2>💬 Conversa da equipe</h2><p class="notice">Mensagens e emojis disponíveis apenas nesta antessala.</p>'+
