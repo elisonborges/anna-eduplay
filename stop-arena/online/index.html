@@ -62,15 +62,22 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 <script>
 (()=>{
 'use strict';
-const API='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/room';
-const AI='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/validate';
-const KEY='anna.stoparena.online.session';
+const API=window.STOP_ARENA_LAN?location.origin+'/stop-arena/room':'https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/room';
+const AI=window.STOP_ARENA_LAN?location.origin+'/stop-arena/validate':'https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/validate';
+const KEY=window.STOP_ARENA_LAN?'anna.stoparena.lan.session':'anna.stoparena.online.session';
 const PRESETS={"recreativo":{"Clássico":["Nome","Animal","CEP","Cor","Objeto","Fruta"],"Populares":["Nome","Animal","CEP","Comida","Profissão","Marca"],"Diversão":["Filme","PDA","Marca","Esporte","Cantor ou banda","JLR"],"Cotidiano":["Comida","Bebida","Roupa","Profissão","Lugar","Objeto"],"Natureza":["Animal","Fruta","Flor","Árvore","Cor","Planta"],"Viagem":["CEP","Lugar turístico","Comida típica","Meio de transporte","Hotel","Ponto turístico"]},"educacional":{"Português":["Substantivo","Adjetivo","Verbo","Nome próprio","JLR","Objeto"],"Ciências":["Animal","Planta","PHC","Alimento","Elemento da natureza","Material"],"Geografia":["CEP","Rio","Continente","Lugar geográfico","Relevo","Bioma"],"História":["Personagem histórico","Acontecimento histórico","Profissão antiga","Objeto histórico","CEP","Objeto"],"Matemática":["Forma geométrica","Termo matemático","Unidade de medida","Número por extenso","Instrumento de medição","Objeto geométrico"],"Tecnologia":["Componente eletrônico","Ferramenta","Termo de programação","Dispositivo tecnológico","Sensor","Aplicativo"]}};
 const app=document.getElementById('app');
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const upper=x=>String(x??'').toLocaleUpperCase('pt-BR');
 const btn=(title,act,cls='')=>'<button class="btn '+cls+'" data-act="'+act+'">'+title+'</button>';
-const queryCode=new URLSearchParams(location.search).get('sala')||'';
+const params=new URLSearchParams(location.search);
+const isLocal=Boolean(window.STOP_ARENA_LAN);
+if(isLocal){
+ document.title='Multiplayer Local | Stop Arena · AnnA EduPlay';
+ const subtitle=document.querySelector('.brand small');
+ if(subtitle)subtitle.textContent='AnnA EduPlay · Multiplayer Local 🏫';
+}
+const queryCode=params.get('sala')||'';
 const queryEvent=new URLSearchParams(location.search).get('evento')||'';
 const entry={name:'',team:'Equipe Campeã',mode:'recreativo',preset:'Clássico',eventCode:upper(queryEvent).slice(0,7),rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[...PRESETS.recreativo.Clássico];
@@ -91,10 +98,10 @@ async function checkReadiness(){
   const response=await fetch(API.replace('/room','/status'),{signal:controller.signal,credentials:'omit'});
   const data=await response.json();
   if(!response.ok||!data.online)throw Error('Serviço de salas não disponível');
-  el.textContent='✅ Servidor de salas disponível'+(data.ai?' · 🧠 Credencial IA presente (consulta ainda depende da API)':' · revisão manual disponível');
+  el.textContent=(window.STOP_ARENA_LAN?'✅ Anfitrião LAN conectado — jogo offline na rede':'✅ Servidor de salas disponível')+(data.ai?' · 🧠 Credencial IA presente (consulta ainda depende da API)':' · revisão manual disponível');
   el.className='status';
  }catch{
-  el.textContent='⚠️ Salas online aguardando implantação no Cloudflare. O jogo local continua disponível.';
+  el.textContent=window.STOP_ARENA_LAN?'⚠️ Servidor LAN indisponível. Confirme se o aplicativo anfitrião continua aberto.':'⚠️ Salas online aguardando implantação no Cloudflare. O jogo local continua disponível.';
   el.className='status error';
  }finally{clearTimeout(timeout)}
 }
@@ -118,15 +125,15 @@ function captureEntry(){
 }
 function renderEntry(){
  screen='entry';clearInterval(interval);clearInterval(timer);interval=null;timer=null;
- app.innerHTML='<h1>🌐 Cooperativo Online</h1><p class="sub">Crie uma sala e convide a equipe. Cada participante usa seu próprio aparelho, com respostas compartilhadas!</p>'+
+ app.innerHTML=(isLocal?'<h1>🏫 Multiplayer Local</h1><p class="sub">Cada pessoa joga no próprio aparelho. Crie uma sala, compartilhe o PIN e confiram juntos as respostas.</p><div class="attention">📶 No modo LAN, conecte todos os dispositivos à mesma rede e abra o endereço do computador anfitrião. Não precisa de internet.</div>':'<h1>🌐 Cooperativo Online</h1><p class="sub">Crie uma sala e convide a equipe. Cada participante usa seu próprio aparelho, com respostas compartilhadas!</p>')+
  '<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>'+
- '<section class="panel" style="margin:13px 0;background:linear-gradient(105deg,#e4fff4,#eaf3ff)"><div class="actions" style="justify-content:space-between;margin-top:0"><div><strong>🏠 Quadro de salas criadas</strong><p class="notice">Veja nomes das salas, participantes conectados e vagas disponíveis.</p></div><a class="btn primary" href="salas/">Ver todas as salas →</a></div></section>'+
+ (isLocal?'':'<section class="panel" style="margin:13px 0;background:linear-gradient(105deg,#e4fff4,#eaf3ff)"><div class="actions" style="justify-content:space-between;margin-top:0"><div><strong>🏠 Quadro de salas criadas</strong><p class="notice">Veja nomes das salas, participantes conectados e vagas disponíveis.</p></div><a class="btn primary" href="salas/">Ver todas as salas →</a></div></section>')+
  '<div class="layout"><section class="panel"><span class="kicker">🏠 CRIAR SALA</span>'+
  '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
- '<label for="eventCode">Código do evento (opcional; até 50 equipes)</label><input id="eventCode" maxlength="7" placeholder="Código de 7 caracteres" value="'+esc(entry.eventCode)+'">'+
+ (isLocal?'':'<label for="eventCode">Código do evento (opcional; até 50 equipes)</label><input id="eventCode" maxlength="7" placeholder="Código de 7 caracteres" value="'+esc(entry.eventCode)+'">'+
  '<p class="notice">🏆 Se participar de um evento, as regras definidas pelo organizador prevalecem: categorias, letras, duração e número de rodadas iguais para todas as equipes.</p>'+
- '<p class="notice"><a href="eventos/">🏆 Criar evento ou ver placar de equipes</a></p>'+
+ '<p class="notice"><a href="eventos/">🏆 Criar evento ou ver placar de equipes</a></p>')+
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS[entry.mode]).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
  '<div><label for="rounds">Rodadas</label><select id="rounds">'+[1,3,5,10,20].map(n=>'<option value="'+n+'" '+(entry.rounds===n?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div>'+
  '<label for="duration">Tempo por rodada</label><select id="duration">'+[30,60,90,120,180,300].map(n=>'<option value="'+n+'" '+(entry.duration===n?'selected':'')+'>'+n+' segundos</option>').join('')+'</select>'+
@@ -137,10 +144,10 @@ function renderEntry(){
  '<div class="chips">'+categories.map((x,i)=>'<span class="chip">'+esc(x)+' <button type="button" data-remove="'+i+'" title="Remover">×</button></span>').join('')+'</div>'+
  '<div class="actions"><input style="flex:1;min-width:110px" id="extraCat" maxlength="42" placeholder="Nova categoria">'+btn('Adicionar','addCat','small')+'</div>'+
  '<div class="attention">💡 Mínimo de 6 categorias; as respostas serão avaliadas pelo dicionário local, pela equipe ou com ajuda opcional da IA.</div>'+
- '<div class="actions">'+btn('✨ Criar sala e gerar convite','create','primary fill')+'</div></section>'+
+ '<div class="actions">'+btn(isLocal?'🏫 Criar sala e gerar PIN':'✨ Criar sala e gerar convite','create','primary fill')+'</div></section>'+
  '<section class="panel"><span class="kicker">📲 ENTRAR EM UMA SALA</span>'+
- '<p class="notice">Recebeu um convite? Informe o código da sala e seu nome. Entre antes de a partida começar. <a href="salas/">Ou escolha uma sala no quadro.</a></p>'+
- '<label for="joinCode">Código da sala</label><input id="joinCode" maxlength="7" autocapitalize="characters" placeholder="EX.: ABC1234" value="'+esc(entry.joinCode)+'">'+
+ '<p class="notice">'+(isLocal?'Recebeu o PIN? Digite os 7 caracteres e seu nome para entrar antes do começo.':'Recebeu um convite? Informe o código da sala e seu nome. Entre antes de a partida começar. <a href="salas/">Ou escolha uma sala no quadro.</a>')+'</p>'+
+ '<label for="joinCode">'+(isLocal?'PIN da sala (7 caracteres)':'Código da sala')+'</label><input id="joinCode" maxlength="7" autocapitalize="characters" placeholder="EX.: ABC1234" value="'+esc(entry.joinCode)+'">'+
  '<label for="joinName">Seu nome</label><input id="joinName" maxlength="25" placeholder="Como quer aparecer?" value="'+esc(entry.joinName)+'">'+
  '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div>'+
  '<div class="attention">🌟 Todos precisam colaborar. A equipe inteira compartilha a pontuação e a meta de 70% dos pontos possíveis.</div>'+
@@ -153,14 +160,19 @@ async function enter(op){
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
-  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:upper(entry.eventCode).trim(),categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),eventCode:isLocal?'':upper(entry.eventCode).trim(),categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
   const data=await request(payload);
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
 }
-function link(){return location.origin+location.pathname+'?sala='+encodeURIComponent(room.code)}
+function link(){return location.origin+location.pathname+'?'+(isLocal?'modo=local&':'')+'sala='+encodeURIComponent(room.code)}
+async function copyPin(){
+ if(!room)return;
+ try{await navigator.clipboard.writeText(room.code);status('PIN '+room.code+' copiado.')}
+ catch{prompt('Copie o PIN da sala:',room.code)}
+}
 async function share(){
- const text='Entre na equipe '+room.team+' do Stop Arena: '+link();
+ const text='Entre na equipe '+room.team+' do Stop Arena. PIN '+room.code+': '+link();
  try{if(navigator.share){await navigator.share({title:'Stop Arena Cooperativo',text,url:link()});return}
  await navigator.clipboard.writeText(text);status('Convite copiado! Envie pelo WhatsApp ou outro aplicativo.')}catch{prompt('Copie o convite:',text)}
 }
@@ -196,12 +208,13 @@ async function act(action,extra={}){
 function renderRoom(){
  if(!room)return renderEntry();
  screen='room';clearInterval(timer);
- const header='<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">Sala '+esc(room.code)+' · '+room.members.length+'/6 participantes</div></div><div class="actions" style="margin:0">'+btn('📋 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>';
+ const header='<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">'+(isLocal?'PIN ':'Sala ')+esc(room.code)+' · '+room.members.length+'/6 participantes</div></div><div class="actions" style="margin:0">'+btn('📋 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>';
  let body='';
  if(room.stage==='lobby'){
   body='<section class="panel"><h1>🎊 Sala criada!</h1><p>Compartilhe o código com os participantes. O organizador inicia quando estiverem prontos.</p>'+
-  '<div class="roomcode">'+esc(room.code)+'</div>'+ (room.eventCode?'<p class="notice">🏆 Evento '+esc(room.eventCode)+' · até 50 equipes.</p>':'')+
-  '<div class="actions">'+btn('📋 Copiar convite','share','primary')+'</div>'+
+  '<div class="roomcode" aria-label="'+(isLocal?'PIN da sala':'Código da sala')+'">'+esc(room.code)+'</div>'+
+  (isLocal?'<p class="notice">🔐 Compartilhe este PIN de 7 caracteres com seus colegas. Todos entram pelo próprio aparelho.</p>':'')+ (room.eventCode?'<p class="notice">🏆 Evento '+esc(room.eventCode)+' · até 50 equipes.</p>':'')+
+  '<div class="actions">'+(isLocal?btn('📋 Copiar PIN','copyPin','primary'):'')+btn('🔗 Copiar convite','share',isLocal?'small':'primary')+'</div>'+
   '<h3>🙌 Nossa equipe</h3>'+room.members.map(m=>'<div class="member">🙋 '+esc(m.name)+(m.id===room.viewer?' <small>(você)</small>':'')+'</div>').join('')+
   '<p class="notice">Mínimo de 2 jogadores; máximo de 6. '+room.categories.length+' categorias, '+room.rounds+' rodadas de '+room.duration+'s.</p>'+
   (room.host?'<div class="actions">'+btn('🚀 Iniciar missão','start','green')+btn('🏁 Finalizar jogo','finishGame')+'</div>':'<div class="attention">⏳ Aguardando o organizador começar a partida...</div>')+'</section>';
@@ -234,7 +247,7 @@ function renderRoom(){
     )+'</article>';
   }).join('')+'</div>'+
   '<div class="attention">🟡 '+pending+' pendente(s) · '+waiting+' resposta(s) aguardando o segundo voto ou decisão final. '+(room.host?'Você pode resolver as divergências.':'A decisão final das divergências é do organizador.')+'</div>'+
-  (room.host?'<div class="actions">'+btn('🏁 Finalizar jogo','finishGame')+btn('🤖 Consultar IA como desempate','ai')+'<button class="btn primary" data-act="next" '+(pending||waiting?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Seu voto ajuda a equipe a conferir as respostas.</p>')+
+  (room.host?'<div class="actions">'+btn('🏁 Finalizar jogo','finishGame')+(window.STOP_ARENA_LAN?'':btn('🤖 Consultar IA como desempate','ai'))+'<button class="btn primary" data-act="next" '+(pending||waiting?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Seu voto ajuda a equipe a conferir as respostas.</p>')+
   '</section>';
 
  }else{
@@ -336,8 +349,9 @@ app.addEventListener('click',async e=>{
  if(action==='addCat'){captureEntry();const cat=document.getElementById('extraCat')?.value.trim().slice(0,42);if(!cat)return;if(categories.length>=12)return status('Máximo de 12 categorias.',true);if(categories.some(x=>x.toLocaleLowerCase('pt-BR')===cat.toLocaleLowerCase('pt-BR')))return status('Categoria já adicionada.',true);categories.push(cat);renderEntry();return}
  if(action==='create'||action==='join')return enter(action);
  if(action==='share')return share();
+ if(action==='copyPin')return copyPin();
  if(action==='leave')return reset();
- if(action==='ai')return reviewAI();
+ if(action==='ai'){if(window.STOP_ARENA_LAN)return status('🤖 Gemini exige internet. No modo LAN offline, use a votação e a conferência manual.',true);return reviewAI()}
  if(action==='finishGame'){
   if(!room?.host||!['lobby','game','review'].includes(room.stage))return;
   const answer='Finalizar a partida para todos os participantes?\n\n'+

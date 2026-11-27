@@ -1,3 +1,23 @@
+## AnnA Stop Arena Host LAN — implementação atual (v0.1)
+
+- O **Multiplayer Local** deixa de utilizar salas do Cloudflare: o card inicial aponta para `stop-arena/lan/`, com instruções para iniciar o aplicativo anfitrião.
+- O motor de salas existente foi adaptado para `stop-arena/host/room-engine.mjs`; `server.mjs` oferece HTTP LAN, recebe comandos de criação/entrada/votação/STOP e serve a interface `stop-arena/online/index.html` em modo offline.
+- O organizador inicia o Host pelo lançador `Iniciar-Stop-Arena-LAN.cmd`, que abre a interface no navegador Windows. Cada aluno utiliza o endereço IPv4 e a porta exibidos pelo anfitrião e entra com o PIN alfanumérico de 7 caracteres.
+- A preparação do `runtime/node.exe` Windows x64 está em `Preparar-Runtime.cmd`: uma etapa online inicial, com download do Node LTS e verificação SHA-256. O runtime **ainda não está incluído** no repositório/distribuição.
+- Depois de preparado, o sistema é independente da internet para o jogo. As salas são mantidas em memória do anfitrião, e a conferência Gemini permanece desativada nesse modo offline.
+- Esta primeira versão foi testada sintaticamente e seu motor de salas passou em simulação de dois jogadores. **O teste de execução completa em Windows e a conexão física LAN ainda estão pendentes**.
+- As alterações estão na branch `feature/stop-arena-host-lan`, **não publicadas na main**.
+
+## Multiplayer Local — sala com PIN (nova modalidade)
+
+- O card antes denominado **Cooperativo Local** agora abre `stop-arena/online/?modo=local` com título **🏫 Multiplayer Local**.
+- O organizador cria uma sala para 2 a 6 participantes, configura as categorias, letras, tempo e rodadas, e recebe um **PIN alfanumérico de 7 caracteres** gerado pelo serviço de salas existente.
+- Cada integrante entra no próprio celular, tablet ou computador com o PIN ou link de convite, digita suas próprias respostas e participa da conferência da equipe após o STOP.
+- O PIN pode ser copiado diretamente na sala. O convite preserva `modo=local` para quem entrar pelo link. Todos participam da mesma sala sincronizada, com votação, Gemini opcional e pontuação coletiva por categoria.
+- **Limitação declarada:** o servidor de salas AnnA Virtual exige conexão à internet, mesmo quando os jogadores estão fisicamente próximos e conectados ao mesmo Wi-Fi. Este modo **não** oferece hospedagem LAN/autônoma nem funcionamento offline entre dispositivos. Não se deve anunciá-lo como rede local sem internet.
+- O **Cooperativo Online** permanece acessível para participantes em lugares diferentes, com a mesma infraestrutura de salas e a opção de eventos e quadro de salas.
+- Implementação incremental em `feature/stop-arena-multiplayer-local`, **sem publicação na branch principal**. Os jogos antigos de um único aparelho permanecem legíveis no armazenamento local, mas não são mais oferecidos como uma modalidade nova.
+
 ## Finalização antecipada de partida — implementação em branch
 
 - Botão **🏁 Finalizar jogo** nas telas de escolha/sorteio da letra, preenchimento e conferência dos modos locais. Ao clicar, um **pop-up de confirmação** informa as rodadas concluídas, os pontos acumulados e que a rodada incompleta não conta para o resultado.
@@ -78,7 +98,7 @@
 
 
 
-## Cooperativo local (primeira versão jogável)
+## Histórico: cooperativo local antigo (mesmo dispositivo, substituído)
 - A tela inicial oferece **🤝 Cooperativo**, além de Recreativo e Educacional individuais.
 - Equipe com **2 a 6 participantes**, nome personalizável e respostas compartilhadas no **mesmo dispositivo**.
 - As respostas continuam em MAIÚSCULAS e utilizam validação local, revisão manual e botão opcional de consulta à IA.
