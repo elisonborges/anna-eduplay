@@ -120,6 +120,7 @@ function renderEntry(){
  screen='entry';clearInterval(interval);clearInterval(timer);interval=null;timer=null;
  app.innerHTML='<h1>🌐 Cooperativo Online</h1><p class="sub">Crie uma sala e convide a equipe. Cada participante usa seu próprio aparelho, com respostas compartilhadas!</p>'+
  '<div id="readiness" class="status">🔄 Verificando conexão com as salas...</div>'+
+ '<section class="panel" style="margin:13px 0;background:linear-gradient(105deg,#e4fff4,#eaf3ff)"><div class="actions" style="justify-content:space-between;margin-top:0"><div><strong>🏠 Quadro de salas criadas</strong><p class="notice">Veja nomes das salas, participantes conectados e vagas disponíveis.</p></div><a class="btn primary" href="salas/">Ver todas as salas →</a></div></section>'+
  '<div class="layout"><section class="panel"><span class="kicker">🏠 CRIAR SALA</span>'+
  '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
  '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
@@ -138,7 +139,7 @@ function renderEntry(){
  '<div class="attention">💡 Mínimo de 6 categorias; as respostas serão avaliadas pelo dicionário local, pela equipe ou com ajuda opcional da IA.</div>'+
  '<div class="actions">'+btn('✨ Criar sala e gerar convite','create','primary fill')+'</div></section>'+
  '<section class="panel"><span class="kicker">📲 ENTRAR EM UMA SALA</span>'+
- '<p class="notice">Recebeu um convite? Informe o código da sala e seu nome. Entre antes de a partida começar.</p>'+
+ '<p class="notice">Recebeu um convite? Informe o código da sala e seu nome. Entre antes de a partida começar. <a href="salas/">Ou escolha uma sala no quadro.</a></p>'+
  '<label for="joinCode">Código da sala</label><input id="joinCode" maxlength="7" autocapitalize="characters" placeholder="EX.: ABC1234" value="'+esc(entry.joinCode)+'">'+
  '<label for="joinName">Seu nome</label><input id="joinName" maxlength="25" placeholder="Como quer aparecer?" value="'+esc(entry.joinName)+'">'+
  '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div>'+
