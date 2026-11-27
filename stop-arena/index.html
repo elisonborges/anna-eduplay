@@ -215,6 +215,26 @@ a.online-mode:hover{transform:translateY(-2px)}
 }
 @media(max-width:330px){.mode-gallery{grid-template-columns:1fr}.mode-gallery .mode{min-height:205px}}
 @media(prefers-reduced-motion:reduce){.mode-gallery .mode,.mode-gallery .mode-art,.mode-gallery .mode em span{transition:none}.mode-gallery .mode:hover,.mode-gallery .mode:hover .mode-art{transform:none}}
+
+/* Stop Arena - cabeçalho em destaque, exclusivamente na página inicial */
+.home-hero{position:relative;overflow:hidden;padding:clamp(20px,3.5vw,34px);border-radius:24px;background:linear-gradient(118deg,#5222a3 0%,#7633d0 53%,#a957e6 100%);color:#fff;box-shadow:0 12px 30px #48218b2e;margin-bottom:17px;isolation:isolate}
+.home-hero::before{content:"";position:absolute;width:300px;height:300px;right:-100px;top:-190px;background:radial-gradient(circle,#ffffff28,transparent 65%);z-index:-1;pointer-events:none}
+.home-hero-title{display:flex;align-items:center;justify-content:space-between;gap:26px}
+.home-title-group{min-width:0;flex:1}
+.home-eyebrow{display:inline-block;font-size:11px;letter-spacing:.13em;text-transform:uppercase;font-weight:850;color:#eadbff;margin-bottom:5px}
+.home-hero h1{font-size:clamp(37px,5.3vw,61px);line-height:1.06;letter-spacing:-.045em;font-weight:950;margin:5px 0 10px;text-shadow:0 3px 12px #30096038}
+.home-hero h1>span:first-child{color:#ffe19a}.home-spark{display:inline-block;font-size:.42em;vertical-align:top;margin:5px 0 0 10px;color:#ffcf79;animation:homeSpark 3.2s ease-in-out infinite}
+.home-title-group p{margin:0;font-size:clamp(14px,1.65vw,17px);line-height:1.55;color:#f5ecff;max-width:52ch;font-weight:550}
+.home-adventure{flex:0 0 auto;display:flex;flex-direction:column;gap:5px;max-width:242px;border-radius:18px;background:#ffffff20;border:1px solid #ffffff57;padding:16px 19px;box-shadow:inset 0 1px 1px #ffffff30}
+.home-adventure>span{font-size:22px;color:#ffdf9b}.home-adventure strong{font-size:clamp(17px,2vw,22px);line-height:1.15;font-weight:900;color:#fff}
+.home-adventure small{font-size:12px;line-height:1.35;color:#f0e5ff}
+.home-about{margin-top:14px;border:1px solid var(--edge);background:var(--card);border-radius:13px;padding:12px 17px}
+.home-about summary{cursor:pointer;color:var(--accent);font-size:13px;font-weight:850}
+.home-about p{font-size:12px;color:var(--muted);line-height:1.7;margin:11px 0 2px}
+@keyframes homeSpark{0%,100%{opacity:.6;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+@media(max-width:620px){.home-hero-title{gap:13px;align-items:flex-start}.home-hero{padding:20px 17px;border-radius:18px}.home-adventure{max-width:145px;padding:11px 12px}.home-adventure strong{font-size:15px}.home-adventure small{font-size:11px}.home-hero h1{font-size:clamp(31px,7.2vw,46px)}}
+@media(max-width:390px){.home-hero-title{flex-direction:column;gap:15px}.home-adventure{max-width:none;width:100%;padding:11px 13px;gap:3px}.home-adventure>span{display:none}.home-hero h1{font-size:37px}}
+@media(prefers-reduced-motion:reduce){.home-spark{animation:none}}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -246,7 +266,7 @@ const title=(t,d='')=>'<div class="hrow"><div><h1>'+esc(t)+'</h1><p class="sub">
 function show(html){app.innerHTML=html;save()}
 const button=(t,act,cls='secondary')=>'<button class="btn '+cls+'" data-a="'+act+'">'+t+'</button>';
 const back=()=>button('← Início','home');
-function renderHome(){show(title('🎉 Stop Arena','Escolha como jogar. Cada aventura tem seu próprio desafio!')+
+function renderHome(){show('<section class="home-hero" aria-labelledby="home-title"><div class="home-hero-title"><div class="home-title-group"><span class="home-eyebrow">AnnA EduPlay · Jogo de palavras</span><h1 id="home-title">Stop <span>Arena</span><span class="home-spark" aria-hidden="true">✦</span></h1><p>Um desafio de palavras, criatividade e diversão para jogar sozinho ou em equipe.</p></div><div class="home-adventure"><span aria-hidden="true">✦</span><strong>Escolha sua aventura</strong><small>Selecione um modo e comece a jogar!</small></div></div></section>'+
  '<div class="gridmodes mode-gallery" aria-label="Modos de jogo">'+
  '<button class="mode mode-recreativo" data-mode="recreativo"><span class="mode-art" aria-hidden="true"><span class="mode-symbol">🎯</span></span><span class="mode-copy"><strong>Recreativo individual</strong><small>Desafie seus próprios recordes no Stop clássico.</small></span><em>Começar partida <span aria-hidden="true">→</span></em></button>'+
  '<button class="mode mode-computador" data-bot="1"><span class="mode-art" aria-hidden="true"><span class="mode-symbol">🦾</span></span><span class="mode-copy"><strong>Contra o computador</strong><small>Um rival offline com três níveis de dificuldade.</small></span><em>Enfrentar rival <span aria-hidden="true">→</span></em></button>'+
@@ -254,7 +274,7 @@ function renderHome(){show(title('🎉 Stop Arena','Escolha como jogar. Cada ave
  '<button class="mode mode-cooperativo" data-coop="1"><span class="mode-art" aria-hidden="true"><span class="mode-symbol">🤝</span></span><span class="mode-copy"><strong>Cooperativo local</strong><small>Até seis pessoas, uma equipe e um aparelho.</small></span><em>Formar equipe <span aria-hidden="true">→</span></em></button>'+
  '<a class="mode mode-online" href="online/"><span class="mode-art" aria-hidden="true"><span class="mode-symbol">🌐</span></span><span class="mode-copy"><strong>Cooperativo Online</strong><small>Crie salas e conecte participantes pelo celular.</small></span><em>Criar ou entrar <span aria-hidden="true">→</span></em></a>'+
  '</div>'+
- '<section class="panel"><strong>✨ Escolha sua aventura</strong><p class="notice">Individual, contra o computador, cooperativo local ou em salas online. Os modos locais funcionam sem internet; o Cooperativo Online depende do servidor.</p><details style="margin-top:9px"><summary style="cursor:pointer;font-weight:800;color:var(--accent)">Sobre este módulo</summary><p class="notice">Stop Arena é um módulo do AnnA EduPlay, ecossistema AnnA One. Projeto educacional de Elison Borges. As partidas locais são armazenadas no navegador. As salas online exigem conexão.</p></details></section>')}
+ '<section class="home-about"><details><summary>ⓘ Sobre o módulo</summary><p>Stop Arena faz parte do AnnA EduPlay, ecossistema AnnA One. Projeto educacional de Elison Borges. As partidas locais ficam salvas neste navegador e podem funcionar offline. O Cooperativo Online exige internet e conexão com o servidor.</p></details></section>')}
 function renderSetup(){
  const opts=Object.keys(presets[s.mode]);
  const choices=[1,3,5,10];
