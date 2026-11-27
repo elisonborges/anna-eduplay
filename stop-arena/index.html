@@ -462,26 +462,44 @@ async function consultAI(){
  const targets=s.results.map((r,index)=>({...r,index})).filter(r=>r.status==='review'&&r.answer);
  const info=document.getElementById('aiFeedback');
  const btn=app.querySelector('[data-a="consultAI"]');
+ if(!info||!btn)return;
  if(!targets.length){info.textContent='Não há respostas pendentes.';return}
- btn.disabled=true;info.textContent='Consultando IA...';
+ btn.disabled=true;info.textContent='🤖 Conferindo '+targets.length+' resposta(s) com IA...';
+ const expectedLetter=s.letter,expectedRound=s.round;
  try{
-  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
   let response;
-  try{response=await fetch(AI_ENDPOINT,{method:'POST',credentials:'omit',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({letter:s.letter,items:targets.map(({index,category,answer})=>({index,category,answer}))})})}
+  try{response=await fetch(AI_ENDPOINT,{method:'POST',credentials:'omit',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({letter:expectedLetter,items:targets.map(({index,category,answer})=>({index,category,answer}))})})}
   finally{clearTimeout(timeout)}
-  if(!response.ok)throw Error('serviço indisponível ('+response.status+')');
-  const data=await response.json();
-  if(!Array.isArray(data.suggestions))throw Error('resposta inesperada');
-  let count=0;
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw Error(data.error||'serviço indisponível ('+response.status+')');
+  if(!Array.isArray(data.suggestions))throw Error('formato da IA inesperado');
+  if(s.screen!=='result'||s.round!==expectedRound||s.letter!==expectedLetter)return;
+  let evaluated=0,uncertain=0;
+  const eligible=new Map(targets.map(x=>[x.index,x]));
   for(const suggestion of data.suggestions){
-   const ix=Number(suggestion.index);
-   if(!Number.isInteger(ix)||!targets.some(t=>t.index===ix)||!['valid','invalid','review'].includes(suggestion.status))continue;
-   const reason=document.getElementById('reason'+ix);
-   if(reason){reason.textContent='🤖 IA sugere '+labels[suggestion.status]+': '+String(suggestion.reason||'Sem justificativa').slice(0,150)+' — decida manualmente';count++}
+   const index=Number(suggestion.index),target=eligible.get(index);
+   if(!target||!['valid','invalid','review'].includes(suggestion.status))continue;
+   const current=s.results[index];
+   if(!current||current.status!=='review'||current.answer!==target.answer)continue;
+   const reason='🤖 IA: '+String(suggestion.reason||'Sem justificativa').slice(0,150);
+   current.reason=reason;
+   const help=document.getElementById('reason'+index);
+   if(help)help.textContent=reason;
+   if(suggestion.status==='review'){uncertain++;continue}
+   current.status=suggestion.status;
+   const selector=app.querySelector('[data-status="'+index+'"]');
+   if(selector)selector.value=suggestion.status;
+   const point=document.getElementById('pt'+index);
+   if(point)point.textContent=points(suggestion.status)?'+'+points(suggestion.status)+' pts':'0 pts';
+   evaluated++;
   }
-  info.textContent=count+' sugestão(ões) recebida(s). A decisão final é sua.';
- }catch(error){info.textContent='IA indisponível: '+(error.name==='AbortError'?'tempo esgotado':error.message)+'. Continue manualmente.'}
- finally{btn.disabled=false}
+  const pending=s.results.filter(x=>x.status==='review').length;
+  updateReviewSummary();
+  save();
+  info.textContent='✅ '+evaluated+' resposta(s) conferida(s) · '+uncertain+' dúvida(s) apontada(s) · '+pending+' pendente(s). Você pode corrigir qualquer avaliação.';
+ }catch(error){info.textContent='⚠️ IA indisponível: '+(error.name==='AbortError'?'tempo esgotado':error.message)+'. Continue manualmente.'}
+ finally{if(btn.isConnected)updateReviewSummary()}
 }
 
 const points=x=>x==='valid'?10:0;
@@ -511,7 +529,7 @@ function renderResult(){
  '</select><strong class="review-points" id="pt'+i+'">'+(points(r.status)?'+'+points(r.status)+' pts':'0 pts')+'</strong></div></article>').join('')+'</section>'+
  (s.playStyle==='computer'?'<section class="panel computer-review"><h3>🤖 Respostas do computador</h3><p class="notice">O adversário preparou suas palavras antes da rodada.</p><div class="review-grid">'+s.computerResults.map(item=>'<div class="review-answer"><span class="review-answer-icon">'+categoryEmoji(item.category)+'</span><div class="review-answer-main"><strong>'+esc(item.category)+'</strong><b>'+esc(item.answer||'—')+'</b></div><strong class="review-points">'+(item.status==='valid'?'+10 pts':'0 pts')+'</strong></div>').join('')+'</div><p><strong>🤖 Computador: '+computerRoundScore()+' pontos nesta rodada</strong></p></section>':'')+
  '<div id="reviewMessage" class="review-message '+(pending?'has-pending':'all-ready')+'">'+(pending?'🟡 Faltam '+pending+' resposta(s) para conferir. Use a IA ou escolha a avaliação.':'🎉 Tudo conferido! Pode seguir para a próxima rodada.')+'</div>'+
- '<div class="review-toolbar"><div class="review-ai">'+button('🤖 Conferir pendentes com IA','consultAI')+'<span id="aiFeedback" class="notice" role="status">'+(pending?'Consulta opcional; revisão manual sempre disponível.':'Não há respostas pendentes.')+'</span></div><div class="review-buttons">'+button('↺ Refazer','retry')+'<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'🏆 Resultado final →':'➡ Próxima rodada')+'</button></div></div>'+
+ '<div class="review-toolbar"><div class="review-ai">'+button('🤖 Conferir pendentes com IA','consultAI')+'<span id="aiFeedback" class="notice" role="status">'+(pending?'O Gemini ajuda na conferência; você pode corrigir a avaliação.':'Não há respostas pendentes.')+'</span></div><div class="review-buttons">'+button('↺ Refazer','retry')+'<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'🏆 Resultado final →':'➡ Próxima rodada')+'</button></div></div>'+
  '<p id="pendingCount" class="sr-only">'+pending+' resposta(s) aguardando revisão.</p>');
 }
 
