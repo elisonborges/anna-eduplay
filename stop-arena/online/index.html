@@ -204,7 +204,7 @@ function renderRoom(){
   '<div class="actions">'+btn('📋 Copiar convite','share','primary')+'</div>'+
   '<h3>🙌 Nossa equipe</h3>'+room.members.map(m=>'<div class="member">🙋 '+esc(m.name)+(m.id===room.viewer?' <small>(você)</small>':'')+'</div>').join('')+
   '<p class="notice">Mínimo de 2 jogadores; máximo de 6. '+room.categories.length+' categorias, '+room.rounds+' rodadas de '+room.duration+'s.</p>'+
-  (room.host?'<div class="actions">'+btn('🚀 Iniciar missão','start','green')+'</div>':'<div class="attention">⏳ Aguardando o organizador começar a partida...</div>')+'</section>';
+  (room.host?'<div class="actions">'+btn('🚀 Iniciar missão','start','green')+btn('🏁 Finalizar jogo','finishGame')+'</div>':'<div class="attention">⏳ Aguardando o organizador começar a partida...</div>')+'</section>';
  }else if(room.stage==='game'){
   body='<div class="stats"><div class="stat"><small>🔤 LETRA</small><strong>'+esc(room.letter)+'</strong></div>'+
   '<div class="stat"><small>⏱️ TEMPO</small><strong id="countdown">--:--</strong></div>'+
@@ -340,9 +340,9 @@ app.addEventListener('click',async e=>{
  if(action==='ai')return reviewAI();
  if(action==='finishGame'){
   if(!room?.host||!['lobby','game','review'].includes(room.stage))return;
-  const answer='Finalizar a partida para todos os participantes?\\n\\n'+
-   'Rodadas concluídas: '+room.history.length+'\\nPontuação atual: '+room.score+
-   ' pontos.\\n\\nA rodada atual ainda não concluída não será contabilizada.\\nDeseja finalizar?';
+  const answer='Finalizar a partida para todos os participantes?\n\n'+
+   'Rodadas concluídas: '+room.history.length+'\nPontuação atual: '+room.score+
+   ' pontos.\n\nA rodada atual ainda não concluída não será contabilizada.\nDeseja finalizar?';
   if(!confirm(answer))return;
   return act('close');
  }
