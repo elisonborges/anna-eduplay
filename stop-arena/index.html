@@ -273,6 +273,12 @@ a.online-mode:hover{transform:translateY(-2px)}
 @media(max-width:600px){.play-answers,.review-grid{grid-template-columns:1fr}.review-hero{padding:14px}.play-hero{padding:15px}.review-answer{flex-wrap:nowrap}.review-answer-actions{flex-direction:column;width:auto}.review-toolbar{align-items:stretch}.review-buttons{justify-content:space-between}.review-buttons .primary{flex:1}.play-actions-hint{display:none}.play-actions .btn{flex:1}}
 @media(max-width:360px){.review-answer{flex-wrap:wrap}.review-answer-actions{flex-direction:row;width:100%}.review-stat{padding:8px 3px;font-size:11px}.review-stats{gap:5px}}
 @media(prefers-reduced-motion:reduce){.play-answer{transition:none}}
+
+/* Cinco segundos para preparar a rodada após o sorteio. */
+.pre-round-count{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:14px auto;padding:10px 14px;width:fit-content;border-radius:15px;background:color-mix(in srgb,var(--card) 75%,#e1d2ff);border:1px solid var(--edge);color:var(--ink);font-weight:750}
+.pre-round-count[hidden]{display:none}
+.pre-round-count strong{display:grid;place-items:center;width:57px;height:57px;border-radius:50%;background:#6935c3;color:white;font-size:32px;line-height:1;box-shadow:0 5px 13px #45228c3c}
+@media(max-width:420px){.pre-round-count{gap:8px;font-size:12px}.pre-round-count strong{width:49px;height:49px;font-size:28px}}
 </style></head><body>
 <header class="top"><div class="shell bar"><a class="identity" href="../" aria-label="Voltar ao AnnA EduPlay"><img src="../favicon.svg" alt=""><span><strong>Stop Arena</strong><small>AnnA EduPlay · AnnA One</small></span></a><div class="bar-right"><a class="toplink" href="../">← EduPlay</a><button class="theme" id="theme" aria-label="Alternar tema">◐</button></div></div></header>
 <main class="shell main" id="app" aria-live="polite"></main>
@@ -297,7 +303,7 @@ const app=document.getElementById('app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
 const fresh=()=>({screen:'home',mode:'recreativo',preset:'Clássico',categories:[...presets.recreativo.Clássico],name:'Jogador',playStyle:'solo',difficulty:'normal',computerAnswers:[],computerResults:[],teamName:'Equipe Stop',members:['Jogador 1','Jogador 2'],contributors:[],rounds:5,duration:90,rule:'random',excluded:[],round:1,letter:'',used:[],answers:[],results:[],history:[],deadline:0,score:0,endReason:''});
-let s=fresh(),timer=null,rouletteTimer=null;
+let s=fresh(),timer=null,rouletteTimer=null,preRoundTimer=null,preRoundDeadline=0;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
 try{let data=JSON.parse(localStorage.getItem(KEY)||'null');if(data&&typeof data==='object'&&Array.isArray(data.categories)&&Array.isArray(data.history))s={...fresh(),...data}}catch(e){}
 const title=(t,d='')=>'<div class="hrow"><div><h1>'+esc(t)+'</h1><p class="sub">'+esc(d)+'</p></div></div>';
@@ -369,6 +375,7 @@ function choose(){
  '<section class="panel"><div class="lettergrid">'+availableLetters().map(l=>'<button data-letter="'+l+'">'+l+'</button>').join('')+'</div><div class="actions">'+button('🎡 Girar roleta','random','primary')+back()+'</div></section>');
 }
 function spin(){
+ cancelPreRoundCountdown();
  const pool=eligibleLetters();
  if(!pool.length)return alert('Selecione ao menos uma letra.');
  const target=pool[Math.floor(Math.random()*pool.length)];
@@ -377,7 +384,7 @@ function spin(){
  show(title('Sorteio da letra','Rodada '+s.round+' de '+s.rounds)+
  '<section class="panel roulette-panel"><p class="eyebrow" id="wheelStatus" role="status">A roleta está girando...</p>'+
  '<div class="roulette-disc rolling" id="rouletteDisc" aria-hidden="true"><strong id="wheelLetter">?</strong></div>'+
- '<p class="notice" id="wheelHint">Preparando a próxima rodada</p><div class="actions" style="justify-content:center">'+button('Começar rodada →','beginSelected','primary')+'</div></section>');
+ '<p class="notice" id="wheelHint">Preparando a próxima rodada</p><div class="pre-round-count" id="preRoundCount" role="status" aria-live="off" hidden><span>Começando em</span><strong id="preRoundSeconds">5</strong><span>segundos</span></div><div class="actions" style="justify-content:center">'+button('▶ Começar rodada agora','beginSelected','primary')+'</div></section>');
  const btn=app.querySelector('[data-a="beginSelected"]');btn.disabled=true;
  const face=document.getElementById('wheelLetter');
  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -391,10 +398,30 @@ function spin(){
    clearInterval(rouletteTimer);rouletteTimer=null;
    document.getElementById('rouletteDisc').classList.remove('rolling');
    document.getElementById('wheelStatus').textContent='A letra sorteada é...';
-   document.getElementById('wheelHint').textContent='Letra '+target+'! Pronto para responder?';
-   btn.disabled=false;btn.focus();
+   document.getElementById('wheelHint').textContent='Letra '+target+'! Prepare suas respostas!';
+   btn.disabled=false;
+   startPreRoundCountdown(target);
   }
  },reduce?60:95);
+}
+function cancelPreRoundCountdown(){
+ clearInterval(preRoundTimer);preRoundTimer=null;preRoundDeadline=0;
+}
+function startPreRoundCountdown(letter){
+ cancelPreRoundCountdown();
+ if(s.screen!=='roulette')return;
+ preRoundDeadline=Date.now()+5000;
+ const panel=document.getElementById('preRoundCount');
+ if(panel)panel.hidden=false;
+ const tickPreRound=()=>{
+  if(s.screen!=='roulette'||s.letter!==letter){cancelPreRoundCountdown();return}
+  const remaining=Math.max(0,Math.ceil((preRoundDeadline-Date.now())/1000));
+  const seconds=document.getElementById('preRoundSeconds');
+  if(seconds)seconds.textContent=remaining;
+  if(remaining===0){cancelPreRoundCountdown();begin(letter)}
+ };
+ tickPreRound();
+ preRoundTimer=setInterval(tickPreRound,100);
 }
 function nextRound(){
  s.answers=s.categories.map(()=>'');s.contributors=s.categories.map(()=>'');s.results=[];s.computerAnswers=[];s.computerResults=[];s.endReason='';
@@ -402,6 +429,8 @@ function nextRound(){
 }
 function begin(l){
  if(!availableLetters().includes(l))return;
+ cancelPreRoundCountdown();
+ clearInterval(rouletteTimer);rouletteTimer=null;
  s.letter=l;
  if(!s.used.includes(l))s.used.push(l);
  s.deadline=s.duration?Date.now()+s.duration*1000:0;
@@ -459,12 +488,12 @@ function classify(category,answer,letter){
  return {status:'review',reason:'Não encontrada no dicionário resumido. Pode estar correta.'};
 }
 async function consultAI(){
- const targets=s.results.map((r,index)=>({...r,index})).filter(r=>r.status==='review'&&r.answer);
+ const targets=s.results.map((r,index)=>({...r,index})).filter(r=>r.answer&&r.status!=='empty');
  const info=document.getElementById('aiFeedback');
  const btn=app.querySelector('[data-a="consultAI"]');
  if(!info||!btn)return;
- if(!targets.length){info.textContent='Não há respostas pendentes.';return}
- btn.disabled=true;info.textContent='🤖 Conferindo '+targets.length+' resposta(s) com IA...';
+ if(!targets.length){info.textContent='Não há respostas para conferir.';return}
+ btn.disabled=true;info.textContent='🤖 Conferindo a escrita e a categoria de '+targets.length+' resposta(s)...';
  const expectedLetter=s.letter,expectedRound=s.round;
  try{
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
@@ -472,7 +501,7 @@ async function consultAI(){
   try{response=await fetch(AI_ENDPOINT,{method:'POST',credentials:'omit',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({letter:expectedLetter,items:targets.map(({index,category,answer})=>({index,category,answer}))})})}
   finally{clearTimeout(timeout)}
   const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw Error(data.error||'serviço indisponível ('+response.status+')');
+  if(!response.ok)throw Error((data.error||'Serviço Gemini indisponível')+(data.diagnostico?.providerStatus?' · HTTP '+data.diagnostico.providerStatus:'')+(data.diagnostico?.detail?' · '+String(data.diagnostico.detail).slice(0,150):'')+(data.diagnostico?.type?' · '+data.diagnostico.type:''));
   if(!Array.isArray(data.suggestions))throw Error('formato da IA inesperado');
   if(s.screen!=='result'||s.round!==expectedRound||s.letter!==expectedLetter)return;
   let evaluated=0,uncertain=0;
@@ -481,8 +510,21 @@ async function consultAI(){
    const index=Number(suggestion.index),target=eligible.get(index);
    if(!target||!['valid','invalid','review'].includes(suggestion.status))continue;
    const current=s.results[index];
-   if(!current||current.status!=='review'||current.answer!==target.answer)continue;
-   const reason='🤖 IA: '+String(suggestion.reason||'Sem justificativa').slice(0,150);
+   if(!current||current.answer!==target.answer||current.status!==target.status)continue;
+   const correction=typeof suggestion.corrected==='string'?suggestion.corrected.trim().slice(0,80):'';
+   const different=correction&&correction.toLocaleUpperCase('pt-BR')!==current.answer.toLocaleUpperCase('pt-BR');
+   const reason='🤖 IA: '+String(suggestion.reason||'Sem justificativa').slice(0,140);
+   if(different){
+    current.correction=correction;
+    current.status='review';
+    current.reason='✍️ Grafia sugerida: '+correction+' · '+reason+' · confirme a avaliação.';
+    const field=app.querySelector('[data-status="'+index+'"]');if(field)field.value='review';
+    const point=document.getElementById('pt'+index);if(point)point.textContent='0 pts';
+    const help=document.getElementById('reason'+index);if(help)help.textContent=current.reason;
+    uncertain++;
+    continue;
+   }
+   if(current.status!=='review')continue;
    current.reason=reason;
    const help=document.getElementById('reason'+index);
    if(help)help.textContent=reason;
@@ -497,7 +539,7 @@ async function consultAI(){
   const pending=s.results.filter(x=>x.status==='review').length;
   updateReviewSummary();
   save();
-  info.textContent='✅ '+evaluated+' resposta(s) conferida(s) · '+uncertain+' dúvida(s) apontada(s) · '+pending+' pendente(s). Você pode corrigir qualquer avaliação.';
+  info.textContent='✅ '+evaluated+' avaliação(ões) concluída(s) · '+uncertain+' correção(ões) ou dúvida(s) para revisar · '+pending+' pendente(s). A palavra original foi preservada.';
  }catch(error){info.textContent='⚠️ IA indisponível: '+(error.name==='AbortError'?'tempo esgotado':error.message)+'. Continue manualmente.'}
  finally{if(btn.isConnected)updateReviewSummary()}
 }
@@ -514,7 +556,7 @@ function updateReviewSummary(){
   message.textContent=pending?'🟡 Faltam '+pending+' resposta(s) para conferir. Use a IA ou escolha a avaliação.':'🎉 Tudo conferido! Pode seguir para a próxima rodada.';
  }
  const next=app.querySelector('[data-a="confirm"]');if(next)next.disabled=pending>0;
- const ai=app.querySelector('[data-a="consultAI"]');if(ai)ai.disabled=pending===0;
+ const ai=app.querySelector('[data-a="consultAI"]');if(ai)ai.disabled=!s.results.some(r=>r.answer&&r.status!=='empty');
 }
 function renderResult(){
  const pending=s.results.filter(r=>r.status==='review').length;
@@ -524,12 +566,12 @@ function renderResult(){
  '<div class="review-help">💡 <strong>Conferência inteligente:</strong> palavras reconhecidas são aceitas; outras podem ser conferidas pela IA ou por você. A decisão pode ser corrigida.</div>'+
  (s.playStyle==='coop'?'<p class="play-note">🤝 Todos colaboram e compartilham os pontos!</p>':'')+
  '<section class="review-grid" aria-label="Respostas da rodada">'+
- s.results.map((r,i)=>'<article class="review-answer" data-review-card="'+i+'"><span class="review-answer-icon" aria-hidden="true">'+categoryEmoji(r.category)+'</span><div class="review-answer-main"><strong>'+esc(r.category)+'</strong><b>'+esc(String(r.answer||'—').toLocaleUpperCase('pt-BR'))+'</b><small id="reason'+i+'">'+esc(r.reason||'Revisão manual')+'</small></div><div class="review-answer-actions"><select data-status="'+i+'" aria-label="Avaliar '+esc(r.category)+'">'+
- ['valid','review','invalid','empty'].map(status=>'<option value="'+status+'" '+(r.status===status?'selected':'')+'>'+labels[status]+'</option>').join('')+
+ s.results.map((r,i)=>'<article class="review-answer" data-review-card="'+i+'"><span class="review-answer-icon" aria-hidden="true">'+categoryEmoji(r.category)+'</span><div class="review-answer-main"><strong>'+esc(r.category)+'</strong><b>'+esc(String(r.answer||'—').toLocaleUpperCase('pt-BR'))+'</b><small id="reason'+i+'">'+esc(r.reason||'Revisão manual')+'</small></div><div class="review-answer-actions">'+(String(r.answer||'').trim()?'<select data-status="'+i+'" aria-label="Avaliar '+esc(r.category)+'">':'<select disabled aria-label="Resposta vazia, sem avaliação">')+''+
+ (String(r.answer||'').trim()?['valid','review','invalid']:['empty']).map(status=>'<option value="'+status+'" '+(r.status===status?'selected':'')+'>'+labels[status]+'</option>').join('')+
  '</select><strong class="review-points" id="pt'+i+'">'+(points(r.status)?'+'+points(r.status)+' pts':'0 pts')+'</strong></div></article>').join('')+'</section>'+
  (s.playStyle==='computer'?'<section class="panel computer-review"><h3>🤖 Respostas do computador</h3><p class="notice">O adversário preparou suas palavras antes da rodada.</p><div class="review-grid">'+s.computerResults.map(item=>'<div class="review-answer"><span class="review-answer-icon">'+categoryEmoji(item.category)+'</span><div class="review-answer-main"><strong>'+esc(item.category)+'</strong><b>'+esc(item.answer||'—')+'</b></div><strong class="review-points">'+(item.status==='valid'?'+10 pts':'0 pts')+'</strong></div>').join('')+'</div><p><strong>🤖 Computador: '+computerRoundScore()+' pontos nesta rodada</strong></p></section>':'')+
  '<div id="reviewMessage" class="review-message '+(pending?'has-pending':'all-ready')+'">'+(pending?'🟡 Faltam '+pending+' resposta(s) para conferir. Use a IA ou escolha a avaliação.':'🎉 Tudo conferido! Pode seguir para a próxima rodada.')+'</div>'+
- '<div class="review-toolbar"><div class="review-ai">'+button('🤖 Conferir pendentes com IA','consultAI')+'<span id="aiFeedback" class="notice" role="status">'+(pending?'O Gemini ajuda na conferência; você pode corrigir a avaliação.':'Não há respostas pendentes.')+'</span></div><div class="review-buttons">'+button('↺ Refazer','retry')+'<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'🏆 Resultado final →':'➡ Próxima rodada')+'</button></div></div>'+
+ '<div class="review-toolbar"><div class="review-ai">'+button('🤖 Conferir escrita com IA','consultAI')+'<span id="aiFeedback" class="notice" role="status">'+(pending?'O Gemini ajuda na conferência; você pode corrigir a avaliação.':'Não há respostas pendentes.')+'</span></div><div class="review-buttons">'+button('↺ Refazer','retry')+'<button class="btn primary" data-a="confirm" '+(pending?'disabled':'')+'>'+(s.round===s.rounds?'🏆 Resultado final →':'➡ Próxima rodada')+'</button></div></div>'+
  '<p id="pendingCount" class="sr-only">'+pending+' resposta(s) aguardando revisão.</p>');
 }
 
@@ -548,7 +590,7 @@ function renderEnd(){
  '<table class="scoretable"><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Seus pontos</th>'+(isBot?'<th>🤖 Computador</th>':'')+'</tr></thead><tbody>'+s.history.map((h,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(h.letter)+'</td><td>'+h.valid+'</td><td>'+h.score+'</td>'+(isBot?'<td>'+(h.botScore||0)+'</td>':'')+'</tr>').join('')+'</tbody></table>'+
  '<div class="actions" style="margin-top:15px">'+back()+button('Jogar novamente','again','primary')+'</div></section>');
 }
-function render(){document.body.classList.remove('keyboard-open');clearInterval(timer);clearInterval(rouletteTimer);if(s.screen==='home')renderHome();else if(s.screen==='setup')renderSetup();else if(s.screen==='letter')choose();else if(s.screen==='game')renderGame();else if(s.screen==='result')renderResult();else if(s.screen==='end')renderEnd();else{s.screen='home';renderHome()}}
+function render(){document.body.classList.remove('keyboard-open');clearInterval(timer);clearInterval(rouletteTimer);cancelPreRoundCountdown();if(s.screen==='home')renderHome();else if(s.screen==='setup')renderSetup();else if(s.screen==='letter')choose();else if(s.screen==='game')renderGame();else if(s.screen==='result')renderResult();else if(s.screen==='end')renderEnd();else{s.screen='home';renderHome()}}
 function start(){
  const raw=document.getElementById('rounds').value.trim();
  if(!/^\d+$/.test(raw)||Number(raw)<1||Number(raw)>50){alert('Defina de 1 a 50 rodadas.');document.getElementById('rounds').focus();return}
@@ -672,7 +714,7 @@ app.addEventListener('input',e=>{
  field.closest('.play-answer')?.classList.toggle('is-filled',!!upper.trim());
  updateFilled();save();
 });
-app.addEventListener('change',e=>{if(e.target.dataset.status!==undefined){const i=Number(e.target.dataset.status);s.results[i].status=e.target.value;s.results[i].reason='Revisão manual';document.getElementById('reason'+i).textContent='Decisão manual';document.getElementById('pt'+i).textContent=points(e.target.value)?'+'+points(e.target.value)+' pts':'0 pts';updateReviewSummary();save()}});
+app.addEventListener('change',e=>{if(e.target.dataset.status!==undefined){const i=Number(e.target.dataset.status);if(!s.results[i]||!String(s.results[i].answer||'').trim())return;s.results[i].status=e.target.value;s.results[i].reason='Revisão manual';document.getElementById('reason'+i).textContent='Decisão manual';document.getElementById('pt'+i).textContent=points(e.target.value)?'+'+points(e.target.value)+' pts':'0 pts';updateReviewSummary();save()}});
 app.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('ans')){e.preventDefault();let arr=[...app.querySelectorAll('.ans')];arr[arr.indexOf(e.target)+1]?.focus()}if(e.key==='Enter'&&e.target.id==='newCategory'){e.preventDefault();app.querySelector('[data-a="add"]').click()}});
 let theme='light';try{theme=localStorage.getItem('anna.eduplay.stoparena.theme')||'light'}catch(e){}document.documentElement.dataset.theme=theme;document.getElementById('theme').addEventListener('click',()=>{theme=theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('anna.eduplay.stoparena.theme',theme)}catch(e){}});
 // Atualiza partidas antigas salvas antes da regra de respostas em MAIÚSCULAS.

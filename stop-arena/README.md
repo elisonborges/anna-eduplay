@@ -1,3 +1,31 @@
+## Roleta — preparação de cinco segundos
+
+- Depois de a roleta revelar a letra, aparece a contagem regressiva visual **5, 4, 3, 2, 1**; ao terminar, a rodada começa automaticamente.
+- O botão **▶ Começar rodada agora** é liberado assim que a roleta para e permite iniciar sem esperar os cinco segundos.
+- O cronômetro da partida só começa quando a tela de respostas é aberta, não durante o sorteio nem a preparação.
+- Ao iniciar a rodada ou abandonar a tela, o temporizador de preparação é cancelado para impedir inícios duplicados.
+- Aplicado à roleta das modalidades locais (Individual, Educacional, Contra o Computador e Cooperativo Local). As salas online não têm roleta visual nessa interface; seu início continua controlado pelo organizador.
+- Implementado na branch de desenvolvimento **feature/stop-arena-validacao-compartilhada**, ainda sem publicação na versão principal.
+
+## Conferência conjunta das respostas — revisão em desenvolvimento
+
+- Cada participante de uma sala online mantém suas próprias respostas por categoria durante a rodada. Após o STOP, todos os participantes autorizados veem as palavras preenchidas por cada integrante, com autoria identificada.
+- Qualquer participante pode votar **Aceitar** ou **Recusar** em cada resposta não vazia. Dois votos concordantes definem o status provisório; divergências permanecem pendentes. O organizador pode decidir e encerrar uma divergência.
+- Nenhum participante pode votar, corrigir ou atribuir pontos a respostas vazias. Na tela individual, o seletor de uma resposta em branco fica desabilitado; na sala online, ela aparece como não preenchida.
+- A IA atua como parecer de desempate e ortografia, compartilhado no estado persistente da sala. Nunca substitui automaticamente palavras digitadas nem concede pontuação com base apenas na correção sugerida.
+- Os resultados coletivos contabilizam **no máximo 10 pontos por categoria**, mesmo com diversas palavras corretas enviadas por jogadores diferentes. O histórico da sala preserva a pontuação consolidada.
+- Com 2 a 6 participantes e 6 a 12 categorias, a conferência pode envolver até 72 respostas; consultas Gemini são divididas em lotes de até 12 entradas, com índices traduzidos de volta para a resposta original.
+- O Worker informa o status HTTP e a mensagem resumida do provedor nos erros Gemini; o erro 502 observado não teve causa específica verificada em produção. Se a IA falhar, a revisão manual permanece disponível.
+- Alterações em `feature/stop-arena-validacao-compartilhada` de `anna-eduplay` e `anna-virtual`. Ainda não publicadas na `main` nem validadas com o Gemini real e dois celulares.
+
+## Sugestões ortográficas do Gemini (em desenvolvimento)
+
+- O botão **🤖 Conferir escrita com IA** permite revisar a adequação à categoria e a grafia das respostas preenchidas, mesmo quando já reconhecidas localmente.
+- Se o Gemini identificar uma grafia corrigida com segurança, o card mostra **✍️ Grafia sugerida: ...**, mantém a palavra originalmente digitada e deixa a avaliação pendente de decisão humana (sem pontuação automática para uma correção).
+- No Cooperativo Online, a sugestão aparece ao organizador; a avaliação pode ficar pendente por ação autenticada do servidor. Os outros participantes recebem as alterações de status e pontuação.
+- O Worker filtra sugestões por índice, comprimento e letra inicial. Gemini pode errar e não é um corretor ortográfico infalível.
+- Esta melhoria está nas branches **feature/stop-arena-correcao-ortografica** dos dois repositórios; ainda não foi publicada na branch principal nem validada com a API Gemini real.
+
 ## Conferência de respostas com Gemini — integração
 
 - O jogador continua recebendo validação imediata do dicionário local, inclusive offline. Palavras não encontradas, mas com letra inicial compatível, ficam pendentes.
