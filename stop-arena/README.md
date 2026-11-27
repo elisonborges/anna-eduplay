@@ -1,3 +1,11 @@
+## Finalização antecipada de partida — implementação em branch
+
+- Botão **🏁 Finalizar jogo** nas telas de escolha/sorteio da letra, preenchimento e conferência dos modos locais. Ao clicar, um **pop-up de confirmação** informa as rodadas concluídas, os pontos acumulados e que a rodada incompleta não conta para o resultado.
+- Confirmando, os cronômetros são interrompidos e aparece a tela de resultado final com a pontuação das rodadas concluídas. Cancelando, a partida continua inalterada.
+- No Cooperativo Online, o organizador pode encerrar a sala antecipadamente (lobby, preenchimento ou conferência); participantes não organizadores continuam podendo sair individualmente. A confirmação avisa que o encerramento vale para todos e só contabiliza rodadas concluídas.
+- O Durable Object marca a sala como finalizada antecipadamente e sincroniza a tela de resultado com todos os jogadores, preservando histórico e pontos acumulados.
+- Alterações preparadas em `feature/stop-arena-finalizar-partida` de `anna-eduplay` e `anna-virtual`. **Não publicadas na main.**
+
 ## Roleta — preparação de cinco segundos
 
 - Depois de a roleta revelar a letra, aparece a contagem regressiva visual **5, 4, 3, 2, 1**; ao terminar, a rodada começa automaticamente.
