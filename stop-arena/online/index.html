@@ -125,6 +125,32 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .suggestion-chip{background:#f0e8ff;border:1px solid #cbb9ed;border-radius:9px;color:#5d2997;padding:7px 9px;font-size:12px;font-weight:750;cursor:pointer}
 .suggestion-chip:disabled{opacity:.45;cursor:not-allowed}
 .picked-categories{margin:9px 0}
+
+/* Antessala: organizador em uma tela compacta, participante em espera focada. */
+.lobby-actions-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+.lobby-actions-summary .lobby-links{margin:0}
+.lobby-actions-summary .lobby-details{margin:0;font-size:12px;white-space:normal}
+.lobby-layout{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.lobby-layout>.panel{width:100%}
+.lobby-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lobby-player-row{display:flex;gap:12px;overflow-x:auto;padding:8px 2px 12px}
+.lobby-chat-compact{max-width:100%;padding:14px!important}
+.lobby-chat-compact h2{margin:0 0 8px}
+.lobby-chat-compact .lobby-feed{height:100px;min-height:0;max-height:100px}
+.lobby-chat-compact .lobby-emojis{margin:8px 0}
+.lobby-chat-compact .lobby-emojis button{font-size:18px;padding:5px 9px}
+.lobby-chat-compact .lobby-compose{margin:5px 0}
+.student-waiting{text-align:center;max-width:560px;margin:28px auto;padding:36px 22px;border-radius:22px;background:white;border:1px solid #ddd0f3;box-shadow:0 10px 38px #4c258115}
+.waiting-kicker{font-size:11px;letter-spacing:1px;font-weight:800;color:#6839b5}
+.waiting-emoji{font-size:76px;line-height:1.4;padding:10px}
+.student-waiting h1{margin:5px 0;font-size:clamp(24px,5vw,36px)}
+.student-waiting>p{color:#61527f;font-size:17px}
+.waiting-pulse{background:#f1eaff;color:#57339a;padding:13px;border-radius:11px;margin-top:20px}
+.waiting-chat{margin:14px 0;text-align:left}
+.waiting-chat summary{cursor:pointer;text-align:center;font-weight:750;padding:9px;border-radius:10px;background:#f3edff}
+.waiting-chat .lobby-chat-compact{margin-top:8px}
+.waiting-exit{margin-top:12px}
+@media(max-width:650px){.lobby-actions-summary{align-items:stretch}.lobby-actions-summary .lobby-details{width:100%}.lobby-links{flex-wrap:wrap}.lobby-chat-compact .lobby-compose{flex-direction:row}}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -159,7 +185,7 @@ if(isLocal){
 const queryCode=params.get('sala')||'';
 const queryEvent=upper(new URLSearchParams(location.search).get('evento')||'').trim();
 const championshipMode=/^[A-HJ-NP-Z2-9]{7}$/.test(queryEvent);
-const entry={emoji:'😀',name:'',team:'',teacherPlays:false,mode:'recreativo',eventCode:championshipMode?queryEvent:'',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
+const entry={emoji:'😀',name:'',team:'',teacherPlays:false,chatAllowed:true,mode:'recreativo',eventCode:championshipMode?queryEvent:'',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
 let categories=[];
 let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='',lobbyDraft='';
@@ -206,6 +232,8 @@ function captureEntry(){
  }
  const teacherCheckbox=document.getElementById('teacherPlays');
  if(teacherCheckbox)entry.teacherPlays=teacherCheckbox.checked;
+ const chatCheckbox=document.getElementById('chatAllowed');
+ if(chatCheckbox)entry.chatAllowed=chatCheckbox.checked;
  for(const [key,id] of [['mode','mode'],['rounds','rounds'],['duration','duration']]){
   const el=document.getElementById(id);if(el)entry[key]=key==='mode'?el.value:Number(el.value==='custom'?(document.getElementById(id+'Custom')?.value||''):el.value);
  }
@@ -219,7 +247,8 @@ function renderEntry(){
  '<div class="name-emoji-row"><div class="name-compact"><label for="ownerName">'+(isLocal?'Seu nome':'Nome do professor')+'</label><input id="ownerName" autocapitalize="characters" maxlength="25" placeholder="Nome do professor" value="'+esc(entry.name)+'"></div>'+
  (isLocal?'':emojiSelector('hostEmoji',entry.emoji))+'</div>'+
  '<label for="teamName">'+(championshipMode?'Nome da equipe':'Nome da sala')+'</label><input id="teamName" autocapitalize="characters" maxlength="35" placeholder="'+(championshipMode?'Ex.: Equipe 7º A':'Ex.: Sala de Stop do 7º ano')+'" value="'+esc(entry.team)+'">'+
- (isLocal?'':'<label class="teacher-toggle"><input type="checkbox" id="teacherPlays" '+(entry.teacherPlays?'checked':'')+'><span>O professor também vai jogar</span></label><p class="notice">Desmarcado: o professor apenas organiza e confere. A sala pode ter 1 a 49 jogadores convidados, além do organizador.</p>')+
+ (isLocal?'':'<label class="teacher-toggle"><input type="checkbox" id="teacherPlays" '+(entry.teacherPlays?'checked':'')+'><span>O professor também vai jogar</span></label><p class="notice">Desmarcado: o professor apenas organiza e confere. A sala pode ter 1 a 49 jogadores convidados, além do organizador.</p>'+
+ '<label class="teacher-toggle"><input type="checkbox" id="chatAllowed" '+(entry.chatAllowed?'checked':'')+'><span>Permitir chat e emojis na antessala</span></label><p class="notice">Disponível somente antes da partida. Ao iniciar, as conversas são encerradas.</p>')+
  (!isLocal&&championshipMode?'<div class="championship-notice"><strong>🏆 Campeonato '+esc(entry.eventCode)+'</strong><span>Esta sala seguirá as regras definidas pelo organizador do campeonato.</span><a href="eventos/">Consultar campeonato</a></div>':'')+
  '<div class="fieldrow"><div><label for="mode">Modo da partida</label><select id="mode"><option value="recreativo" '+(entry.mode==='recreativo'?'selected':'')+'>🏆 Recreativo</option><option value="educacional" '+(entry.mode==='educacional'?'selected':'')+'>🎓 Educacional</option></select></div>'+
  '</div><div class="round-time-column">'+numericField('rounds',entry.rounds,[1,3,5,10,20],1,20,'')+numericField('duration',entry.duration,[30,60,90,120,180,300],30,300,'segundos')+'</div>'+
@@ -249,7 +278,7 @@ async function enter(op){
  if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
  working=true;status('Conectando à sala...');
  try{
-  const payload=op==='create'?{op,name:upper(entry.name.trim()),team:upper(entry.team.trim()),eventCode:isLocal?'':(championshipMode?entry.eventCode:''),emoji:isLocal?undefined:entry.emoji,teacherPlays:isLocal?true:entry.teacherPlays,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const payload=op==='create'?{op,name:upper(entry.name.trim()),team:upper(entry.team.trim()),eventCode:isLocal?'':(championshipMode?entry.eventCode:''),emoji:isLocal?undefined:entry.emoji,teacherPlays:isLocal?true:entry.teacherPlays,chatAllowed:isLocal?false:entry.chatAllowed,categories,letters,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
   const data=await request(payload);
   session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
  }catch(error){status(error.message,true)}finally{working=false}
@@ -311,7 +340,7 @@ function renderRoom(){
  if(!room)return renderEntry();
  screen='room';clearInterval(timer);
  const spectator=room.members.find(m=>m.id===room.viewer)?.plays===false;
- const header='<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">'+(isLocal?'PIN ':'Sala ')+esc(room.code)+' · '+room.members.length+'/'+(isLocal?6:50)+' participantes</div></div><div class="actions" style="margin:0">'+btn('📋 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>';
+ const header=!isLocal&&room.stage==='lobby'?'':('<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">'+(isLocal?'PIN ':'Sala ')+esc(room.code)+' · '+room.members.length+'/'+(isLocal?6:50)+' participantes</div></div><div class="actions" style="margin:0">'+btn('🔗 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>');
  let body='';
  if(room.stage==='lobby'){
  if(isLocal){  body='<section class="panel"><h1>🎊 Sala criada!</h1><p>Compartilhe o código com os participantes. O organizador inicia quando estiverem prontos.</p>'+
@@ -323,23 +352,35 @@ function renderRoom(){
   (room.host?'<div class="actions">'+btn('🚀 Iniciar missão','start','green')+btn('🏁 Finalizar jogo','finishGame')+'</div>':'<div class="attention">⏳ Aguardando o organizador começar a partida...</div>')+'</section>';
 
  }else{
-const chat=(room.lobbyMessages||[]).slice(-40);
-body='<div class="lobby-hero"><div><span>● ANTESSALA · '+(room.host?'ORGANIZADOR':'PARTICIPANTE')+'</span><h1>🏠 '+esc(room.team)+'</h1><p>Compartilhe o PIN e receba os jogadores antes de iniciar.</p></div><div class="lobby-pin"><small>PIN DE ACESSO</small><strong>'+esc(room.code)+'</strong><small>'+room.members.length+' de '+(isLocal?6:50)+' participantes</small></div></div>'+
-'<div class="lobby-links">'+btn('📋 Copiar PIN','copyPin','small')+btn('🔗 Copiar convite','share','primary')+'<a class="btn green" href="'+esc(link())+'">Link dos participantes</a></div>'+
-'<div class="lobby-layout"><section class="panel"><h2>👥 Participantes ('+room.members.length+'/'+(isLocal?6:50)+')</h2><p class="notice">O organizador pode remover participantes antes de iniciar.</p>'+
-'<div class="lobby-player-row">'+room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.emoji||'😀')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você':m.id===room.members[0].id?(m.plays===false?'Professor · organizador':'Professor · jogador'):'Jogador')+'</small></span>'+
-(room.host&&m.id!==room.viewer?'<button class="btn lobby-remove" data-kick="'+esc(m.id)+'" data-kick-name="'+esc(m.name)+'">Remover</button>':'')+'</div>').join('')+'</div>'+
-'<div class="lobby-details">🎯 '+room.categories.length+' categorias · 🔁 '+room.rounds+' rodadas · ⏱️ '+room.duration+'s</div>'+
-(room.host?'<div class="lobby-start"><p>Ao começar, chat e emojis são desativados para todos.</p>'+btn('🎡 Sortear letra e começar','start','green fill')+btn('🏁 Finalizar jogo','finishGame','small')+'</div>':'<div class="attention">⏳ Aguardando o organizador iniciar a partida...</div>')+
-'</section><section class="panel"><h2>💬 Conversa da equipe</h2><p class="notice">Mensagens e emojis disponíveis apenas nesta antessala.</p>'+
-'<div class="lobby-feed" id="lobbyFeed" role="log">'+(chat.length?chat.map(m=>'<p class="lobby-message"><strong>'+esc(m.name||'Antessala')+':</strong> '+esc(m.text)+
+ const chat=(room.lobbyMessages||[]).slice(-40);
+ const chatBox=()=>'<section class="panel lobby-chat-compact"><h2>💬 Conversa da equipe</h2>'+
+ '<div class="lobby-feed" id="lobbyFeed" role="log">'+(chat.length?chat.map(m=>'<p class="lobby-message"><strong>'+esc(m.name||'Antessala')+':</strong> '+esc(m.text)+
  (room.host&&m.by!=='system'?'<button class="lobby-delete" data-lobby-delete="'+esc(m.id)+'" aria-label="Excluir mensagem de '+esc(m.name)+'">✕</button>':'')+'</p>').join(''):'<p class="notice">👋 Dê boas-vindas à equipe!</p>')+'</div>'+
-'<div class="lobby-emojis">'+['👋','👏','🎉','👍','😊','🚀'].map(e=>'<button data-lobby-emoji="'+e+'" aria-label="Enviar '+e+'">'+e+'</button>').join('')+'</div>'+
-'<form id="lobbyForm" class="lobby-compose"><input id="lobbyText" maxlength="140" value="'+esc(lobbyDraft)+'" placeholder="Escreva uma mensagem..." aria-label="Mensagem para a equipe"><button class="btn primary" type="submit">Enviar</button></form></section></div>';
-
+ '<div class="lobby-emojis">'+['👋','👏','🎉','👍','😊','🚀'].map(e=>'<button type="button" data-lobby-emoji="'+e+'" aria-label="Enviar '+e+'">'+e+'</button>').join('')+'</div>'+
+ '<form id="lobbyForm" class="lobby-compose"><input id="lobbyText" maxlength="140" value="'+esc(lobbyDraft)+'" placeholder="Escreva uma mensagem..." aria-label="Mensagem para a equipe"><button class="btn primary" type="submit">Enviar</button></form></section>';
+ if(!room.host){
+  const self=room.members.find(m=>m.id===room.viewer)||{name:'Jogador',emoji:'😀'};
+  body='<section class="student-waiting"><span class="waiting-kicker">STOP ARENA · ANTESSALA</span><div class="waiting-emoji">'+esc(self.emoji||'😀')+'</div>'+
+   '<h1>'+esc(self.name)+'</h1><p>Aguarde o professor iniciar a partida.</p><div class="waiting-pulse">⏳ Você já está na sala '+esc(room.team)+'</div>'+
+   (room.chatAllowed!==false?'<details class="waiting-chat"><summary>💬 Conversar enquanto aguarda</summary>'+chatBox()+'</details>':'')+
+   '<div class="waiting-exit">'+btn('Sair da sala','leave','small')+'</div></section>';
+ }else{
+  body='<div class="lobby-hero"><div><span>● ANTESSALA · ORGANIZADOR</span><h1>'+esc(room.team)+'</h1><p>Os jogadores estão entrando na sala.</p></div>'+
+    '<div class="lobby-pin"><small>PIN DE ACESSO</small><strong>'+esc(room.code)+'</strong><small>'+room.members.length+' de 50 participantes</small></div></div>'+
+    '<div class="lobby-actions-summary"><div class="lobby-links">'+btn('📋 Copiar PIN','copyPin','small')+
+    btn('🔗 Compartilhar convite','share','primary')+
+    '<a class="btn green" href="'+esc(link())+'">Link dos participantes</a></div>'+
+    '<div class="lobby-details">🎯 '+room.categories.length+' categorias · 🔁 '+room.rounds+' rodadas · ⏱️ '+room.duration+'s</div></div>'+
+    '<div class="lobby-layout"><section class="panel"><div class="lobby-heading"><h2>👥 Participantes ('+room.members.length+'/50)</h2>'+
+    btn('Sair do aparelho','leave','small')+'</div>'+
+    '<div class="lobby-player-row">'+room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.emoji||'😀')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você · Professor':m.plays===false?'Professor · organizador':'Jogador')+'</small></span>'+
+    (m.id!==room.viewer?'<button class="btn lobby-remove" data-kick="'+esc(m.id)+'" data-kick-name="'+esc(m.name)+'">Remover</button>':'')+'</div>').join('')+'</div>'+
+    '<div class="lobby-start">'+btn('🎡 Sortear letra e começar','start','green fill')+btn('🏁 Finalizar jogo','finishGame','small')+'</div>'+
+    '</section>'+(room.chatAllowed!==false?chatBox():'')+'</div>';
+ }
  }
  }else if(room.stage==='roulette'){
-  body='<section class="panel" style="text-align:center"><h1>🎡 Sorteio da letra</h1>'+
+  body='<section class="panel" style="text-align:center"><h1>🎡 Preparação da rodada</h1>'+
    '<p class="notice">Rodada '+room.round+' de '+room.rounds+' · A roleta e a contagem são sincronizadas para todos.</p>'+
    '<div class="online-wheel" id="onlineWheel" aria-label="Letra sorteada"><strong id="wheelLetter">?</strong></div>'+
    '<h2 id="wheelMessage" role="status">A roleta está girando...</h2>'+
@@ -413,15 +454,17 @@ function startRouletteTimer(){
  const update=()=>{
   if(!room||room.stage!=='roulette')return;
   const revealAt=Number(room.revealAt||0),startAt=Number(room.roundStartAt||0);
-  const now=Date.now(),spinning=now<revealAt;
+  const spinAt=Number(room.spinAt||revealAt-3000);
+  const now=Date.now(),preparing=now<spinAt,spinning=now>=spinAt&&now<revealAt;
   const face=document.getElementById('wheelLetter');
   const message=document.getElementById('wheelMessage');
   const counter=document.getElementById('wheelSeconds');
   const disc=document.getElementById('onlineWheel');
-  if(face)face.textContent=spinning?alphabet[Math.floor(now/90)%alphabet.length]:room.letter;
+  if(face)face.textContent=preparing?'⏳':spinning?alphabet[Math.floor(now/90)%alphabet.length]:room.letter;
   if(disc)disc.classList.toggle('spinning',spinning);
-  if(message)message.textContent=spinning?'A roleta está girando...':'Letra '+room.letter+'! Prepare-se para começar.';
-  if(counter)counter.textContent=spinning?'':Math.max(0,Math.ceil((startAt-now)/1000))+' segundos para iniciar a rodada';
+  if(message)message.textContent=preparing?'A partida vai começar!':spinning?'🎡 Sorteando a letra...':'Letra '+room.letter+'! Prepare-se para começar.';
+  if(counter)counter.textContent=preparing?Math.max(0,Math.ceil((spinAt-now)/1000))+' segundos para a roleta':
+   spinning?'Sorteando...':Math.max(0,Math.ceil((startAt-now)/1000))+' segundos para iniciar a rodada';
   if(now>=startAt&&!working&&!checking)poll();
  };
  update();timer=setInterval(update,120);
@@ -497,7 +540,7 @@ app.addEventListener('click',async e=>{
   return act('kick',{memberId:b.dataset.kick});
  }
  if(b.dataset.lobbyEmoji!==undefined){
-  if(isLocal||room?.stage!=='lobby')return;
+  if(isLocal||room?.stage!=='lobby'||room.chatAllowed===false)return;
   return act('lobbyEmoji',{text:b.dataset.lobbyEmoji});
  }
  if(b.dataset.vote!==undefined){
@@ -540,7 +583,7 @@ app.addEventListener('click',async e=>{
 app.addEventListener('submit',async e=>{
  if(e.target.id!=='lobbyForm')return;
  e.preventDefault();
- if(isLocal||room?.stage!=='lobby'||working)return;
+ if(isLocal||room?.stage!=='lobby'||room.chatAllowed===false||working)return;
  const message=(document.getElementById('lobbyText')?.value||'').trim();
  if(!message)return;
  await act('lobbyMessage',{text:message});
@@ -557,7 +600,7 @@ app.addEventListener('change',e=>{
   return;
  }
  if(el.dataset.grade!==undefined){if(el.value!=='review')act('grade',{index:Number(el.dataset.grade),status:el.value});return}
- if(['teacherPlays','roundsCustom','durationCustom','ownerName','teamName','joinCode','joinName','hostEmoji'].includes(el.id))captureEntry();
+ if(['teacherPlays','chatAllowed','roundsCustom','durationCustom','ownerName','teamName','joinCode','joinName','hostEmoji'].includes(el.id))captureEntry();
 });
 app.addEventListener('input',e=>{
  if(e.target.id==='lobbyText'){lobbyDraft=e.target.value;return}
