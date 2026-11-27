@@ -64,7 +64,7 @@ async function refresh(){
    const available=r.joinable?6-registered:0;
    return '<article class="room"><div class="room-head"><strong>🏠 '+esc(r.name||'Sala sem nome')+'</strong><span class="room-code">'+esc(r.code)+'</span></div>'+
     '<div class="stats"><div class="stat"><b>'+connected+'</b><small>🟢 Conectados</small></div>'+
-    '<div class="stat"><b>'+registered+'/6</b><small>👥 Inscritos</small></div><div class="stat"><b>'+available+'</b><small>🪑 Vagas livres</small></div></div>'+
+    '<div class="stat"><b>'+registered+'/'+(Number(room.capacity)||50)+'</b><small>👥 Inscritos</small></div><div class="stat"><b>'+available+'</b><small>🪑 Vagas livres</small></div></div>'+
     '<div class="foot"><span class="stage">'+esc(labels[r.stage]||'Sala ativa')+(r.eventCode?' · Evento '+esc(r.eventCode):'')+'</span>'+
     (r.joinable?'<a class="button primary" href="../?sala='+encodeURIComponent(r.code)+'">Entrar na sala</a>':'<span class="hint">Entrada encerrada</span>')+'</div></article>';
   }).join('');
