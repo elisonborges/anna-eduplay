@@ -167,6 +167,7 @@ async function share(){
 function setRoom(next){
  if(!next)return;
  const changed=!room||room.version!==next.version||room.stage!==next.stage;
+ if(room&&(room.code!==next.code||room.round!==next.round||room.stage==='review'&&next.stage!=='review'))hints={};
  const oldStage=room?.stage;room=next;
  if(screen!=='room'||oldStage!==next.stage||!document.getElementById('onlineRoom')){renderRoom()}
  else if(changed){if(next.stage==='game')syncAnswers();else renderRoom()}
