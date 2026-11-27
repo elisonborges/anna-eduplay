@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6027b6"><title>Cooperativo Online | Stop Arena · AnnA EduPlay</title>
+<meta name="description" content="Stop Arena Cooperativo Online: crie uma sala e jogue em equipe no celular ou computador">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#25305d;background:#f4f3ff;--edge:#e1d6f8;--accent:#752ce1}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at 5% 8%,#ffe5f6,transparent 30%),radial-gradient(circle at 90% 20%,#d8faff,transparent 28%),linear-gradient(135deg,#f4f1ff,#fff9ed)}
+button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}
+header{background:linear-gradient(115deg,#45219a,#8740ed 60%,#d33dab);color:white;box-shadow:0 4px 18px #6a36b033}
+.header{max-width:1120px;margin:auto;padding:13px 18px;display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap}
+.brand{font-weight:900;font-size:19px}.brand small{display:block;font-weight:500;font-size:11px;color:#f5eaff}
+header a{color:white;text-decoration:none;font-weight:700}
+main{max-width:1120px;margin:auto;padding:20px 16px 30px}h1{font-size:clamp(23px,3.2vw,32px);margin:2px 0 5px}
+p{margin:5px 0 10px;line-height:1.45}.sub,.hint{color:#596783;font-size:13px}
+.panel{background:#fffefa;border:1px solid var(--edge);padding:18px;border-radius:17px;box-shadow:0 8px 24px #6c37ae18}
+.layout{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:16px}.stack{display:grid;gap:12px}
+label{font-weight:800;font-size:12px;display:block;margin:7px 0 5px}
+input,select{width:100%;min-height:43px;padding:9px 11px;border:1px solid #d6c8f2;background:#f8f6ff;border-radius:10px;color:#252850;font-size:16px}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #f2b447;outline-offset:2px}
+.btn{padding:11px 15px;border-radius:11px;border:1px solid #d9caee;background:#f4ecff;color:#5427a5;font-weight:800;min-height:43px}
+.btn.primary{border:0;color:white;background:linear-gradient(110deg,#9549e9,#6327cf);box-shadow:0 4px 12px #8445da35}
+.btn.green{background:linear-gradient(110deg,#07a99b,#10bb7f);border:0;color:white}
+.btn.stop{background:linear-gradient(110deg,#fa527e,#ec3263);border:0;color:white}
+.btn.small{min-height:33px;padding:5px 9px;font-size:12px}
+.actions{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:12px}.actions .fill{flex:1}
+.fieldrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}.chip{background:#ebf8f6;border:1px solid #aee5da;border-radius:10px;padding:7px 9px;font-size:12px;font-weight:700;color:#166e62}
+.chip button{border:0;background:transparent;color:#d63376;font-weight:900}
+.notice{font-size:12px;color:#58617c}.attention{padding:11px;border-radius:10px;background:#fff1ce;border:1px solid #ffd78f;color:#7a5013;font-size:12px;margin:11px 0}
+.status{margin:10px 0;padding:9px 11px;border-radius:10px;background:#e6f8ff;border-left:4px solid #32a7c8;color:#174c6a;font-size:12px}
+.status.error{background:#fff0ef;border-color:#ef6e6e;color:#862a32}
+.kicker{color:#7131b2;font-weight:900;font-size:12px;letter-spacing:.04em}
+.roomcode{font-size:clamp(30px,6vw,56px);letter-spacing:.16em;font-weight:1000;text-align:center;color:#6733b7;background:#f3eaff;border:2px dashed #b292e7;border-radius:13px;padding:10px;margin:12px 0;user-select:all}
+.member{display:flex;align-items:center;justify-content:space-between;border-radius:10px;background:#eefaf3;padding:10px 12px;margin:7px 0;color:#1c6c58;font-weight:700}
+.banner{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px;border-radius:12px;background:linear-gradient(100deg,#d4fbeb,#dff4ff);margin-bottom:12px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:13px}
+.stat{text-align:center;border:1px solid #e3c9f1;background:#f3e7ff;border-radius:11px;padding:8px 4px}
+.stat:nth-child(2){background:#e6f8ff}.stat:nth-child(3){background:#fff0ce}.stat:nth-child(4){background:#e1f9ed}
+.stat small{display:block;font-size:10px;color:#59617d}.stat strong{display:block;font-size:clamp(17px,3vw,26px)}
+.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.answer{border:1px solid #e5d5f0;border-radius:12px;padding:10px;background:#fff}
+.answer:nth-child(3n+2){background:#f5fffb}.answer:nth-child(3n){background:#fff9ed}
+.answer label{font-size:13px;margin:0 0 6px}.answer input{text-transform:uppercase;font-weight:700}
+.answer small{font-size:10px;color:#60718b;display:block;margin-top:5px;min-height:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px 6px;border-bottom:1px solid #eee3fb}th{color:#63508d;font-size:11px}
+table select{font-size:12px;min-height:36px;max-width:170px}
+.score{text-align:center;color:#13a279;font-size:42px;font-weight:900}
+.goal{text-align:center;color:#16785e;font-weight:800}
+footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px;font-size:12px}
+@media(max-width:700px){.layout{grid-template-columns:1fr}.answers{grid-template-columns:1fr}.panel{padding:13px}.fieldrow{grid-template-columns:1fr}.header{padding:12px}.stats{gap:4px}.stat{padding:7px 2px}}
+</style></head>
+<body><header><div class="header"><div class="brand">🎉 Stop Arena <small>AnnA EduPlay · Cooperativo Online 🌐</small></div><a href="../">← Voltar ao jogo</a></div></header>
+<main id="app" aria-live="polite"><h1>🤝 Preparando a sala online</h1></main>
+<footer>AnnA One · Stop Arena Cooperativo · Respostas em MAIÚSCULAS · Validação supervisionada</footer>
+<script>
+(()=>{
+'use strict';
+const API='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/room';
+const AI='https://anna-virtual-teste.elisonborg.workers.dev/stop-arena/validate';
+const KEY='anna.stoparena.online.session';
+const PRESETS={"recreativo":{"Clássico":["Nome","Animal","CEP","Cor","Objeto","Fruta"],"Populares":["Nome","Animal","CEP","Comida","Profissão","Marca"],"Diversão":["Filme","PDA","Marca","Esporte","Cantor ou banda","JLR"],"Cotidiano":["Comida","Bebida","Roupa","Profissão","Lugar","Objeto"],"Natureza":["Animal","Fruta","Flor","Árvore","Cor","Planta"],"Viagem":["CEP","Lugar turístico","Comida típica","Meio de transporte","Hotel","Ponto turístico"]},"educacional":{"Português":["Substantivo","Adjetivo","Verbo","Nome próprio","JLR","Objeto"],"Ciências":["Animal","Planta","PHC","Alimento","Elemento da natureza","Material"],"Geografia":["CEP","Rio","Continente","Lugar geográfico","Relevo","Bioma"],"História":["Personagem histórico","Acontecimento histórico","Profissão antiga","Objeto histórico","CEP","Objeto"],"Matemática":["Forma geométrica","Termo matemático","Unidade de medida","Número por extenso","Instrumento de medição","Objeto geométrico"],"Tecnologia":["Componente eletrônico","Ferramenta","Termo de programação","Dispositivo tecnológico","Sensor","Aplicativo"]}};
+const app=document.getElementById('app');
+const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const upper=x=>String(x??'').toLocaleUpperCase('pt-BR');
+const btn=(title,act,cls='')=>'<button class="btn '+cls+'" data-act="'+act+'">'+title+'</button>';
+const queryCode=new URLSearchParams(location.search).get('sala')||'';
+const entry={name:'',team:'Equipe Campeã',preset:'Clássico',rounds:3,duration:90,joinCode:upper(queryCode).slice(0,7),joinName:''};
+let categories=[...PRESETS.recreativo.Clássico];
+let session=null,room=null,interval=null,timer=null,checking=false,working=false,lastError='',hints={},drafts=new Map(),seenVersion=-1,screen='';
+try{const saved=JSON.parse(sessionStorage.getItem(KEY)||'null');if(saved?.code&&saved?.token)session=saved}catch{}
+const status=(msg,isError=false)=>{let el=document.getElementById('status');if(el){el.textContent=msg||'';el.className='status'+(isError?' error':'');el.hidden=!msg}};
+const saveSession=()=>{try{sessionStorage.setItem(KEY,JSON.stringify(session))}catch{}};
+const reset=()=>{session=null;room=null;screen='';seenVersion=-1;clearInterval(interval);clearInterval(timer);interval=null;timer=null;try{sessionStorage.removeItem(KEY)}catch{};renderEntry()};
+async function request(payload){
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),14000);
+ try{
+  const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal,credentials:'omit'});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok)throw Error(data.error||'Serviço indisponível ('+res.status+')');
+  return data;
+ }finally{clearTimeout(timeout)}
+}
+const userName=id=>room?.members.find(m=>m.id===id)?.name||'Equipe';
+function captureEntry(){
+ for(const [key,id] of [['name','ownerName'],['team','teamName'],['joinName','joinName'],['joinCode','joinCode']]){
+  const el=document.getElementById(id);if(el)entry[key]=el.value;
+ }
+ for(const [key,id] of [['preset','preset'],['rounds','rounds'],['duration','duration']]){
+  const el=document.getElementById(id);if(el)entry[key]=key==='preset'?el.value:Number(el.value);
+ }
+}
+function renderEntry(){
+ screen='entry';clearInterval(interval);clearInterval(timer);interval=null;timer=null;
+ app.innerHTML='<h1>🌐 Cooperativo Online</h1><p class="sub">Crie uma sala e convide a equipe. Cada participante usa seu próprio aparelho, com respostas compartilhadas!</p>'+
+ '<div class="layout"><section class="panel"><span class="kicker">🏠 CRIAR SALA</span>'+
+ '<label for="ownerName">Seu nome</label><input id="ownerName" maxlength="25" placeholder="Seu nome" value="'+esc(entry.name)+'">'+
+ '<label for="teamName">Nome da equipe</label><input id="teamName" maxlength="35" value="'+esc(entry.team)+'">'+
+ '<div class="fieldrow"><div><label for="preset">Conjunto de categorias</label><select id="preset">'+Object.keys(PRESETS.recreativo).map(x=>'<option '+(entry.preset===x?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></div>'+
+ '<div><label for="rounds">Rodadas</label><select id="rounds">'+[1,3,5,10,20].map(n=>'<option value="'+n+'" '+(entry.rounds===n?'selected':'')+'>'+n+'</option>').join('')+'</select></div></div>'+
+ '<label for="duration">Tempo por rodada</label><select id="duration">'+[30,60,90,120,180,300].map(n=>'<option value="'+n+'" '+(entry.duration===n?'selected':'')+'>'+n+' segundos</option>').join('')+'</select>'+
+ '<div class="actions"><strong>🎯 Categorias da partida</strong><span class="hint">'+categories.length+' de 12</span></div>'+
+ '<div class="chips">'+categories.map((x,i)=>'<span class="chip">'+esc(x)+' <button type="button" data-remove="'+i+'" title="Remover">×</button></span>').join('')+'</div>'+
+ '<div class="actions"><input style="flex:1;min-width:110px" id="extraCat" maxlength="42" placeholder="Nova categoria">'+btn('Adicionar','addCat','small')+'</div>'+
+ '<div class="attention">💡 Mínimo de 6 categorias; as respostas serão avaliadas pelo dicionário local, pela equipe ou com ajuda opcional da IA.</div>'+
+ '<div class="actions">'+btn('✨ Criar sala e gerar convite','create','primary fill')+'</div></section>'+
+ '<section class="panel"><span class="kicker">📲 ENTRAR EM UMA SALA</span>'+
+ '<p class="notice">Recebeu um convite? Informe o código da sala e seu nome. Entre antes de a partida começar.</p>'+
+ '<label for="joinCode">Código da sala</label><input id="joinCode" maxlength="7" autocapitalize="characters" placeholder="EX.: ABC1234" value="'+esc(entry.joinCode)+'">'+
+ '<label for="joinName">Seu nome</label><input id="joinName" maxlength="25" placeholder="Como quer aparecer?" value="'+esc(entry.joinName)+'">'+
+ '<div class="actions">'+btn('🤝 Entrar na equipe','join','green fill')+'</div>'+
+ '<div class="attention">🌟 Todos precisam colaborar. A equipe inteira compartilha a pontuação e a meta de 70% dos pontos possíveis.</div>'+
+ '<p id="status" class="status" hidden></p></section></div>';
+}
+async function enter(op){
+ if(working)return;captureEntry();
+ if(op==='create'&&(!entry.name.trim()||!entry.team.trim()||categories.length<6||categories.length>12)){status('Informe seu nome, equipe e pelo menos 6 categorias.',true);return}
+ if(op==='join'&&(!entry.joinName.trim()||!/^[A-HJ-NP-Z2-9]{7}$/.test(upper(entry.joinCode)))){status('Informe seu nome e um código válido de 7 caracteres.',true);return}
+ working=true;status('Conectando à sala...');
+ try{
+  const payload=op==='create'?{op,name:entry.name.trim(),team:entry.team.trim(),categories,rounds:entry.rounds,duration:entry.duration}:{op,code:upper(entry.joinCode),name:entry.joinName.trim()};
+  const data=await request(payload);
+  session={code:data.room.code,token:data.token};saveSession();room=data.room;lastError='';seenVersion=-1;renderRoom();startPolling();
+ }catch(error){status(error.message,true)}finally{working=false}
+}
+function link(){return location.origin+location.pathname+'?sala='+encodeURIComponent(room.code)}
+async function share(){
+ const text='Entre na equipe '+room.team+' do Stop Arena: '+link();
+ try{if(navigator.share){await navigator.share({title:'Stop Arena Cooperativo',text,url:link()});return}
+ await navigator.clipboard.writeText(text);status('Convite copiado! Envie pelo WhatsApp ou outro aplicativo.')}catch{prompt('Copie o convite:',text)}
+}
+function setRoom(next){
+ if(!next)return;
+ const changed=!room||room.version!==next.version||room.stage!==next.stage;
+ const oldStage=room?.stage;room=next;
+ if(screen!=='room'||oldStage!==next.stage||!document.getElementById('onlineRoom')){renderRoom()}
+ else if(changed){if(next.stage==='game')syncAnswers();else renderRoom()}
+ seenVersion=next.version;
+}
+function startPolling(){
+ clearInterval(interval);interval=setInterval(poll,2500);poll();
+}
+async function poll(){
+ if(!session||checking||working)return;
+ checking=true;
+ try{const result=await request({op:'state',...session});lastError='';setRoom(result.room);status('')}
+ catch(e){lastError=e.message;status('Sem atualização: '+e.message,true)}
+ finally{checking=false}
+}
+async function act(action,extra={}){
+ if(!session||working)return;
+ working=true;
+ try{
+  const result=await request({op:'action',...session,action,...extra});
+  setRoom(result.room);lastError='';status('');
+ }catch(error){status(error.message,true)}
+ finally{working=false}
+}
+function renderRoom(){
+ if(!room)return renderEntry();
+ screen='room';clearInterval(timer);
+ const header='<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">Sala '+esc(room.code)+' · '+room.members.length+'/6 participantes</div></div><div class="actions" style="margin:0">'+btn('📋 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>';
+ let body='';
+ if(room.stage==='lobby'){
+  body='<section class="panel"><h1>🎊 Sala criada!</h1><p>Compartilhe o código com os participantes. O organizador inicia quando estiverem prontos.</p>'+
+  '<div class="roomcode">'+esc(room.code)+'</div>'+
+  '<div class="actions">'+btn('📋 Copiar convite','share','primary')+'</div>'+
+  '<h3>🙌 Nossa equipe</h3>'+room.members.map(m=>'<div class="member">🙋 '+esc(m.name)+(m.id===room.viewer?' <small>(você)</small>':'')+'</div>').join('')+
+  '<p class="notice">Mínimo de 2 jogadores; máximo de 6. '+room.categories.length+' categorias, '+room.rounds+' rodadas de '+room.duration+'s.</p>'+
+  (room.host?'<div class="actions">'+btn('🚀 Iniciar missão','start','green')+'</div>':'<div class="attention">⏳ Aguardando o organizador começar a partida...</div>')+'</section>';
+ }else if(room.stage==='game'){
+  body='<div class="stats"><div class="stat"><small>🔤 LETRA</small><strong>'+esc(room.letter)+'</strong></div>'+
+  '<div class="stat"><small>⏱️ TEMPO</small><strong id="countdown">--:--</strong></div>'+
+  '<div class="stat"><small>🎯 RODADA</small><strong>'+room.round+'/'+room.rounds+'</strong></div>'+
+  '<div class="stat"><small>🏆 PONTOS</small><strong>'+room.score+'</strong></div></div>'+
+  '<section class="panel"><p class="notice">✍️ Escrevam juntos! Cada campo é compartilhado; a última edição confirmada é exibida para toda a equipe.</p>'+
+  '<div class="answers">'+room.categories.map((cat,i)=>'<div class="answer"><label for="answer'+i+'">'+esc(cat)+'</label><input class="answer-input" data-answer="'+i+'" id="answer'+i+'" maxlength="80" autocomplete="off" inputmode="text" value="'+esc(room.answers[i]?.value||'')+'"><small id="author'+i+'">'+(room.answers[i]?.by?'Sugerido por '+esc(userName(room.answers[i].by)):'Resposta da equipe')+'</small></div>').join('')+'</div>'+
+  '<div class="actions">'+btn('✋ STOP! Encerrar rodada','stop','stop')+'</div></section>';
+ }else if(room.stage==='review'){
+  const pending=room.results.filter(r=>r.status==='review').length;
+  body='<section class="panel"><h1>🔍 Conferência da equipe</h1><p class="notice">✅ Reconhecidas, ❌ letra incorreta e 🟡 pendentes. O organizador decide, com ajuda opcional da IA.</p>'+
+  '<div style="overflow:auto"><table><thead><tr><th>Categoria / Resposta</th><th>Avaliação</th><th>Pontos</th></tr></thead><tbody>'+
+  room.results.map((r,i)=>'<tr><td><strong>'+esc(r.category)+'</strong><div>'+esc(r.answer||'—')+'</div><small class="notice" id="aiReason'+i+'">'+(hints[i]?esc(hints[i]):r.by?'Por '+esc(userName(r.by)):'')+'</small></td><td>'+
+  (room.host&&r.answer?'<select data-grade="'+i+'">'+['valid','review','invalid'].map(v=>'<option value="'+v+'" '+(r.status===v?'selected':'')+'>'+({valid:'✅ Aceita',review:'🟡 Revisar',invalid:'❌ Inválida'})[v]+'</option>').join('')+'</select>':'<span class="notice">'+({valid:'✅ Aceita',review:'🟡 Revisar',invalid:'❌ Inválida',empty:'— Vazia'})[r.status]+'</span>')+
+  '</td><td>'+(r.status==='valid'?10:0)+'</td></tr>').join('')+'</tbody></table></div>'+
+  '<div class="attention">🟡 '+pending+' resposta(s) em revisão. '+(room.host?'Resolva as pendências para avançar.':'O organizador está revisando.')+'</div>'+
+  (room.host?'<div class="actions">'+btn('✨ Consultar IA','ai')+'<button class="btn primary" data-act="next" '+(pending?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Aguardando o organizador confirmar as respostas.</p>')+
+  '</section>';
+ }else{
+  const goal=Math.ceil(room.categories.length*room.rounds*10*.7),reached=room.score>=goal;
+  body='<section class="panel"><h1>'+(reached?'🏆 Missão cumprida!':'🤝 Missão concluída!')+'</h1>'+
+  '<div class="score">'+room.score+' pontos</div><p class="goal">'+(reached?'🎉 A equipe alcançou a meta de '+goal+' pontos!':'💪 Meta de '+goal+' pontos. Que tal tentar novamente?')+'</p>'+
+  '<p class="notice">⭐ '+room.members.length+' participantes · '+room.history.length+' rodadas concluídas</p>'+
+  '<div style="overflow:auto"><table><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos</th></tr></thead><tbody>'+
+  room.history.map(x=>'<tr><td>'+x.round+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+'</tbody></table></div>'+
+  '<div class="actions">'+btn('🎉 Criar outra sala','leave','primary')+'</div></section>';
+ }
+ app.innerHTML='<div id="onlineRoom">'+header+body+'</div><p id="status" class="status" hidden></p>';
+ if(room.stage==='game'){startTimer()}
+}
+function syncAnswers(){
+ if(!room||room.stage!=='game')return;
+ for(let i=0;i<room.categories.length;i++){
+  const input=document.getElementById('answer'+i);
+  if(input&&document.activeElement!==input&&!drafts.has(i))input.value=room.answers[i]?.value||'';
+  const author=document.getElementById('author'+i);
+  if(author)author.textContent=room.answers[i]?.by?'Sugerido por '+userName(room.answers[i].by):'Resposta da equipe';
+ }
+ const pts=document.getElementById('score');if(pts)pts.textContent=room.score;
+}
+function startTimer(){
+ clearInterval(timer);
+ const update=()=>{
+  if(!room||room.stage!=='game')return;
+  const remain=Math.max(0,Math.ceil((room.deadline-Date.now())/1000));
+  const el=document.getElementById('countdown');
+  if(el)el.textContent=String(Math.floor(remain/60)).padStart(2,'0')+':'+String(remain%60).padStart(2,'0');
+ };
+ update();timer=setInterval(update,250);
+}
+function queueAnswer(index,value){
+ const previous=drafts.get(index);
+ if(previous)clearTimeout(previous.timer);
+ const timer=setTimeout(async()=>{
+  const item=drafts.get(index);
+  if(!item)return;
+  drafts.delete(index);
+  try{const data=await request({op:'action',...session,action:'answer',index,value:item.value});setRoom(data.room)}
+  catch(e){status('Falha ao sincronizar resposta: '+e.message,true)}
+ },650);
+ drafts.set(index,{timer,value});
+}
+async function flushDrafts(){
+ const items=[...drafts.entries()];
+ drafts.clear();
+ for(const [index,item] of items){clearTimeout(item.timer);await request({op:'action',...session,action:'answer',index,value:item.value})}
+}
+async function reviewAI(){
+ if(!room?.host)return;
+ const items=room.results.map((r,index)=>({...r,index})).filter(r=>r.status==='review'&&r.answer);
+ if(!items.length){status('Nenhuma resposta pendente de IA.');return}
+ status('✨ Consultando IA...');
+ try{
+  const response=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({letter:room.letter,items:items.map(({index,category,answer})=>({index,category,answer}))}),credentials:'omit'});
+  const data=await response.json();
+  if(!response.ok)throw Error(data.error||'IA indisponível');
+  if(!Array.isArray(data.suggestions))throw Error('Formato de IA inesperado');
+  for(const x of data.suggestions){
+   if(!items.some(m=>m.index===x.index)||!['valid','invalid','review'].includes(x.status))continue;
+   const hint='🤖 IA sugere '+({valid:'ACEITAR',invalid:'RECUSAR',review:'REVISAR'})[x.status]+': '+String(x.reason||'').slice(0,140);
+   hints[x.index]=hint;const el=document.getElementById('aiReason'+x.index);if(el)el.textContent=hint;
+  }
+  status('Sugestões recebidas. O organizador mantém a decisão final.');
+ }catch(e){status('IA indisponível: '+e.message+'. Continue manualmente.',true)}
+}
+app.addEventListener('click',async e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.remove!==undefined){captureEntry();if(categories.length<=6)return status('Mantenha pelo menos 6 categorias.',true);categories.splice(Number(b.dataset.remove),1);renderEntry();return}
+ if(!b.dataset.act)return;
+ const action=b.dataset.act;
+ if(action==='addCat'){captureEntry();const cat=document.getElementById('extraCat')?.value.trim().slice(0,42);if(!cat)return;if(categories.length>=12)return status('Máximo de 12 categorias.',true);if(categories.some(x=>x.toLocaleLowerCase('pt-BR')===cat.toLocaleLowerCase('pt-BR')))return status('Categoria já adicionada.',true);categories.push(cat);renderEntry();return}
+ if(action==='create'||action==='join')return enter(action);
+ if(action==='share')return share();
+ if(action==='leave')return reset();
+ if(action==='ai')return reviewAI();
+ if(action==='stop'){try{await flushDrafts();await act('stop')}catch(err){status(err.message,true)}return}
+ if(['start','next'].includes(action))return act(action);
+});
+app.addEventListener('change',e=>{
+ const el=e.target;
+ if(el.id==='preset'){captureEntry();categories=[...PRESETS.recreativo[entry.preset]];renderEntry();return}
+ if(el.dataset.grade!==undefined){act('grade',{index:Number(el.dataset.grade),status:el.value});return}
+ if(['rounds','duration','ownerName','teamName','joinCode','joinName'].includes(el.id))captureEntry();
+});
+app.addEventListener('input',e=>{
+ if(e.target.dataset.answer!==undefined){
+  const field=e.target,index=Number(field.dataset.answer);
+  const next=upper(field.value);
+  if(field.value!==next){const start=field.selectionStart,end=field.selectionEnd;field.value=next;try{field.setSelectionRange(start,end)}catch{}}
+  queueAnswer(index,next);
+ }
+ if(e.target.id==='joinCode')e.target.value=upper(e.target.value);
+});
+window.addEventListener('visibilitychange',()=>{if(!document.hidden&&session)poll()});
+if(session){app.innerHTML='<h1>🔄 Retomando sua sala...</h1>';startPolling()}
+else renderEntry();
+})();
+</script></body></html>
