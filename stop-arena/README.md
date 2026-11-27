@@ -1,3 +1,14 @@
+## Conferência de respostas por IA — versão de desenvolvimento
+
+- **Individual, Educacional e Contra o Computador:** a conferência local continua imediata; respostas fora do dicionário, mas com a letra inicial correta, ficam **pendentes**. O botão **🤖 Conferir pendentes com IA** consulta o Gemini e aplica as avaliações `valid` ou `invalid`, atualizando a pontuação. Respostas incertas continuam em `review`.
+- **Cooperativo Local:** mesmo processo, com revisão individual das respostas e pontuação única da equipe.
+- **Cooperativo Online:** o **organizador da sala** aciona a conferência; as avaliações retornadas da IA são aplicadas pelo endpoint autenticado `grade` e sincronizadas para toda a equipe. Pendências não resolvidas precisam de decisão humana.
+- **Revisão manual sempre disponível** para corrigir classificações; o botão de avançar só é liberado quando não há respostas pendentes.
+- O Gemini é acionado via AnnA Virtual `POST /stop-arena/validate`; **a chave não fica no navegador**. O backend valida índices, estados, letra inicial e restringe o tamanho dos dados. As respostas são tratadas como dados, não instruções.
+- Em caso de falha, tempo esgotado ou falta de cota, o jogo continua funcionando com o dicionário e a avaliação manual.
+- O adversário offline contra o computador continua usando apenas o dicionário local, **sem consultar o Gemini**.
+- A implementação está nas branches `feature/stop-arena-conferencia-ia` de **anna-eduplay** e **anna-virtual**. Ainda não houve publicação nem validação com a API Gemini real e dispositivos físicos.
+
 ## Experimento de layout — cards verticais (branch visual)
 
 - Branch: `experiment/stop-arena-cards-verticais`. **Não está publicada no site principal**.
