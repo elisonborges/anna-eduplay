@@ -1,3 +1,13 @@
+## Multiplayer Local — sala com PIN (nova modalidade)
+
+- O card antes denominado **Cooperativo Local** agora abre `stop-arena/online/?modo=local` com título **🏫 Multiplayer Local**.
+- O organizador cria uma sala para 2 a 6 participantes, configura as categorias, letras, tempo e rodadas, e recebe um **PIN alfanumérico de 7 caracteres** gerado pelo serviço de salas existente.
+- Cada integrante entra no próprio celular, tablet ou computador com o PIN ou link de convite, digita suas próprias respostas e participa da conferência da equipe após o STOP.
+- O PIN pode ser copiado diretamente na sala. O convite preserva `modo=local` para quem entrar pelo link. Todos participam da mesma sala sincronizada, com votação, Gemini opcional e pontuação coletiva por categoria.
+- **Limitação declarada:** o servidor de salas AnnA Virtual exige conexão à internet, mesmo quando os jogadores estão fisicamente próximos e conectados ao mesmo Wi-Fi. Este modo **não** oferece hospedagem LAN/autônoma nem funcionamento offline entre dispositivos. Não se deve anunciá-lo como rede local sem internet.
+- O **Cooperativo Online** permanece acessível para participantes em lugares diferentes, com a mesma infraestrutura de salas e a opção de eventos e quadro de salas.
+- Implementação incremental em `feature/stop-arena-multiplayer-local`, **sem publicação na branch principal**. Os jogos antigos de um único aparelho permanecem legíveis no armazenamento local, mas não são mais oferecidos como uma modalidade nova.
+
 ## Finalização antecipada de partida — implementação em branch
 
 - Botão **🏁 Finalizar jogo** nas telas de escolha/sorteio da letra, preenchimento e conferência dos modos locais. Ao clicar, um **pop-up de confirmação** informa as rodadas concluídas, os pontos acumulados e que a rodada incompleta não conta para o resultado.
@@ -78,7 +88,7 @@
 
 
 
-## Cooperativo local (primeira versão jogável)
+## Histórico: cooperativo local antigo (mesmo dispositivo, substituído)
 - A tela inicial oferece **🤝 Cooperativo**, além de Recreativo e Educacional individuais.
 - Equipe com **2 a 6 participantes**, nome personalizável e respostas compartilhadas no **mesmo dispositivo**.
 - As respostas continuam em MAIÚSCULAS e utilizam validação local, revisão manual e botão opcional de consulta à IA.
