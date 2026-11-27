@@ -305,6 +305,7 @@ async function act(action,extra={}){
 function renderRoom(){
  if(!room)return renderEntry();
  screen='room';clearInterval(timer);
+ const spectator=room.members.find(m=>m.id===room.viewer)?.plays===false;
  const header='<div class="banner"><div><span class="kicker">🤝 '+esc(room.team)+'</span><div class="notice">'+(isLocal?'PIN ':'Sala ')+esc(room.code)+' · '+room.members.length+'/'+(isLocal?6:50)+' participantes</div></div><div class="actions" style="margin:0">'+btn('📋 Compartilhar convite','share','small')+btn('Sair do aparelho','leave','small')+'</div></div>';
  let body='';
  if(room.stage==='lobby'){
@@ -320,8 +321,8 @@ function renderRoom(){
 const chat=(room.lobbyMessages||[]).slice(-40);
 body='<div class="lobby-hero"><div><span>● ANTESSALA · '+(room.host?'ORGANIZADOR':'PARTICIPANTE')+'</span><h1>🏠 '+esc(room.team)+'</h1><p>Compartilhe o PIN e receba os jogadores antes de iniciar.</p></div><div class="lobby-pin"><small>PIN DE ACESSO</small><strong>'+esc(room.code)+'</strong><small>'+room.members.length+' de '+(isLocal?6:50)+' participantes</small></div></div>'+
 '<div class="lobby-links">'+btn('📋 Copiar PIN','copyPin','small')+btn('🔗 Copiar convite','share','primary')+'<a class="btn green" href="'+esc(link())+'">Link dos participantes</a></div>'+
-'<div class="lobby-layout"><section class="panel"><h2>👥 Jogadores ('+room.members.length+'/'+(isLocal?6:50)+')</h2><p class="notice">O organizador pode remover participantes antes de iniciar.</p>'+
-'<div class="lobby-player-row">'+room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.emoji||'😀')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você':m.id===room.members[0].id?'Organizador':'Jogador')+'</small></span>'+
+'<div class="lobby-layout"><section class="panel"><h2>👥 Participantes ('+room.members.length+'/'+(isLocal?6:50)+')</h2><p class="notice">O organizador pode remover participantes antes de iniciar.</p>'+
+'<div class="lobby-player-row">'+room.members.map(m=>'<div class="lobby-player"><span class="lobby-avatar">'+esc(m.emoji||'😀')+'</span><span class="lobby-player-name"><strong>'+esc(m.name)+'</strong><small>'+(m.id===room.viewer?'Você':m.id===room.members[0].id?(m.plays===false?'Professor · organizador':'Professor · jogador'):'Jogador')+'</small></span>'+
 (room.host&&m.id!==room.viewer?'<button class="btn lobby-remove" data-kick="'+esc(m.id)+'" data-kick-name="'+esc(m.name)+'">Remover</button>':'')+'</div>').join('')+'</div>'+
 '<div class="lobby-details">🎯 '+room.categories.length+' categorias · 🔁 '+room.rounds+' rodadas · ⏱️ '+room.duration+'s</div>'+
 (room.host?'<div class="lobby-start"><p>Ao começar, chat e emojis são desativados para todos.</p>'+btn('🎡 Sortear letra e começar','start','green fill')+btn('🏁 Finalizar jogo','finishGame','small')+'</div>':'<div class="attention">⏳ Aguardando o organizador iniciar a partida...</div>')+
@@ -345,12 +346,13 @@ body='<div class="lobby-hero"><div><span>● ANTESSALA · '+(room.host?'ORGANIZA
   '<div class="stat"><small>⏱️ TEMPO</small><strong id="countdown">--:--</strong></div>'+
   '<div class="stat"><small>🎯 RODADA</small><strong>'+room.round+'/'+room.rounds+'</strong></div>'+
   '<div class="stat"><small>🏆 PONTOS</small><strong>'+room.score+'</strong></div></div>'+
-  '<section class="panel"><p class="notice">✍️ Cada participante preenche suas próprias palavras. Todas aparecerão juntas na conferência depois do STOP.</p>'+
-  '<div class="answers">'+room.categories.map((cat,i)=>'<div class="answer"><label for="answer'+i+'">'+esc(cat)+'</label><input class="answer-input" data-answer="'+i+'" id="answer'+i+'" maxlength="80" autocomplete="off" inputmode="text" value="'+esc(room.submissions?.[room.viewer]?.[i]??room.answers[i]?.value??'')+'"><small id="author'+i+'">Sua resposta · todos avaliarão após o STOP</small></div>').join('')+'</div>'+
+  '<section class="panel">'+(spectator?'<p class="notice">👩‍🏫 Você está organizando esta rodada, sem responder como jogador. Acompanhe o cronômetro e utilize STOP quando necessário.</p>':'<p class="notice">✍️ Cada participante preenche suas próprias palavras. Todas aparecerão juntas na conferência depois do STOP.</p>')+
+  (spectator?'':'<div class="answers">'+room.categories.map((cat,i)=>'<div class="answer"><label for="answer'+i+'">'+esc(cat)+'</label><input class="answer-input" data-answer="'+i+'" id="answer'+i+'" maxlength="80" autocomplete="off" inputmode="text" value="'+esc(room.submissions?.[room.viewer]?.[i]??room.answers[i]?.value??'')+'"><small id="author'+i+'">Sua resposta · todos avaliarão após o STOP</small></div>').join('')+'</div>')+
   '<div class="actions">'+btn('✋ STOP! Encerrar rodada','stop','stop')+(room.host?btn('🏁 Finalizar jogo','finishGame'):'')+'</div></section>';
  }else if(room.stage==='review'){
   const pending=room.results.filter(r=>r.status==='review').length;
-  const waiting=room.results.filter(r=>r.answer&&!r.finalized&&Object.keys(r.votes||{}).length<2).length;
+  const votesNeeded=Math.min(2,room.members.filter(m=>m.plays!==false).length);
+  const waiting=room.results.filter(r=>r.answer&&!r.finalized&&Object.keys(r.votes||{}).length<votesNeeded).length;
   const credited=new Set();
   body='<section class="panel"><h1>🔎 Conferência em equipe</h1><p class="notice">Todos veem as respostas preenchidas. Cada participante pode votar ✅ ou ❌. Com opiniões diferentes, o Gemini ajuda e o organizador decide. Respostas vazias não são avaliadas.</p>'+
   '<p class="notice">Cada categoria vale no máximo 10 pontos para a equipe, mesmo que vários jogadores acertem.</p><div class="answers review-coop-grid">'+room.results.map((r,i)=>{
@@ -361,14 +363,14 @@ body='<div class="lobby-hero"><div><span>● ANTESSALA · '+(room.host?'ORGANIZA
    return '<article class="panel review-coop-card"><strong>'+esc(r.category)+'</strong><div class="review-word">'+esc(r.answer||'— Sem resposta')+'</div>'+
     (r.by?'<small class="notice">✍️ Por '+esc(userName(r.by))+'</small>':'')+
     (!filled?'<p class="notice">— Campo vazio · 0 pontos · sem avaliação</p>':
-     '<div class="review-votes"><button class="btn '+(mine==='valid'?'green':'secondary')+'" data-vote="'+i+'" data-vote-status="valid" '+(r.finalized?'disabled':'')+'>✅ Aceitar ('+agree+')</button><button class="btn '+(mine==='invalid'?'stop':'secondary')+'" data-vote="'+i+'" data-vote-status="invalid" '+(r.finalized?'disabled':'')+'>❌ Recusar ('+disagree+')</button></div>'+
+     '<div class="review-votes"><button class="btn '+(mine==='valid'?'green':'secondary')+'" data-vote="'+i+'" data-vote-status="valid" '+(r.finalized||spectator?'disabled':'')+'>✅ Aceitar ('+agree+')</button><button class="btn '+(mine==='invalid'?'stop':'secondary')+'" data-vote="'+i+'" data-vote-status="invalid" '+(r.finalized||spectator?'disabled':'')+'>❌ Recusar ('+disagree+')</button></div>'+
      '<p class="notice">Situação: <strong>'+({valid:'✅ Aceita',review:'🟡 Revisar',invalid:'❌ Recusada'})[r.status]+'</strong> · '+(r.status==='valid'&&!credited.has(r.categoryIndex??room.categories.indexOf(r.category))?(credited.add(r.categoryIndex??room.categories.indexOf(r.category)),10):0)+' pontos para a equipe</p>'+
      (ai?'<p class="ai-opinion">🤖 Parecer da IA: '+esc(({valid:'Aceitar',invalid:'Recusar',review:'Em dúvida'})[ai.status])+' · '+esc(ai.reason||'')+(ai.corrected?' · ✍️ Grafia sugerida: '+esc(ai.corrected):'')+'</p>':'')+
      (hints[i]?'<p class="notice">'+esc(hints[i])+'</p>':'')+
      (room.host?'<label class="notice" for="finalGrade'+i+'">Decisão final do organizador</label><select id="finalGrade'+i+'" data-grade="'+i+'">'+['review','valid','invalid'].map(v=>'<option value="'+v+'" '+(r.finalized&&r.status===v?'selected':v==='review'&&!r.finalized?'selected':'')+'>'+({review:'— Aguardar votos',valid:'✅ Confirmar válida',invalid:'❌ Confirmar inválida'})[v]+'</option>').join('')+'</select>':'')
     )+'</article>';
   }).join('')+'</div>'+
-  '<div class="attention">🟡 '+pending+' pendente(s) · '+waiting+' resposta(s) aguardando o segundo voto ou decisão final. '+(room.host?'Você pode resolver as divergências.':'A decisão final das divergências é do organizador.')+'</div>'+
+  '<div class="attention">🟡 '+pending+' pendente(s) · '+waiting+' resposta(s) aguardando voto(s) ou decisão final. '+(room.host?'Você pode resolver as divergências.':'A decisão final das divergências é do organizador.')+'</div>'+
   (room.host?'<div class="actions">'+btn('🏁 Finalizar jogo','finishGame')+(window.STOP_ARENA_LAN?'':btn('🤖 Consultar IA como desempate','ai'))+'<button class="btn primary" data-act="next" '+(pending||waiting?'disabled':'')+'>'+(room.round>=room.rounds?'🏆 Concluir partida':'➡️ Próxima rodada')+'</button></div>':'<p class="notice">Seu voto ajuda a equipe a conferir as respostas.</p>')+
   '</section>';
 
