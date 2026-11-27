@@ -198,6 +198,8 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .final-actions{margin-top:20px;gap:10px}
 .final-details h3{font-size:14px;margin:15px 0 8px}
 .final-details table{min-width:430px}
+.student-final-result{max-width:390px;margin:18px auto;padding:18px;border:2px solid #d8c3f5;border-radius:18px;background:linear-gradient(145deg,#f2eaff,#fff);text-align:center}
+.student-final-result h2{font-size:18px;margin:0 0 10px}.student-final-result strong{font-size:27px;color:#54259d}.student-final-result p{margin:8px 0 0;font-weight:700}
 @media(max-width:600px){.final-actions>.btn{flex:1 1 100%}}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
@@ -494,7 +496,7 @@ function renderRoom(){
   const goal=Math.ceil(room.categories.length*room.rounds*10*.7),reached=room.score>=goal;
   const tracked=!isLocal&&room.scoreTrackingComplete&&room.playerScores&&room.history.length>0;
   const members=room.members.filter(m=>m.plays!==false);
-  const ranked=tracked?members.map(m=>({name:m.name,emoji:m.emoji||'😀',score:Number(room.playerScores[m.id]||0)}))
+  const ranked=tracked?members.map(m=>({id:m.id,name:m.name,emoji:m.emoji||'😀',score:Number(room.playerScores[m.id]||0)}))
     .sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'pt-BR')):[];
   const levels=[...new Set(ranked.map(p=>p.score))].slice(0,3);
   const positions=levels.map(score=>({place:ranked.findIndex(p=>p.score===score)+1,score,players:ranked.filter(p=>p.score===score)}));
@@ -522,7 +524,8 @@ function renderRoom(){
    '<div class="firework-field" aria-hidden="true">'+Array.from({length:18},(_,i)=>'<i style="--i:'+i+'"></i>').join('')+'</div>'+
    '</div>':
    '<div class="final-info"><h2>👏 Obrigado por participar!</h2><p>'+(room.history.length===0?'Nenhuma rodada foi concluída; não há classificação individual.':'Esta sala começou antes da atualização da pontuação individual. O placar coletivo foi preservado, sem inventar uma classificação.')+'</p></div>')+
-  '<details class="final-details"><summary>📄 Relatório da partida · consultar resultados e pontuações</summary>'+
+  (!room.host&&tracked?(()=>{const mine=ranked.find(p=>p.id===room.viewer);if(!mine)return '';const place=ranked.findIndex(p=>p.score===mine.score)+1;return '<div class="student-final-result" aria-label="Sua classificação"><h2>🌟 Sua classificação</h2><strong>'+place+'º lugar</strong><p>'+esc(mine.name)+' · '+mine.score+' pontos</p></div>'})():'')+
+  (room.host?'<details class="final-details"><summary>📄 Relatório da partida · consultar resultados e pontuações</summary>'+
    '<p class="notice">Documento de conferência para eventuais questionamentos. Os dados se referem apenas às rodadas concluídas.</p>'+
    '<p class="notice"><strong>Sala:</strong> '+esc(room.team)+' · <strong>PIN:</strong> '+esc(room.code)+' · <strong>Total coletivo:</strong> '+room.score+' pontos</p>'+
    (tracked?'<h3>Pontuação individual</h3><div style="overflow:auto"><table><thead><tr><th>Jogador</th><th>Pontos</th></tr></thead><tbody>'+
@@ -530,11 +533,11 @@ function renderRoom(){
    '<h3>Rodadas concluídas</h3>'+
    '<div style="overflow:auto"><table><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos coletivos</th></tr></thead><tbody>'+
    room.history.map(x=>'<tr><td>'+x.round+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+
-   '</tbody></table></div><div class="actions">'+btn('⬇️ Baixar relatório CSV','downloadReport','small')+'</div></details>'+
+   '</tbody></table></div><div class="actions">'+btn('⬇️ Baixar relatório CSV','downloadReport','small')+'</div></details>':'')+
   '<div class="actions final-actions" style="justify-content:center">'+
-   (room.host?btn('🔄 Jogar novamente','replay','primary'):'<span class="notice">O professor pode iniciar outra partida nesta sala.</span>')+
+   (room.host?btn('🔄 Jogar novamente','replay','primary'):'')+
    btn('🚪 Encerrar partida','exitMatch','small')+
-   btn('🎉 Criar outra sala','leave','small')+
+   (room.host?btn('🎉 Criar outra sala','leave','small'):'')+
   '</div></section>';
 
  }
