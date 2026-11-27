@@ -297,7 +297,7 @@ async function reviewAI(){
   try{response=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({letter,items:items.map(({index,category,answer})=>({index,category,answer}))}),credentials:'omit',signal:controller.signal})}
   finally{clearTimeout(timeout)}
   const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw Error(data.error+(data.diagnostico?.detail?' · '+data.diagnostico.detail:'')||'Falha na IA');
+  if(!response.ok)throw Error((data.error||'Serviço Gemini indisponível')+(data.diagnostico?.providerStatus?' · HTTP '+data.diagnostico.providerStatus:'')+(data.diagnostico?.detail?' · '+String(data.diagnostico.detail).slice(0,150):'')+(data.diagnostico?.type?' · '+data.diagnostico.type:''));
   if(!Array.isArray(data.suggestions))throw Error('Resposta inesperada da IA');
   if(!session||!room||room.code!==code||room.round!==round||room.letter!==letter||room.stage!=='review')return;
   const originals=new Map(items.map(r=>[r.index,r]));
