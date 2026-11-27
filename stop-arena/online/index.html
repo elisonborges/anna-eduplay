@@ -195,6 +195,10 @@ footer{border-top:1px solid #ddd1f4;text-align:center;color:#53627c;padding:14px
 .final-details summary{cursor:pointer;font-weight:800;color:#5a3297}
 @media(prefers-reduced-motion:reduce){.champion-cup,.firework-field i{animation:none}.podium-rank,.champion-announce{transition:none}}
 @media(max-width:620px){.podium-list{gap:8px}.podium-rank{min-width:100%;min-height:140px}.podium-rank-1{min-height:170px}}
+.final-actions{margin-top:20px;gap:10px}
+.final-details h3{font-size:14px;margin:15px 0 8px}
+.final-details table{min-width:430px}
+@media(max-width:600px){.final-actions>.btn{flex:1 1 100%}}
 </style><style>
 .online-wheel{display:grid;place-items:center;margin:20px auto;width:170px;height:170px;border-radius:50%;background:conic-gradient(#e5bdff,#a2e9fc,#f9c7e3,#bda8ff,#e5bdff);border:9px solid #6636be;box-shadow:0 10px 30px #48217a35;color:#37166c}
 .online-wheel strong{font-size:90px;line-height:1}
@@ -337,6 +341,25 @@ async function share(){
  const text='Entre na equipe '+room.team+' do Stop Arena. PIN '+room.code+': '+link();
  try{if(navigator.share){await navigator.share({title:'Stop Arena Cooperativo',text,url:link()});return}
  await navigator.clipboard.writeText(text);status('Convite copiado! Envie pelo WhatsApp ou outro aplicativo.')}catch{prompt('Copie o convite:',text)}
+}
+function downloadMatchReport(){
+ if(!room||room.stage!=='end')return;
+ const rows=[['RELATÓRIO STOP ARENA'],['Sala',room.team],['PIN',room.code],
+  ['Rodadas concluídas',room.history.length],['Pontos coletivos',room.score],
+  ['Situação',room.finishedEarly?'Encerrada pelo professor':'Concluída'],[],
+  ['JOGADORES','PONTUAÇÃO']];
+ if(room.scoreTrackingComplete&&room.playerScores){
+  room.members.filter(m=>m.plays!==false).sort((a,b)=>(room.playerScores[b.id]||0)-(room.playerScores[a.id]||0))
+    .forEach(m=>rows.push([m.name,room.playerScores[m.id]||0]));
+ }else rows.push(['Pontuação individual não disponível nesta partida']);
+ rows.push([],['RODADA','LETRA','RESPOSTAS VÁLIDAS','PONTOS COLETIVOS']);
+ room.history.forEach(r=>rows.push([r.round,r.letter,r.valid,r.score]));
+ const csv='\uFEFF'+rows.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='stop-arena-relatorio-'+room.code+'.csv';
+ document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function setRoom(next){
  if(!next)return;
@@ -499,11 +522,20 @@ function renderRoom(){
    '<div class="firework-field" aria-hidden="true">'+Array.from({length:18},(_,i)=>'<i style="--i:'+i+'"></i>').join('')+'</div>'+
    '</div>':
    '<div class="final-info"><h2>👏 Obrigado por participar!</h2><p>'+(room.history.length===0?'Nenhuma rodada foi concluída; não há classificação individual.':'Esta sala começou antes da atualização da pontuação individual. O placar coletivo foi preservado, sem inventar uma classificação.')+'</p></div>')+
-  '<details class="final-details"><summary>📋 Ver resultados por rodada</summary>'+
+  '<details class="final-details"><summary>📄 Relatório da partida · consultar resultados e pontuações</summary>'+
+   '<p class="notice">Documento de conferência para eventuais questionamentos. Os dados se referem apenas às rodadas concluídas.</p>'+
+   '<p class="notice"><strong>Sala:</strong> '+esc(room.team)+' · <strong>PIN:</strong> '+esc(room.code)+' · <strong>Total coletivo:</strong> '+room.score+' pontos</p>'+
+   (tracked?'<h3>Pontuação individual</h3><div style="overflow:auto"><table><thead><tr><th>Jogador</th><th>Pontos</th></tr></thead><tbody>'+
+    ranked.map(p=>'<tr><td>'+esc(p.name)+'</td><td>'+p.score+'</td></tr>').join('')+'</tbody></table></div>':'')+
+   '<h3>Rodadas concluídas</h3>'+
    '<div style="overflow:auto"><table><thead><tr><th>Rodada</th><th>Letra</th><th>Válidas</th><th>Pontos coletivos</th></tr></thead><tbody>'+
    room.history.map(x=>'<tr><td>'+x.round+'</td><td>'+esc(x.letter)+'</td><td>'+x.valid+'</td><td>'+x.score+'</td></tr>').join('')+
-   '</tbody></table></div></details>'+
-  '<div class="actions" style="justify-content:center">'+btn('🎉 Criar outra sala','leave','primary')+'</div></section>';
+   '</tbody></table></div><div class="actions">'+btn('⬇️ Baixar relatório CSV','downloadReport','small')+'</div></details>'+
+  '<div class="actions final-actions" style="justify-content:center">'+
+   (room.host?btn('🔄 Jogar novamente','replay','primary'):'<span class="notice">O professor pode iniciar outra partida nesta sala.</span>')+
+   btn('🚪 Encerrar partida','exitMatch','small')+
+   btn('🎉 Criar outra sala','leave','small')+
+  '</div></section>';
 
  }
  const keepFocus=document.activeElement?.id==='lobbyText';
@@ -670,6 +702,17 @@ app.addEventListener('click',async e=>{
  if(action==='share')return share();
  if(action==='copyPin')return copyPin();
  if(action==='leave')return reset();
+ if(action==='exitMatch'){
+  reset();
+  if(!isLocal)location.assign(new URL('../',location.href).href);
+  return;
+ }
+ if(action==='downloadReport')return downloadMatchReport();
+ if(action==='replay'){
+  if(!room?.host||room.stage!=='end')return;
+  if(!confirm('Jogar novamente na mesma sala com os mesmos participantes e regras? A pontuação será zerada. Baixe o relatório anterior antes de continuar se precisar guardá-lo.'))return;
+  return act('replay');
+ }
  if(action==='ai'){if(window.STOP_ARENA_LAN)return status('🤖 Gemini exige internet. No modo LAN offline, use a votação e a conferência manual.',true);return reviewAI()}
  if(action==='finishGame'){
   if(!room?.host||!['lobby','roulette','game','review'].includes(room.stage))return;
