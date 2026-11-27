@@ -1,3 +1,12 @@
+## Conferência de respostas com Gemini — integração
+
+- O jogador continua recebendo validação imediata do dicionário local, inclusive offline. Palavras não encontradas, mas com letra inicial compatível, ficam pendentes.
+- Na tela de revisão em cards, **🤖 Conferir pendentes com IA** envia somente letra, categoria e resposta das pendências ao endpoint protegido `/stop-arena/validate` do AnnA Virtual. A chave do Gemini fica exclusivamente no Worker.
+- As avaliações `valid` e `invalid` são aplicadas aos cards e à pontuação; respostas com `review` exigem revisão manual. O jogador pode corrigir qualquer avaliação. Sem internet, cota ou configuração Gemini, continua a revisão manual.
+- No Cooperativo Online, somente o organizador aciona a conferência; o resultado é gravado via ações autenticadas de avaliação e sincronizado com a sala, preservando a decisão manual do organizador.
+- O adversário offline contra o computador permanece separado do serviço Gemini.
+- Validação feita: sintaxe JavaScript e simulação da resposta da API para casos aceitos, recusados e duvidosos; **não equivale a uma chamada real ao Gemini**. A disponibilidade real depende da publicação do AnnA Virtual e da variável `GEMINI_API_KEY` no Cloudflare.
+
 ## Nova experiência visual — preenchimento e conferência
 
 - Tela **Preencher palavras**: cabeçalho com letra da rodada, cronômetro, progresso e status; campos agrupados em cards por categoria, com ícones, contraste reforçado e borda destacada quando preenchidos.
